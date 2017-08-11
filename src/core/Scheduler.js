@@ -38,7 +38,7 @@ export default class Scheduler {
     callback(true)
   }
 
-  scheduleNavigation = async (nextLocation: Location, action: ?Action) => {
+  scheduleNavigation = (nextLocation: Location, action: ?Action) => {
     const { location } = this.store
 
     // If location path and query has not changed, skip it.

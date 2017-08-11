@@ -48,7 +48,7 @@ describe('Scheduler', () => {
 
   describe('scheduling and processing navigation', () => {
     test('activation guard fails', async () => {
-      const schedulePromise = scheduler.scheduleNavigation(
+      scheduler.scheduleNavigation(
         {
           pathname: '/pressly/news'
         },
@@ -61,7 +61,6 @@ describe('Scheduler', () => {
         expect(navigation.location.pathname).toEqual('/pressly/news')
         expect(toJS(navigation.parts)).toEqual(['', 'pressly', 'news'])
         expect(navigation.action).toEqual('PUSH')
-        expect(schedulePromise).toBeDefined()
       } else {
         expect(false).toBe(true)
       }
@@ -85,7 +84,7 @@ describe('Scheduler', () => {
     })
 
     test('activation guard passes', async () => {
-      const schedulePromise = scheduler.scheduleNavigation(
+      scheduler.scheduleNavigation(
         {
           pathname: '/pressly/news'
         },
@@ -98,7 +97,6 @@ describe('Scheduler', () => {
         expect(navigation.location.pathname).toEqual('/pressly/news')
         expect(toJS(navigation.parts)).toEqual(['', 'pressly', 'news'])
         expect(navigation.action).toEqual('PUSH')
-        expect(schedulePromise).toBeDefined()
       } else {
         expect(false).toBe(true)
       }

@@ -28,9 +28,7 @@ class HistoryManager {
   start() {
     this.scheduler.start()
     this.dispose = this.history.listen((location, action) => {
-      this.scheduler.scheduleNavigation(location, action).catch(err => {
-        console.error(err)
-      })
+      this.scheduler.scheduleNavigation(location, action)
     })
   }
 
