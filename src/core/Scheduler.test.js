@@ -120,5 +120,7 @@ describe('Scheduler', () => {
       // Enter lifecycle method should be called.
       expect(onEnter).toHaveBeenCalled()
     })
+
+    // TODO: Add tests for deactivation.
   })
 })
