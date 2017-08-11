@@ -7,10 +7,12 @@ import delay from '../util/delay'
 
 describe('Scheduler', () => {
   let scheduler, store
-  let resolveActivate, rejectActivate, onError, resolveDeactivate, rejectDeactivate
+  let resolveActivate, rejectActivate, onEnter, onLeave, onError, resolveDeactivate, rejectDeactivate
 
   beforeEach(() => {
     store = new RouterStore()
+    onEnter = jest.fn(() => Promise.resolve())
+    onLeave = jest.fn(() => Promise.resolve())
     onError = jest.fn(() => Promise.resolve())
     store.replaceChildren(store.state.root, [
       createRouteNode({
@@ -27,6 +29,8 @@ describe('Scheduler', () => {
             })
           }
         ],
+        onEnter: [onEnter],
+        onLeave: [onLeave],
         onError: [onError],
         canDeactivate: [
           (node, params) => {
@@ -75,6 +79,9 @@ describe('Scheduler', () => {
 
       // Navigation is cleared.
       expect(scheduler.navigation).toBe(null)
+
+      // Enter lifecycle method should not be called.
+      expect(onEnter).not.toHaveBeenCalled()
     })
 
     test('activation guard passes', async () => {
@@ -109,6 +116,9 @@ describe('Scheduler', () => {
 
       // Navigation is cleared.
       expect(scheduler.navigation).toBe(null)
+
+      // Enter lifecycle method should be called.
+      expect(onEnter).toHaveBeenCalled()
     })
   })
 })

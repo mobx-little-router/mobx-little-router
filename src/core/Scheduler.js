@@ -92,13 +92,13 @@ export default class Scheduler {
       )
 
       // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
-      await this.runGuards('canDeactivate', [], deactivating.map(node => ({
+      await this.runGuards(['canDeactivate', 'onLeave'], [], deactivating.map(node => ({
         node,
         segment: '',
         params: node.value.params || {}
       })))
 
-      await this.runGuards('canActivate', [], activating)
+      await this.runGuards(['canActivate', 'onEnter'], [], activating)
     } catch (err) {
       // Make sure we chain errors back up!
       throw err
@@ -106,7 +106,7 @@ export default class Scheduler {
   }
 
   runGuards = async (
-    type: HookType,
+    types: HookType[],
     processed: MatchResult[],
     remaining: MatchResult[]
   ) => {
@@ -120,18 +120,22 @@ export default class Scheduler {
     const { params, node } = curr
     const { value: { hooks } } = node
 
-    const guard = Promise.all(
-      hooks[type].map(f =>
-        f(node, params).catch(error => {
-          throw new GuardFailure(error, node, params)
-        })
-      )
-    )
+    const guard = types.reduce((acc, type) => {
+      // Make sure previous lifecycle resolved before proceeding with next.
+      // A rejection will skip any unprocessed lifecycle hooks.
+      return acc.then(() => Promise.all(
+        hooks[type].map(f =>
+          f(node, params).catch(error => {
+            throw new GuardFailure(error, node, params)
+          })
+        )
+      ))
+    }, Promise.resolve())
 
     try {
       await guard
       // Run the next guards.
-      await this.runGuards(type, [curr], rest)
+      await this.runGuards(types, [curr], rest)
     } catch (err) {
       // When we encounter a failed guard, just stop navigation.
       throw err
