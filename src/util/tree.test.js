@@ -1,5 +1,5 @@
 // @flow
-import { TreeNode, findPath } from './tree'
+import { TreeNode, findPath, findNode } from './tree'
 
 describe('Tree tests', () => {
   test('traversal', async () => {
@@ -56,5 +56,29 @@ describe('Tree tests', () => {
     }, root, ['foo', 'bar', 'quux', 'this', 'will', 'not', 'match']) // The path here doesn't matter except for limiting the depth.
 
     expect(r3.map(n => n.value.x)).toEqual([10, 9, 7])
+  })
+
+  test('findNode', () => {
+    const root = new TreeNode(
+      { x: 1 },
+      [
+        new TreeNode(
+          { x: 2 },
+          []
+        ),
+        new TreeNode(
+          { x: 3 },
+          [
+            new TreeNode(
+              { x: 4 },
+              []
+            )
+          ]
+        )
+      ]
+    )
+
+    const found = findNode(node => node.value.x === 3, root)
+    expect(found).toBe(root.children[1])
   })
 })

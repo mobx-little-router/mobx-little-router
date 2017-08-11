@@ -1,17 +1,17 @@
 // @flow
 import type { Action } from 'history'
-import { toJS, computed, when, observable, runInAction, autorun } from 'mobx'
+import { action, toJS, computed, when, observable, runInAction, autorun } from 'mobx'
 import type { IObservableArray } from 'mobx'
-import type { Location } from '../types'
+import type { Location, LifecycleFn } from './types'
 import type RouterStore from './RouterStore'
 import shallowEqual from '../util/shallowEqual'
+import type { RouteNode, HookType, MatchResult } from './RouterStateTree'
+import { GuardFailure } from './errors'
 
 type NavigationParams = {
   location: Location,
-  action: ?Action,
-  promise: Promise<boolean>,
-  reject: Function,
-  resolve: Function
+  parts: string[],
+  action: ?Action
 }
 
 export default class Scheduler {
@@ -38,7 +38,7 @@ export default class Scheduler {
     callback(true)
   }
 
-  scheduleNavigation = async (nextLocation: Location, action: ?Action): Promise<boolean> => {
+  scheduleNavigation = async (nextLocation: Location, action: ?Action) => {
     const { location } = this.store
 
     // If location path and query has not changed, skip it.
@@ -48,89 +48,93 @@ export default class Scheduler {
       location.query &&
       shallowEqual(location.query, nextLocation.query)
     ) {
-      return false
+      return
     }
-
-    let resolve: Function = nop
-    let reject: Function = nop
-
-    const promise = new Promise((res, rej) => {
-      resolve = res
-      reject = rej
-    })
 
     runInAction(() => {
       this.navigation = {
         location: nextLocation,
-        action,
-        promise,
-        reject,
-        resolve
+        parts: nextLocation.pathname.split('/'),
+        action
       }
     })
+  }
 
-    return promise
+  @action
+  clearNavigation() {
+    this.navigation = null
   }
 
   processNavigation = async () => {
-    const{ navigation } = this
+    const { navigation } = this
 
     if (!navigation) {
       return
     }
 
-    const { action, location, resolve, reject, promise } = navigation
+    const { location, parts } = navigation
 
     try {
-      if (location) {
-        await this.processDeactivation(action, location)
-        await this.processActivation(action, location)
-      }
-      resolve(true)
+      const path: MatchResult[] = await this.store.state.pathFromRoot(parts)
+      await this.activatePath(path)
+      this.store.setLocation(location)
     } catch (err) {
-      reject(err)
+      this.store.setError(err)
+    } finally {
+      this.clearNavigation()
+    }
+  }
+
+  activatePath = async (activating: MatchResult[]) => {
+    try {
+      const deactivating = this.store.activeNodes.filter(
+        node => !activating.some(x => x.node === node)
+      )
+
+      // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
+      await this.runGuards('canDeactivate', [], deactivating.map(node => ({
+        node,
+        segment: '',
+        params: node.value.params || {}
+      })))
+
+      await this.runGuards('canActivate', [], activating)
+    } catch (err) {
+      // Make sure we chain errors back up!
+      throw err
+    }
+  }
+
+  runGuards = async (
+    type: HookType,
+    processed: MatchResult[],
+    remaining: MatchResult[]
+  ) => {
+    const [curr, ...rest] = remaining
+
+    // Done!
+    if (!curr) {
+      return
     }
 
-    // Once we're done processing this navigation, remove it from queue.
-    return promise
-  }
+    const { params, node } = curr
+    const { value: { hooks } } = node
 
-  processActivation = async (action: ?Action, location: Location) => {
-    const { canActivate } = this.store
+    const guard = Promise.all(
+      hooks[type].map(f =>
+        f(node, params).catch(error => {
+          throw new GuardFailure(error, node, params)
+        })
+      )
+    )
 
-    runInAction(() => {
-      this.store.activating = location
-    })
-
-    const guard = canActivate.reduce((acc, curr) => {
-      return acc.then(() => curr())
-    }, Promise.resolve(true))
-
-    await guard
-
-    runInAction(() => {
-      this.store.activating = null
-      this.store.setLocation(location)
-    })
-  }
-
-  processDeactivation = async (action: ?Action, location: Location) => {
-    const { canDeactivate } = this.store
-
-    runInAction(() => {
-      this.store.deactivating = location
-    })
-
-    const guard = canDeactivate.reduce((acc, curr) => {
-      return acc.then(() => curr())
-    }, Promise.resolve(true))
-
-    await guard
-
-    runInAction(() => {
-      this.store.deactivating = null
-    })
+    try {
+      await guard
+      // Run the next guards.
+      await this.runGuards(type, [curr], rest)
+    } catch (err) {
+      // When we encounter a failed guard, just stop navigation.
+      throw err
+    }
   }
 }
-
-function nop() {}

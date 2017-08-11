@@ -2,7 +2,7 @@
 import type { History } from 'history'
 import { runInAction } from 'mobx'
 import RouterStore from './RouterStore'
-import type { HistoryCreatorFn, GuardFn, GuardType } from '../types'
+import type { HistoryCreatorFn } from './types'
 import Scheduler from './Scheduler'
 
 class HistoryManager {
@@ -17,6 +17,7 @@ class HistoryManager {
     this.history = historyCreator({
       getUserConfirmation: this.scheduleTransition
     })
+
     // Block history on every transition, and we'll let the scheduler handle the lifecycle.
     this.history.block('') // This message is never actually used, just a placeholder.
 
@@ -28,9 +29,7 @@ class HistoryManager {
     this.scheduler.start()
     this.dispose = this.history.listen((location, action) => {
       this.scheduler.scheduleNavigation(location, action).catch(err => {
-        runInAction(() => {
-          this.store.error = err
-        })
+        console.error(err)
       })
     })
   }
@@ -42,10 +41,6 @@ class HistoryManager {
 
   scheduleTransition = (__: string, callback: (continueTransition: boolean) => void) => {
     this.scheduler.scheduleTransition(callback)
-  }
-
-  addGuard = (type: GuardType, f: GuardFn) => {
-    this.store.addGuard(type, f)
   }
 }
 

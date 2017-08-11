@@ -1,21 +1,26 @@
 // @flow
+import { observable } from 'mobx'
+import type { IObservableArray } from 'mobx'
 
 export class TreeNode<T> {
-  value: T
-  children: TreeNode<T>[]
+  @observable value: T
+  @observable children: IObservableArray<TreeNode<T>>
 
   constructor(value: T, children: TreeNode<T>[]) {
     this.value = value
-    this.children = children
+    this.children = observable.array(children)
   }
 }
-
 
 type Visitor<T> = (n: TreeNode<T>, segment: string) => Promise<boolean>
 
 // Asynchronous DFS from root node for a matching path based on return of visitor function.
-export async function findPath<T>(visitor: Visitor<T>, node: TreeNode<T>, path: string[]): Promise<TreeNode<T>[]> {
-  const [ curr, ...rest ] = path
+export async function findPath<T>(
+  visitor: Visitor<T>,
+  node: TreeNode<T>,
+  path: string[]
+): Promise<TreeNode<T>[]> {
+  const [curr, ...rest] = path
 
   // No more segments to parse.
   if (curr === undefined) {
@@ -37,4 +42,19 @@ export async function findPath<T>(visitor: Visitor<T>, node: TreeNode<T>, path: 
 
   // Nothing matched here.
   return []
+}
+
+// DFS for finding a matching node by predicate.
+export function findNode<T>(
+  predicate: (x: TreeNode<T>) => boolean,
+  node: TreeNode<T>
+): TreeNode<T> | null {
+  if (predicate(node)) return node
+
+  for (const child of node.children) {
+    const node = findNode(predicate, child)
+    if (node) return node
+  }
+
+  return null
 }

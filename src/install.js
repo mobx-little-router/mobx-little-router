@@ -2,7 +2,7 @@
 
 import RouterStore from './core/RouterStore'
 import HistoryManager from './core/HistoryManager'
-import type { HistoryCreatorFn } from './types'
+import type { HistoryCreatorFn } from './core/types'
 import type { History } from 'history'
 
 type Module = {

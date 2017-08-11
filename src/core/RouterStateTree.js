@@ -1,36 +1,62 @@
 // @flow
+import { observable } from 'mobx'
 import UrlPattern from 'url-pattern'
-import { TreeNode, findPath } from '../util/tree'
+import { TreeNode, findNode, findPath } from '../util/tree'
+import type { LifecycleFn, Params } from './types'
+
+export const HookTypes = {
+  canActivate: 'canActivate',
+  onEnter: 'onEnter',
+  onLeave: 'onLeave',
+  canDeactivate: 'canDeactivate',
+  onError: 'onError'
+}
+
+export type HookType = $Keys<typeof HookTypes>
+
+export type Hooks = { [HookType]: LifecycleFn[] }
 
 export type RouteValue = {
+  key: string,
   // Original path provided to this route node.
   path: string,
   // Pattern to match segments with.
   pattern: null | UrlPattern,
   // Matched path parameters.
-  params: null | Object,
+  params: null | Params,
   // Extra data that can be used to provide view specific functionality.
   // e.g. Route component, loading component, etc.
-  data: Object
+  data: Object,
+  // Allows us to keep track of activated and deactivated states.
+  isActive: boolean,
+
+  // Lifecycle utilities
+  hooks: Hooks
 }
+
+export type RouteNode = TreeNode<RouteValue>
 
 export type MatchResult = {
-  node: TreeNode<RouteValue>,
+  node: RouteNode,
   segment: string,
-  params: Object
+  params: Params
 }
 
-export default class RouteStateTree {
-  root: TreeNode<RouteValue>
+export default class RouterStateTree {
+  @observable root: RouteNode
 
-  constructor(root: TreeNode<RouteValue>) {
+  constructor(root: RouteNode) {
     this.root = root
+  }
+
+  find(predicate: (x: RouteNode) => boolean) {
+    return findNode(predicate, this.root)
   }
 
   async pathFromRoot(path: string[]): Promise<MatchResult[]> {
     const matched: MatchResult[] = []
     await findPath(
-      (node: TreeNode<RouteValue>, segment) => {
+      (node: RouteNode, segment) => {
         const { value: { pattern, path } } = node
 
         // Try to match pattern if it exists.
