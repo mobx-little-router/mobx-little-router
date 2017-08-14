@@ -1,6 +1,5 @@
 // @flow
 import { createMemoryHistory } from 'history'
-import createRouteNode from './routing/createRouteNode'
 import { install } from './'
 
 function delay(ms: number) {
@@ -13,22 +12,14 @@ describe('Routing', () => {
   let m
 
   beforeEach(() => {
-    m = install(createMemoryHistory)
-    /* TODO: This should be built using public API, not this low-level API.
-      Example:
-        install({
-          createHistory: createMemoryHistory,
-          routes: [
-            { path: '', children: [ ... ] },
-            ...
-          ]
-        })
-    */
-    m.store.replaceChildren(m.store.state.root, [
-      createRouteNode({
-        path: ':whatever'
-      })
-    ])
+    m = install({
+      createHistory: createMemoryHistory,
+      routes: [
+        {
+          path: ':whatever'
+        }
+      ]
+    })
   })
 
   test('reaction to push navigation', async () => {

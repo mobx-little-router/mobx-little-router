@@ -1,9 +1,15 @@
 // @flow
 import UrlPattern from 'url-pattern'
+import type { LifecycleFn } from '../scheduling/types'
 import type { Params } from '../history/types'
 import { TreeNode } from '../util/tree'
 
-export type LifecycleFn = (node: RouteNode, params: Params) => Promise<void>
+export type Config = {
+  path: string,
+  data?: Object,
+  children?: Config[],
+  [HookType]: LifecycleFn[]
+}
 
 export const HookTypes = {
   canActivate: 'canActivate',

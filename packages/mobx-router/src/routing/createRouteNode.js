@@ -1,16 +1,9 @@
 // @flow
-import type { RouteValue, HookType } from './types'
+import type { RouteValue, HookType, Config  } from './types'
 import { TreeNode } from '../util/tree'
 import createKey from '../util/createKey'
 import UrlPattern from 'url-pattern'
-import type { LifecycleFn } from '../scheduling/types'
 
-type Config = {
-  path: string,
-  data?: Object,
-  children?: Config[],
-  [HookType]: LifecycleFn[]
-}
 
 function alwaysContinue(__: *, ___: *) {
   return Promise.resolve()
