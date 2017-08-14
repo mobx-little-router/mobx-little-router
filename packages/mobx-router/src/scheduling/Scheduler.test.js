@@ -3,14 +3,13 @@ import { toJS } from 'mobx'
 import RouterStore from '../routing/RouterStore'
 import Scheduler from './Scheduler'
 import createRouteNode from '../routing/createRouteNode'
-import delay from '../util/delay'
 
 describe('Scheduler', () => {
   let scheduler, store
 
   beforeEach(() => {
     store = createStore()
-    scheduler = new Scheduler(store)
+    scheduler = createScheduler(store)
   })
 
   describe('Scheduling and processing navigation', () => {
@@ -84,7 +83,6 @@ describe('Scheduler', () => {
     // Navigation is cleared.
     expect(scheduler.navigation).toBe(null)
 
-
     // Deactivation hook is called.
     expect(spy).toHaveBeenCalledTimes(2)
 
@@ -92,28 +90,32 @@ describe('Scheduler', () => {
     expect(spy.mock.calls[0][0]).toEqual(todosViewNode)
     expect(spy.mock.calls[1][0]).toEqual(todosRootNode)
   })
-
-  function createStore() {
-    const store = new RouterStore()
-    store.replaceChildren(store.state.root, [
-      createRouteNode({
-        path: '',
-        children: []
-      }),
-      createRouteNode({
-        path: 'todos',
-        children: [
-          {
-            path: '',
-            children: []
-          },
-          {
-            path: ':id',
-            children: []
-          }
-        ]
-      })
-    ])
-    return store
-  }
 })
+
+function createStore() {
+  const store = new RouterStore()
+  store.replaceChildren(store.state.root, [
+    createRouteNode({
+      path: '',
+      children: []
+    }),
+    createRouteNode({
+      path: 'todos',
+      children: [
+        {
+          path: '',
+          children: []
+        },
+        {
+          path: ':id',
+          children: []
+        }
+      ]
+    })
+  ])
+  return store
+}
+
+function createScheduler(store) {
+  return new Scheduler(store)
+}

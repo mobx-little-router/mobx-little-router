@@ -23,20 +23,20 @@ describe('Routing', () => {
 
     await delay(0)
 
-    expect(m.store.location && m.store.location.pathname).toEqual('/bar')
+    expect(m.store.location && m.store.location.pathname).toEqual('/bar/')
 
     m.history.goBack()
 
     await delay(0)
 
-    expect(m.store.location && m.store.location.pathname).toEqual('/foo')
+    expect(m.store.location && m.store.location.pathname).toEqual('/foo/')
 
     m.history.push('/bar')
     m.history.replace('/quux')
 
     await delay(0)
 
-    expect(m.store.location && m.store.location.pathname).toEqual('/quux')
+    expect(m.store.location && m.store.location.pathname).toEqual('/quux/')
 
     m.stop()
   })
