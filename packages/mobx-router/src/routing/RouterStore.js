@@ -2,9 +2,9 @@
 import { action, observable, ObservableMap } from 'mobx'
 import type { IObservableArray } from 'mobx'
 import RouterStateTree from './RouterStateTree'
-import type { RouteNode } from './RouterStateTree'
+import type { RouteNode } from './types'
 import createRouteNode from './createRouteNode'
-import type { Location } from '../scheduling/types'
+import type { Location } from '../history/types'
 
 class RouterStore {
   @observable location: null | Location

@@ -1,8 +1,6 @@
 // @flow
-import type { RouteNode } from './routing/RouterStateTree'
-import type { Params } from './scheduling/types'
-
-export class NoMatch {}
+import type { RouteNode } from './routing/types'
+import type { Params } from './history/types'
 
 export class GuardFailure {
   error: any

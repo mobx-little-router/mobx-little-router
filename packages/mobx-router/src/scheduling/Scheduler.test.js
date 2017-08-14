@@ -7,57 +7,17 @@ import delay from '../util/delay'
 
 describe('Scheduler', () => {
   let scheduler, store
-  let resolveActivate,
-    rejectActivate,
-    onEnter,
-    onLeave,
-    onError,
-    resolveDeactivate,
-    rejectDeactivate
 
   beforeEach(() => {
-    store = new RouterStore()
-    onEnter = jest.fn(() => Promise.resolve())
-    onLeave = jest.fn(() => Promise.resolve())
-    onError = jest.fn(() => Promise.resolve())
-    store.replaceChildren(store.state.root, [
-      createRouteNode({
-        path: '',
-        children: []
-      }),
-      createRouteNode({
-        path: ':username',
-        canActivate: [
-          (node, params) => {
-            return new Promise((res, rej) => {
-              resolveActivate = res
-              rejectActivate = rej
-            })
-          }
-        ],
-        onEnter: [onEnter],
-        onLeave: [onLeave],
-        onError: [onError],
-        canDeactivate: [
-          (node, params) => {
-          console.log('????')
-            return new Promise((res, rej) => {
-              resolveDeactivate = res
-              rejectDeactivate = rej
-            })
-          }
-        ],
-        children: []
-      })
-    ])
+    store = createStore()
     scheduler = new Scheduler(store)
   })
 
-  describe('scheduling and processing navigation', () => {
-    test('activation guard fails', async () => {
+  describe('Scheduling and processing navigation', () => {
+    test('Activation guard fails', async () => {
       scheduler.scheduleNavigation(
         {
-          pathname: '/pressly'
+          pathname: '/todos'
         },
         'PUSH'
       )
@@ -65,8 +25,8 @@ describe('Scheduler', () => {
       const { navigation } = scheduler
 
       if (navigation) {
-        expect(navigation.location.pathname).toEqual('/pressly')
-        expect(toJS(navigation.parts)).toEqual(['', 'pressly'])
+        expect(navigation.location.pathname).toEqual('/todos')
+        expect(toJS(navigation.parts)).toEqual(['', 'todos'])
         expect(navigation.action).toEqual('PUSH')
       } else {
         throw new Error()
@@ -76,7 +36,7 @@ describe('Scheduler', () => {
       await delay(0)
 
       // Make the guard fail!
-      rejectActivate()
+      // rejectActivate()
 
       await navPromise
 
@@ -87,13 +47,13 @@ describe('Scheduler', () => {
       expect(scheduler.navigation).toBe(null)
 
       // Enter lifecycle method should not be called.
-      expect(onEnter).not.toHaveBeenCalled()
+      // expect(onEnter).not.toHaveBeenCalled()
     })
 
-    test('activation guard passes', async () => {
+    test('Activation guard passes', async () => {
       scheduler.scheduleNavigation(
         {
-          pathname: '/pressly'
+          pathname: '/todos'
         },
         'PUSH'
       )
@@ -101,8 +61,8 @@ describe('Scheduler', () => {
       const { navigation } = scheduler
 
       if (navigation) {
-        expect(navigation.location.pathname).toEqual('/pressly')
-        expect(toJS(navigation.parts)).toEqual(['', 'pressly'])
+        expect(navigation.location.pathname).toEqual('/todos')
+        expect(toJS(navigation.parts)).toEqual(['', 'todos'])
         expect(navigation.action).toEqual('PUSH')
       } else {
         throw new Error()
@@ -111,34 +71,26 @@ describe('Scheduler', () => {
       const navPromise = scheduler.processNavigation()
       await delay(0)
 
-      resolveActivate()
+      // resolveActivate()
 
       await navPromise
 
       // Navigation should be processed.
-      expect(toJS(store.location)).toEqual({ pathname: '/pressly' })
+      expect(toJS(store.location)).toEqual({ pathname: '/todos' })
 
       // Navigation is cleared.
       expect(scheduler.navigation).toBe(null)
 
       // Enter lifecycle method should be called.
-      expect(onEnter).toHaveBeenCalled()
+      // expect(onEnter).toHaveBeenCalled()
     })
   })
 
-  test.only('deactivation', async () => {
-    // Mark
-    store.activateNodes([
-      store.state.root,
-      store.state.root.children[0]
-    ])
+  test.only('Deactivation successful', async () => {
+    store.setLocation({ pathname: '/todos' })
+    store.activateNodes([store.state.root, store.state.root.children[0]])
 
-    scheduler.scheduleNavigation(
-      {
-        pathname: '/'
-      },
-      'PUSH'
-    )
+    scheduler.scheduleNavigation({ pathname: '/' }, 'PUSH')
 
     const { navigation } = scheduler
 
@@ -153,17 +105,36 @@ describe('Scheduler', () => {
     const navPromise = scheduler.processNavigation()
     await delay(0)
 
-    resolveDeactivate()
-
     await navPromise
 
     // Navigation should be processed.
-    expect(toJS(store.location)).toEqual({ pathname: '/pressly' })
+    expect(toJS(store.location)).toEqual({ pathname: '/' })
 
     // Navigation is cleared.
     expect(scheduler.navigation).toBe(null)
-
-    // Enter lifecycle method should be called.
-    expect(onEnter).toHaveBeenCalled()
   })
+
+  function createStore() {
+    const store = new RouterStore()
+    store.replaceChildren(store.state.root, [
+      createRouteNode({
+        path: '',
+        children: []
+      }),
+      createRouteNode({
+        path: 'todos',
+        children: [
+          {
+            path: '',
+            children: []
+          },
+          {
+            path: ':id',
+            children: []
+          }
+        ]
+      })
+    ])
+    return store
+  }
 })
