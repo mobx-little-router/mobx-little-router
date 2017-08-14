@@ -15,30 +15,14 @@ describe('Scheduler', () => {
 
   describe('Scheduling and processing navigation', () => {
     test('Activation guard fails', async () => {
-      scheduler.scheduleNavigation(
-        {
-          pathname: '/todos'
-        },
-        'PUSH'
-      )
+      const spy = jest.fn(() => Promise.reject('Nope'))
+      const todosRootNode = store.state.root.children[1]
+      store.updateNode(todosRootNode, {
+        hooks: { canActivate: [spy] }
+      })
+      scheduler.scheduleNavigation({ pathname: '/todos' }, 'PUSH')
 
-      const { navigation } = scheduler
-
-      if (navigation) {
-        expect(navigation.location.pathname).toEqual('/todos')
-        expect(toJS(navigation.parts)).toEqual(['', 'todos'])
-        expect(navigation.action).toEqual('PUSH')
-      } else {
-        throw new Error()
-      }
-
-      const navPromise = scheduler.processNavigation()
-      await delay(0)
-
-      // Make the guard fail!
-      // rejectActivate()
-
-      await navPromise
+      await scheduler.processNavigation()
 
       // Navigation should be blocked.
       expect(store.location).toBe(null)
@@ -47,71 +31,66 @@ describe('Scheduler', () => {
       expect(scheduler.navigation).toBe(null)
 
       // Enter lifecycle method should not be called.
-      // expect(onEnter).not.toHaveBeenCalled()
+      expect(spy).toHaveBeenCalledTimes(1)
     })
 
     test('Activation guard passes', async () => {
-      scheduler.scheduleNavigation(
-        {
-          pathname: '/todos'
-        },
-        'PUSH'
-      )
+      const spy = jest.fn(() => Promise.resolve())
+      const rootNode = store.state.root
+      const todosRootNode = store.state.root.children[1]
+      const todosViewNode = store.state.root.children[1].children[1]
+      store.updateNode(rootNode, { hooks: { canActivate: [spy] } })
+      store.updateNode(todosRootNode, { hooks: { canActivate: [spy] } })
+      store.updateNode(todosViewNode, { hooks: { canActivate: [spy] } })
+      scheduler.scheduleNavigation({ pathname: '/todos/123' }, 'PUSH')
 
-      const { navigation } = scheduler
-
-      if (navigation) {
-        expect(navigation.location.pathname).toEqual('/todos')
-        expect(toJS(navigation.parts)).toEqual(['', 'todos'])
-        expect(navigation.action).toEqual('PUSH')
-      } else {
-        throw new Error()
-      }
-
-      const navPromise = scheduler.processNavigation()
-      await delay(0)
-
-      // resolveActivate()
-
-      await navPromise
+      await scheduler.processNavigation()
 
       // Navigation should be processed.
-      expect(toJS(store.location)).toEqual({ pathname: '/todos' })
+      expect(toJS(store.location)).toEqual({ pathname: '/todos/123/' })
 
       // Navigation is cleared.
       expect(scheduler.navigation).toBe(null)
 
       // Enter lifecycle method should be called.
-      // expect(onEnter).toHaveBeenCalled()
+      expect(spy).toHaveBeenCalledTimes(3)
+
+      // Activation is called in bottom-up order.
+      expect(spy.mock.calls[0][0]).toEqual(rootNode)
+      expect(spy.mock.calls[1][0]).toEqual(todosRootNode)
+      expect(spy.mock.calls[2][0]).toEqual(todosViewNode)
+
+      // Matched params are passed to hook.
+      expect(spy.mock.calls[2][1]).toEqual({ id: '123' })
     })
   })
 
-  test.only('Deactivation successful', async () => {
-    store.setLocation({ pathname: '/todos' })
-    store.activateNodes([store.state.root, store.state.root.children[0]])
-
+  test('Deactivation successful', async () => {
+    const spy = jest.fn(() => Promise.resolve())
+    const rootNode = store.state.root
+    const todosRootNode = store.state.root.children[1]
+    const todosViewNode = store.state.root.children[1].children[1]
+    store.updateNode(todosRootNode, { hooks: { canDeactivate: [spy] } })
+    store.updateNode(todosViewNode, { hooks: { canDeactivate: [spy] } })
+    // Active path for "/todos/:id"
+    store.activateNodes([rootNode, todosRootNode, todosViewNode])
     scheduler.scheduleNavigation({ pathname: '/' }, 'PUSH')
 
-    const { navigation } = scheduler
-
-    if (navigation) {
-      expect(navigation.location.pathname).toEqual('/')
-      expect(toJS(navigation.parts)).toEqual(['', ''])
-      expect(navigation.action).toEqual('PUSH')
-    } else {
-      throw new Error()
-    }
-
-    const navPromise = scheduler.processNavigation()
-    await delay(0)
-
-    await navPromise
+    await scheduler.processNavigation()
 
     // Navigation should be processed.
     expect(toJS(store.location)).toEqual({ pathname: '/' })
 
     // Navigation is cleared.
     expect(scheduler.navigation).toBe(null)
+
+
+    // Deactivation hook is called.
+    expect(spy).toHaveBeenCalledTimes(2)
+
+    // Deactivation is called in bottom-up order.
+    expect(spy.mock.calls[0][0]).toEqual(todosViewNode)
+    expect(spy.mock.calls[1][0]).toEqual(todosRootNode)
   })
 
   function createStore() {

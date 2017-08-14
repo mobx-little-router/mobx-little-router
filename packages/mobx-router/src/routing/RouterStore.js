@@ -1,10 +1,13 @@
 // @flow
 import { action, observable, ObservableMap } from 'mobx'
+import UrlPattern from 'url-pattern'
 import type { IObservableArray } from 'mobx'
 import RouterStateTree from './RouterStateTree'
-import type { RouteNode } from './types'
+import type { RouteValue, RouteNode } from './types'
 import createRouteNode from './createRouteNode'
 import type { Location } from '../history/types'
+
+type RouteValueChange = $Shape<RouteValue>
 
 class RouterStore {
   @observable location: null | Location
@@ -40,6 +43,16 @@ class RouterStore {
     this.state = new RouterStateTree(root)
   }
 
+  // Ensures we always get the matched copy from state.
+  getNode(x: RouteNode): RouteNode {
+    const existing = this.lookup.get(x.value.key)
+    if (existing) {
+      return existing
+    } else {
+      throw new Error('Could not add children to a node that does not belong in tree.')
+    }
+  }
+
   @action
   replaceChildren(parent: RouteNode, nodes: RouteNode[]) {
     const existing = this.lookup.get(parent.value.key)
@@ -47,9 +60,20 @@ class RouterStore {
       existing.children.replace(nodes)
       nodes.forEach(child => {
         this.lookup.set(child.value.key, child)
+        this.replaceChildren(child, child.children.slice())
       })
     } else {
-      throw new Error('Could not add children to a node that does not belong in tree.')
+      throw new Error('Cannot add children to a node that does not belong in tree.')
+    }
+  }
+
+  @action
+  updateNode(node: RouteNode, updates: RouteValueChange) {
+    const existing = this.lookup.get(node.value.key)
+    if (existing) {
+      Object.assign(existing.value, updates)
+    } else {
+      throw new Error('Cannot update a node that does not belong in the tree.')
     }
   }
 

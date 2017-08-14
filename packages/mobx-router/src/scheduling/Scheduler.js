@@ -1,12 +1,12 @@
 // @flow
 import type { Action } from 'history'
-import type { IObservableArray } from 'mobx'
 import { action, autorun, computed, observable, runInAction, toJS, when } from 'mobx'
 import type { Location } from '../history/types'
 import type { HookType, MatchResult } from '../routing/types'
 import type RouterStore from '../routing/RouterStore'
 import areNodesEqual from '../routing/areNodesEqual'
 import shallowEqual from '../util/shallowEqual'
+import { differenceWith } from '../util/functional'
 import { GuardFailure } from '../errors'
 
 type NavigationParams = {
@@ -52,10 +52,15 @@ export default class Scheduler {
       return
     }
 
+    const pathname = normalizePath(nextLocation.pathname)
+
     runInAction(() => {
       this.navigation = {
-        location: nextLocation,
-        parts: nextLocation.pathname.split('/'),
+        location: {
+          ...nextLocation,
+          pathname
+        },
+        parts: pathname.split('/'),
         action
       }
     })
@@ -77,6 +82,7 @@ export default class Scheduler {
 
     try {
       const path: MatchResult[] = await this.store.state.pathFromRoot(parts)
+
       await this.activatePath(path)
       this.store.setLocation(location)
     } catch (err) {
@@ -86,26 +92,23 @@ export default class Scheduler {
     }
   }
 
-  // TODO: Make sure deactivation is reversed, and onLeave is only called once all deactivation is processed.
   activatePath = async (activating: MatchResult[]) => {
     try {
-      const deactivating = this.store.activeNodes
-        .filter(node => activating.some(x => !areNodesEqual(x.node, node)))
-        .reverse()
+      const deactivating = differenceWith(
+        areNodesEqual,
+        this.store.activeNodes.slice(),
+        activating.map(x => x.node)
+      )
         .map(node => ({
           node,
           segment: '',
           params: node.value.params || {}
         }))
-
-      console.log('activating', deactivating.map(x => toJS(x.node)))
-      console.log('deactivating', deactivating.map(x => toJS(x.node)))
+        .reverse()
 
       // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
-      await this.runGuards(['canDeactivate'], [], deactivating)
-
-      // await this.runGuards(['canActivate'], [], activating)
-      //
+      await this.runGuards('canDeactivate', [], deactivating)
+      await this.runGuards('canActivate', [], activating)
       // await this.runGuards(['onLeave', 'onEnter'], [], activating)
     } catch (err) {
       // Make sure we chain errors back up!
@@ -114,7 +117,7 @@ export default class Scheduler {
   }
 
   runGuards = async (
-    types: HookType[],
+    type: HookType,
     processed: MatchResult[],
     remaining: MatchResult[]
   ) => {
@@ -128,29 +131,29 @@ export default class Scheduler {
     const { params, node } = curr
     const { value: { hooks } } = node
 
-    const guard = types.reduce((acc, type) => {
-      // Make sure previous lifecycle resolved before proceeding with next.
-      // A rejection will skip any unprocessed lifecycle hooks.
-      console.log('type', type)
+    const guard = hooks[type].reduce((acc, f) => {
       return acc.then(() =>
-        Promise.all(
-          hooks[type].map(f => {
-            console.log('-------- f', f)
-            f(node, params).catch(error => {
-              throw new GuardFailure(error, node, params)
-            })
-          })
-        )
+        f(node, params).catch(error => {
+          throw new GuardFailure(error, node, params)
+        })
       )
     }, Promise.resolve())
 
     try {
       await guard
       // Run the next guards.
-      await this.runGuards(types, [curr], rest)
+      await this.runGuards(type, [curr], rest)
     } catch (err) {
       // When we encounter a failed guard, just stop navigation.
       throw err
     }
+  }
+}
+
+function normalizePath(x: string) {
+  if (x.endsWith('/')) {
+    return x
+  } else {
+    return `${x}/`
   }
 }

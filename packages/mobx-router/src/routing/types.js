@@ -30,7 +30,6 @@ export type RouteValue = {
   data: Object,
   // Allows us to keep track of activated and deactivated states.
   isActive: boolean,
-
   // Lifecycle utilities
   hooks: Hooks
 }

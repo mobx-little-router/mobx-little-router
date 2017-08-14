@@ -3,8 +3,6 @@ import { observable } from 'mobx'
 import UrlPattern from 'url-pattern'
 import { TreeNode, findNode, findPath } from '../util/tree'
 import type { RouteNode, MatchResult } from '../routing/types'
-import type { Params } from '../history/types'
-import type { LifecycleFn } from '../scheduling/types'
 
 export default class RouterStateTree {
   @observable root: RouteNode
@@ -17,6 +15,7 @@ export default class RouterStateTree {
     return findNode(predicate, this.root)
   }
 
+  // TODO: We should handle `loadChildren` to resolve dynamically. See: #2
   async pathFromRoot(path: string[]): Promise<MatchResult[]> {
     const matched: MatchResult[] = []
     await findPath(

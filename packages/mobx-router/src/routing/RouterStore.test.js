@@ -10,12 +10,12 @@ describe('RouterStore', () => {
     store = new RouterStore()
   })
 
-  test('initial parent', () => {
+  test('Initial parent', () => {
     expect(store.state.root.value.path).toEqual('')
     expect(store.lookup.get(store.state.root.value.key)).toBe(store.state.root)
   })
 
-  test('updating children', done => {
+  test('Updating children', done => {
     const a = createRouteNode({
       path: 'a',
       children: []
@@ -42,11 +42,11 @@ describe('RouterStore', () => {
     expect(store.lookup.get(b.value.key)).toBe(b)
 
     expect(() => store.replaceChildren(createRouteNode({ path: '' }), [])).toThrow(
-      /Could not add children/
+      /Cannot add children/
     )
   })
 
-  test('activating nodes', () => {
+  test('Activating nodes', () => {
     const a = createRouteNode({
       path: 'a',
       children: []
@@ -63,5 +63,22 @@ describe('RouterStore', () => {
     expect(store.activeNodes.length).toBe(2)
     expect(store.activeNodes[0].value.path).toEqual('')
     expect(store.activeNodes[1].value.path).toEqual('a')
+  })
+
+  test('Node update', () => {
+    store.updateNode(store.state.root, {
+      data: {
+        x: 'Hello'
+      }
+    })
+
+    expect(store.state.root.value.data.x).toEqual('Hello')
+
+    expect(() => {
+      store.updateNode(createRouteNode({
+        path: 'doesnotexist',
+        children: []
+      }), {})
+    }).toThrow(/Cannot update/)
   })
 })
