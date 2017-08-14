@@ -42,6 +42,8 @@ class RouterStore {
     }
   }
 
+  /* Mutations */
+
   @action
   replaceChildren(parent: RouteNode, nodes: RouteNode[]) {
     const existing = this.getNode(parent)
@@ -51,8 +53,6 @@ class RouterStore {
       this.replaceChildren(child, child.children.slice())
     })
   }
-
-  /* Mutations */
 
   @action
   updateNode(node: RouteNode, updates: RouteValueChange) {
