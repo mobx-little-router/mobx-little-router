@@ -1,0 +1,6 @@
+{
+  "name": "mobx-router-react",
+  "version": "1.0.0",
+  "description": "React adapter components for mobx-router.",
+  "license": "MIT"
+}
