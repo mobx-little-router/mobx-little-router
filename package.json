@@ -3,7 +3,13 @@
   "repository": "git@github.com:jaysoo/mobx-router.git",
   "author": "Jack Hsu <jack.hsu@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "test": "lerna run test --stream"
+  },
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "devDependencies": {
+    "lerna": "^2.0.0"
+  }
 }
