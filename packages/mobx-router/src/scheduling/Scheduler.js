@@ -82,7 +82,6 @@ export default class Scheduler {
 
     try {
       const path: MatchResult[] = await this.store.state.pathFromRoot(parts)
-
       await this.activatePath(path)
       this.store.setLocation(location)
     } catch (err) {

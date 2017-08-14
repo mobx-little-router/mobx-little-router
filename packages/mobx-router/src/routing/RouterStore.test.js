@@ -12,7 +12,7 @@ describe('RouterStore', () => {
 
   test('Initial parent', () => {
     expect(store.state.root.value.path).toEqual('')
-    expect(store.lookup.get(store.state.root.value.key)).toBe(store.state.root)
+    expect(store.cache.get(store.state.root.value.key)).toBe(store.state.root)
   })
 
   test('Updating children', done => {
@@ -38,8 +38,8 @@ describe('RouterStore', () => {
     expect(store.state.root.children.length).toBe(2)
 
     // Stores new nodes in lookup table.
-    expect(store.lookup.get(a.value.key)).toBe(a)
-    expect(store.lookup.get(b.value.key)).toBe(b)
+    expect(store.cache.get(a.value.key)).toBe(a)
+    expect(store.cache.get(b.value.key)).toBe(b)
 
     expect(() => store.replaceChildren(createRouteNode({ path: '' }), [])).toThrow(
       /Node not found/

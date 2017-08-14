@@ -1,9 +1,8 @@
 // @flow
-import { action, observable, ObservableMap } from 'mobx'
-import UrlPattern from 'url-pattern'
 import type { IObservableArray } from 'mobx'
+import { action, observable, ObservableMap } from 'mobx'
 import RouterStateTree from './RouterStateTree'
-import type { RouteValue, RouteNode } from './types'
+import type { RouteNode, RouteValue } from './types'
 import createRouteNode from './createRouteNode'
 import type { Location } from '../history/types'
 
@@ -12,12 +11,11 @@ type RouteValueChange = $Shape<RouteValue>
 class RouterStore {
   @observable location: null | Location
   @observable error: null | Object
-
   @observable state: RouterStateTree
 
   // Create a map of all nodes in tree so we can perform faster lookup.
   // Instances should be exactly the same as in state tree.
-  @observable lookup: ObservableMap<RouteNode>
+  @observable cache: ObservableMap<RouteNode>
 
   // Keep a list of activated nodes so we can track differences when
   // transitioning to a new state.
@@ -27,8 +25,8 @@ class RouterStore {
     const root = createRouteNode({ path: '', onError: [this.handleRootError] }) // Initial root.
     this.location = null
     this.error = null
-    this.lookup = observable.map({ [root.value.key]: root })
-    this.activeNodes = observable.array([])
+    this.cache = observable.map({ [root.value.key]: root })
+    this.activeNodes = observable.array()
     this.state = new RouterStateTree(root)
   }
 
@@ -36,7 +34,7 @@ class RouterStore {
 
   // Ensures we always get the matched copy from state.
   getNode(x: RouteNode): RouteNode {
-    const existing = this.lookup.get(x.value.key)
+    const existing = this.cache.get(x.value.key)
     if (existing) {
       return existing
     } else {
@@ -49,7 +47,7 @@ class RouterStore {
     const existing = this.getNode(parent)
     existing.children.replace(nodes)
     nodes.forEach(child => {
-      this.lookup.set(child.value.key, child)
+      this.cache.set(child.value.key, child)
       this.replaceChildren(child, child.children.slice())
     })
   }

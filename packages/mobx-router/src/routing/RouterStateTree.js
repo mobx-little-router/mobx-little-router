@@ -1,8 +1,7 @@
 // @flow
 import { observable } from 'mobx'
-import UrlPattern from 'url-pattern'
-import { TreeNode, findNode, findPath } from '../util/tree'
-import type { RouteNode, MatchResult } from '../routing/types'
+import { findNode, findPath } from '../util/tree'
+import type { MatchResult, RouteNode } from '../routing/types'
 
 export default class RouterStateTree {
   @observable root: RouteNode
