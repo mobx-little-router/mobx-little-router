@@ -1,9 +1,8 @@
 // @flow
-import type { RouteValue } from './types'
+import type { RouteValue, HookType } from './types'
 import { TreeNode } from '../util/tree'
 import createKey from '../util/createKey'
 import UrlPattern from 'url-pattern'
-import type { HookType } from './types'
 import type { LifecycleFn } from '../scheduling/types'
 
 type Config = {

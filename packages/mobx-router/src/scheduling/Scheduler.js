@@ -2,12 +2,14 @@
 import type { Action } from 'history'
 import { action, autorun, computed, observable, runInAction, toJS, when } from 'mobx'
 import type { Location } from '../history/types'
-import type { HookType, MatchResult } from '../routing/types'
+import type { MatchResult } from '../matching/types'
+import matchResults from '../matching/matchResults'
+import type { HookType } from '../routing/types'
 import type RouterStore from '../routing/RouterStore'
 import areNodesEqual from '../routing/areNodesEqual'
 import shallowEqual from '../util/shallowEqual'
 import { differenceWith } from '../util/functional'
-import { GuardFailure } from '../errors'
+import { NoMatch, GuardFailure } from '../errors'
 
 type NavigationParams = {
   location: Location,
@@ -82,7 +84,8 @@ export default class Scheduler {
 
     try {
       const path: MatchResult[] = await this.store.state.pathFromRoot(parts)
-      await this.activatePath(path)
+      await matchResults(parts, path)
+      await this.doActivate(path)
       this.store.setLocation(location)
     } catch (err) {
       this.store.setError(err)
@@ -91,7 +94,7 @@ export default class Scheduler {
     }
   }
 
-  activatePath = async (activating: MatchResult[]) => {
+  doActivate = async (activating: MatchResult[]) => {
     try {
       const deactivating = differenceWith(
         areNodesEqual,

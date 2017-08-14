@@ -116,6 +116,14 @@ describe('Scheduler', () => {
     expect(spy.mock.calls[0][0]).toEqual(todosViewNode)
     expect(spy.mock.calls[1][0]).toEqual(todosRootNode)
   })
+
+  test('Handling unmatched parts', async () => {
+    scheduler.scheduleNavigation({ pathname: '/nope/nope/nope' }, 'PUSH')
+    await scheduler.processNavigation()
+    expect(store.location).toBe(null)
+    expect(store.error).toBeDefined()
+    expect(store.error && store.error.toString()).toMatch(/No match/)
+  })
 })
 
 function createStore() {

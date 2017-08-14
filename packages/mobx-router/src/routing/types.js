@@ -35,9 +35,3 @@ export type RouteValue = {
 }
 
 export type RouteNode = TreeNode<RouteValue>
-
-export type MatchResult = {
-  node: RouteNode,
-  segment: string,
-  params: Params
-}

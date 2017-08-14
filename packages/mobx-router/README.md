@@ -23,6 +23,8 @@ This package is split into three separate concerns.
   is causing any potential reactions whenever its own state changes. The store never
   directly communicates with the rest of the application.
 
+  Note: Location `pathname` is always normalized to end with a trailing `/`.
+
 2. **Scheduling**
 
   The `Scheduler` class handles all incoming navigation requests. Each request is processed
