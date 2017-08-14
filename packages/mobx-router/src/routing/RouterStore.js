@@ -11,7 +11,7 @@ type RouteValueChange = $Shape<RouteValue>
 
 class RouterStore {
   @observable location: null | Location
-  @observable error: null | Error
+  @observable error: null | Object
 
   @observable state: RouterStateTree
 
@@ -24,24 +24,15 @@ class RouterStore {
   @observable activeNodes: IObservableArray<RouteNode>
 
   constructor() {
-    // Initial empty root.
-    const root = createRouteNode({
-      path: '',
-      children: []
-    })
-
+    const root = createRouteNode({ path: '', onError: [this.handleRootError] }) // Initial root.
     this.location = null
-
     this.error = null
-
-    this.lookup = observable.map({
-      [root.value.key]: root
-    })
-
+    this.lookup = observable.map({ [root.value.key]: root })
     this.activeNodes = observable.array([])
-
     this.state = new RouterStateTree(root)
   }
+
+  /* Queries */
 
   // Ensures we always get the matched copy from state.
   getNode(x: RouteNode): RouteNode {
@@ -49,32 +40,26 @@ class RouterStore {
     if (existing) {
       return existing
     } else {
-      throw new Error('Could not add children to a node that does not belong in tree.')
+      throw new Error('Node not found in state tree.')
     }
   }
 
   @action
   replaceChildren(parent: RouteNode, nodes: RouteNode[]) {
-    const existing = this.lookup.get(parent.value.key)
-    if (existing) {
-      existing.children.replace(nodes)
-      nodes.forEach(child => {
-        this.lookup.set(child.value.key, child)
-        this.replaceChildren(child, child.children.slice())
-      })
-    } else {
-      throw new Error('Cannot add children to a node that does not belong in tree.')
-    }
+    const existing = this.getNode(parent)
+    existing.children.replace(nodes)
+    nodes.forEach(child => {
+      this.lookup.set(child.value.key, child)
+      this.replaceChildren(child, child.children.slice())
+    })
   }
+
+  /* Mutations */
 
   @action
   updateNode(node: RouteNode, updates: RouteValueChange) {
-    const existing = this.lookup.get(node.value.key)
-    if (existing) {
-      Object.assign(existing.value, updates)
-    } else {
-      throw new Error('Cannot update a node that does not belong in the tree.')
-    }
+    const existing = this.getNode(node)
+    Object.assign(existing.value, updates)
   }
 
   @action
@@ -88,8 +73,14 @@ class RouterStore {
   }
 
   @action
-  setError(err: Error) {
+  setError(err: Object) {
     this.error = err
+  }
+
+  @action
+  handleRootError(err: Object) {
+    this.error = err
+    return Promise.reject(err)
   }
 }
 

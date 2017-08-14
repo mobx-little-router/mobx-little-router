@@ -3,17 +3,14 @@ import type { RouteValue } from './types'
 import { TreeNode } from '../util/tree'
 import createKey from '../util/createKey'
 import UrlPattern from 'url-pattern'
+import type { HookType } from './types'
 import type { LifecycleFn } from '../scheduling/types'
 
 type Config = {
   path: string,
   data?: Object,
   children?: Config[],
-  canActivate?: LifecycleFn[],
-  onEnter?: LifecycleFn[],
-  onError?: LifecycleFn[],
-  onLeave?: LifecycleFn[],
-  canDeactivate?: LifecycleFn[]
+  [HookType]: LifecycleFn[]
 }
 
 function alwaysContinue(__: *, ___: *) {

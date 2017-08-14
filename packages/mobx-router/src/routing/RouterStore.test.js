@@ -42,7 +42,7 @@ describe('RouterStore', () => {
     expect(store.lookup.get(b.value.key)).toBe(b)
 
     expect(() => store.replaceChildren(createRouteNode({ path: '' }), [])).toThrow(
-      /Cannot add children/
+      /Node not found/
     )
   })
 
@@ -79,6 +79,6 @@ describe('RouterStore', () => {
         path: 'doesnotexist',
         children: []
       }), {})
-    }).toThrow(/Cannot update/)
+    }).toThrow(/Node not found/)
   })
 })
