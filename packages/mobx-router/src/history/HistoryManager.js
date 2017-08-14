@@ -36,6 +36,7 @@ class HistoryManager {
     this.dispose && this.dispose()
   }
 
+  // TODO: THis should push the callback into a queue somewhere so we can pick it up in scheduler.
   scheduleTransition = (__: string, callback: (continueTransition: boolean) => void) => {
     this.scheduler.scheduleTransition(callback)
   }

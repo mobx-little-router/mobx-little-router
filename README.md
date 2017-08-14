@@ -1,4 +1,4 @@
-# mobx-router
+# MobX Router
 
 A view-agnostic router that uses [MobX](https://mobx.js.org/) to manage its internal state.
 This differs from other router libraries that are component-based.
