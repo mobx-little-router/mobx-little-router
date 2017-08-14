@@ -1,6 +1,5 @@
 // @flow
 import type { History, Location as HistoryLocation } from 'history'
-import type { RouteNode } from './RouterStateTree'
 
 export type Query = { [key: string]: string }
 export type Params = { [key: string]: string }
@@ -13,5 +12,3 @@ export type Location = $Shape<
     query: Query
   }
 >
-
-export type LifecycleFn = (node: RouteNode, params: Params) => Promise<void>

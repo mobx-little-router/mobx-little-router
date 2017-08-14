@@ -4,7 +4,7 @@ import type { IObservableArray } from 'mobx'
 import RouterStateTree from './RouterStateTree'
 import type { RouteNode } from './RouterStateTree'
 import createRouteNode from './createRouteNode'
-import type { Location } from './types'
+import type { Location } from '../scheduling/types'
 
 class RouterStore {
   @observable location: null | Location

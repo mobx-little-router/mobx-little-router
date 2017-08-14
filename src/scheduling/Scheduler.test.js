@@ -1,13 +1,19 @@
 // @flow
 import { toJS } from 'mobx'
-import RouterStore from './RouterStore'
+import RouterStore from '../routing/RouterStore'
 import Scheduler from './Scheduler'
-import createRouteNode from './createRouteNode'
+import createRouteNode from '../routing/createRouteNode'
 import delay from '../util/delay'
 
 describe('Scheduler', () => {
   let scheduler, store
-  let resolveActivate, rejectActivate, onEnter, onLeave, onError, resolveDeactivate, rejectDeactivate
+  let resolveActivate,
+    rejectActivate,
+    onEnter,
+    onLeave,
+    onError,
+    resolveDeactivate,
+    rejectDeactivate
 
   beforeEach(() => {
     store = new RouterStore()
@@ -34,6 +40,7 @@ describe('Scheduler', () => {
         onError: [onError],
         canDeactivate: [
           (node, params) => {
+          console.log('????')
             return new Promise((res, rej) => {
               resolveDeactivate = res
               rejectDeactivate = rej
@@ -50,7 +57,7 @@ describe('Scheduler', () => {
     test('activation guard fails', async () => {
       scheduler.scheduleNavigation(
         {
-          pathname: '/pressly/news'
+          pathname: '/pressly'
         },
         'PUSH'
       )
@@ -58,11 +65,11 @@ describe('Scheduler', () => {
       const { navigation } = scheduler
 
       if (navigation) {
-        expect(navigation.location.pathname).toEqual('/pressly/news')
-        expect(toJS(navigation.parts)).toEqual(['', 'pressly', 'news'])
+        expect(navigation.location.pathname).toEqual('/pressly')
+        expect(toJS(navigation.parts)).toEqual(['', 'pressly'])
         expect(navigation.action).toEqual('PUSH')
       } else {
-        expect(false).toBe(true)
+        throw new Error()
       }
 
       const navPromise = scheduler.processNavigation()
@@ -86,7 +93,7 @@ describe('Scheduler', () => {
     test('activation guard passes', async () => {
       scheduler.scheduleNavigation(
         {
-          pathname: '/pressly/news'
+          pathname: '/pressly'
         },
         'PUSH'
       )
@@ -94,23 +101,22 @@ describe('Scheduler', () => {
       const { navigation } = scheduler
 
       if (navigation) {
-        expect(navigation.location.pathname).toEqual('/pressly/news')
-        expect(toJS(navigation.parts)).toEqual(['', 'pressly', 'news'])
+        expect(navigation.location.pathname).toEqual('/pressly')
+        expect(toJS(navigation.parts)).toEqual(['', 'pressly'])
         expect(navigation.action).toEqual('PUSH')
       } else {
-        expect(false).toBe(true)
+        throw new Error()
       }
 
       const navPromise = scheduler.processNavigation()
       await delay(0)
 
-      // Make the guard fail!
       resolveActivate()
 
       await navPromise
 
       // Navigation should be processed.
-      expect(toJS(store.location)).toEqual({ pathname: '/pressly/news'})
+      expect(toJS(store.location)).toEqual({ pathname: '/pressly' })
 
       // Navigation is cleared.
       expect(scheduler.navigation).toBe(null)
@@ -118,7 +124,46 @@ describe('Scheduler', () => {
       // Enter lifecycle method should be called.
       expect(onEnter).toHaveBeenCalled()
     })
+  })
 
-    // TODO: Add tests for deactivation.
+  test.only('deactivation', async () => {
+    // Mark
+    store.activateNodes([
+      store.state.root,
+      store.state.root.children[0]
+    ])
+
+    scheduler.scheduleNavigation(
+      {
+        pathname: '/'
+      },
+      'PUSH'
+    )
+
+    const { navigation } = scheduler
+
+    if (navigation) {
+      expect(navigation.location.pathname).toEqual('/')
+      expect(toJS(navigation.parts)).toEqual(['', ''])
+      expect(navigation.action).toEqual('PUSH')
+    } else {
+      throw new Error()
+    }
+
+    const navPromise = scheduler.processNavigation()
+    await delay(0)
+
+    resolveDeactivate()
+
+    await navPromise
+
+    // Navigation should be processed.
+    expect(toJS(store.location)).toEqual({ pathname: '/pressly' })
+
+    // Navigation is cleared.
+    expect(scheduler.navigation).toBe(null)
+
+    // Enter lifecycle method should be called.
+    expect(onEnter).toHaveBeenCalled()
   })
 })

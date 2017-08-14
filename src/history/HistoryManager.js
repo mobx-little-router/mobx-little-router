@@ -1,9 +1,9 @@
 // @flow
 import type { History } from 'history'
 import { runInAction } from 'mobx'
-import RouterStore from './RouterStore'
-import type { HistoryCreatorFn } from './types'
-import Scheduler from './Scheduler'
+import RouterStore from '../routing/RouterStore'
+import type { HistoryCreatorFn } from '../scheduling/types'
+import Scheduler from '../scheduling/Scheduler'
 
 class HistoryManager {
   store: RouterStore

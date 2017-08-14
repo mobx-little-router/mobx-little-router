@@ -1,12 +1,13 @@
 // @flow
 import type { Action } from 'history'
-import { action, toJS, computed, when, observable, runInAction, autorun } from 'mobx'
 import type { IObservableArray } from 'mobx'
-import type { Location, LifecycleFn } from './types'
-import type RouterStore from './RouterStore'
+import { action, autorun, computed, observable, runInAction, toJS, when } from 'mobx'
+import type { Location } from '../history/types'
+import type { HookType, MatchResult } from '../routing/types'
+import type RouterStore from '../routing/RouterStore'
+import areNodesEqual from '../routing/areNodesEqual'
 import shallowEqual from '../util/shallowEqual'
-import type { RouteNode, HookType, MatchResult } from './RouterStateTree'
-import { GuardFailure } from './errors'
+import { GuardFailure } from '../errors'
 
 type NavigationParams = {
   location: Location,
@@ -85,20 +86,27 @@ export default class Scheduler {
     }
   }
 
+  // TODO: Make sure deactivation is reversed, and onLeave is only called once all deactivation is processed.
   activatePath = async (activating: MatchResult[]) => {
     try {
-      const deactivating = this.store.activeNodes.filter(
-        node => !activating.some(x => x.node === node)
-      )
+      const deactivating = this.store.activeNodes
+        .filter(node => activating.some(x => !areNodesEqual(x.node, node)))
+        .reverse()
+        .map(node => ({
+          node,
+          segment: '',
+          params: node.value.params || {}
+        }))
+
+      console.log('activating', deactivating.map(x => toJS(x.node)))
+      console.log('deactivating', deactivating.map(x => toJS(x.node)))
 
       // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
-      await this.runGuards(['canDeactivate', 'onLeave'], [], deactivating.map(node => ({
-        node,
-        segment: '',
-        params: node.value.params || {}
-      })))
+      await this.runGuards(['canDeactivate'], [], deactivating)
 
-      await this.runGuards(['canActivate', 'onEnter'], [], activating)
+      // await this.runGuards(['canActivate'], [], activating)
+      //
+      // await this.runGuards(['onLeave', 'onEnter'], [], activating)
     } catch (err) {
       // Make sure we chain errors back up!
       throw err
@@ -123,13 +131,17 @@ export default class Scheduler {
     const guard = types.reduce((acc, type) => {
       // Make sure previous lifecycle resolved before proceeding with next.
       // A rejection will skip any unprocessed lifecycle hooks.
-      return acc.then(() => Promise.all(
-        hooks[type].map(f =>
-          f(node, params).catch(error => {
-            throw new GuardFailure(error, node, params)
+      console.log('type', type)
+      return acc.then(() =>
+        Promise.all(
+          hooks[type].map(f => {
+            console.log('-------- f', f)
+            f(node, params).catch(error => {
+              throw new GuardFailure(error, node, params)
+            })
           })
         )
-      ))
+      )
     }, Promise.resolve())
 
     try {

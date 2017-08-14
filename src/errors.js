@@ -1,6 +1,6 @@
 // @flow
-import type { RouteNode } from './RouterStateTree'
-import type { Params } from './types'
+import type { RouteNode } from './routing/RouterStateTree'
+import type { Params } from './scheduling/types'
 
 export class NoMatch {}
 
