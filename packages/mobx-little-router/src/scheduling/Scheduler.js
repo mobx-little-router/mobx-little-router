@@ -1,9 +1,8 @@
 // @flow
 import type { Action } from 'history'
 import { autorun, extendObservable, runInAction } from 'mobx'
-import type { LifecycleFn } from './types'
+import assertPathFullyMatched from '../matching/assertPathFullyMatched'
 import type { MatchResult } from '../matching/types'
-import assertPathMatched from '../matching/assertPathMatched'
 import type { HookType, Location, RouteNode } from '../routing/types'
 import type RouterStore from '../routing/RouterStore'
 import areNodesEqual from '../routing/areNodesEqual'
@@ -13,10 +12,16 @@ import { GuardFailure } from '../errors'
 
 type NavigationParams = {
   location: Location,
-  parts: string[],
+  segments: string[],
   action: ?Action
 }
 
+function toActiveNodes(path) {
+  return path.map(x => {
+    x.node.value.params = x.params
+    return x.node
+  })
+}
 export default class Scheduler {
   store: RouterStore
   disposer: null | Function
@@ -64,7 +69,7 @@ export default class Scheduler {
           ...nextLocation,
           pathname
         },
-        parts: pathname.split('/'),
+        segments: pathname.split('/'),
         action
       }
     })
@@ -83,17 +88,22 @@ export default class Scheduler {
       return
     }
 
-    const { location, parts } = navigation
+    const { location, segments } = navigation
 
     try {
-      const path: MatchResult[] = await this.store.state.pathFromRoot(parts)
-      await assertPathMatched(parts, path)
-      await this.doActivate(path)
+      // This match call may have side-effects of loading dynamic children.
+      // TODO: Perhaps there is a better way to break the side-effect out of the path search?
+      const path: MatchResult[] = await this.store.state.pathFromRoot(
+        segments,
+        this.maybeLoadRouteNodeChildren
+      )
+
+      await assertPathFullyMatched(segments, path)
+      await this.tryActivate(path)
+
+      // Commit the navigation.
       this.store.setLocation(location)
-      this.store.setActiveNodes(path.map(x => {
-        x.node.value.params = x.params
-        return x.node
-      }))
+      this.store.setActiveNodes(toActiveNodes(path))
     } catch (err) {
       this.store.setError(err)
     } finally {
@@ -101,7 +111,15 @@ export default class Scheduler {
     }
   }
 
-  doActivate = async (activating: MatchResult[]) => {
+  maybeLoadRouteNodeChildren = async (node: RouteNode) => {
+    if (node.value.loadChildren !== null) {
+      return false
+    } else {
+      return false
+    }
+  }
+
+  tryActivate = async (activating: MatchResult[]) => {
     try {
       const deactivating = differenceWith(
         areNodesEqual,

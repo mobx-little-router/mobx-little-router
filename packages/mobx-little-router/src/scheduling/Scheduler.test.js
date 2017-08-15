@@ -13,7 +13,7 @@ describe('Scheduler', () => {
   })
 
   describe('Scheduling and processing navigation', () => {
-    test('Activation fails', async () => {
+    test.only('Activation fails', async () => {
       const spy = jest.fn(() => Promise.reject('Nope'))
       const todosRootNode = store.state.root.children[1]
       store.updateNode(todosRootNode, {
@@ -130,7 +130,7 @@ describe('Scheduler', () => {
     expect(store.activeNodes.map(node => node.value.path)).toEqual(['', ''])
   })
 
-  test('Handling unmatched parts', async () => {
+  test('Handling unmatched segments', async () => {
     scheduler.scheduleNavigation({ pathname: '/nope/nope/nope' }, 'PUSH')
     await scheduler.processNavigation()
     expect(store.location.pathname).toEqual('/')

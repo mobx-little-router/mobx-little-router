@@ -3,7 +3,11 @@ import type { RouteNode } from '../routing/types'
 import { findPath } from '../util/tree'
 import type { MatchResult } from './types'
 
-export default async function pathFromRoot(node: RouteNode, path: string[]): Promise<MatchResult[]> {
+type ShouldContinue = boolean
+
+export type OnExhaustedFn = (node: RouteNode) => Promise<ShouldContinue>
+
+export default async function findPathFromRoot(node: RouteNode, path: string[], onExhausted: OnExhaustedFn): Promise<MatchResult[]> {
   const matched: MatchResult[] = []
   await findPath(
     (node: RouteNode, segment) => {
@@ -25,6 +29,7 @@ export default async function pathFromRoot(node: RouteNode, path: string[]): Pro
       // No match.
       return Promise.resolve(false)
     },
+    onExhausted,
     node,
     path
   )

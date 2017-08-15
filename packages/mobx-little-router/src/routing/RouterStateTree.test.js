@@ -35,7 +35,7 @@ describe('Route tree tests', () => {
   })
 
   test('traversal', async () => {
-    const result = await tree.pathFromRoot(['', 'pressly', 'news', ''])
+    const result = await tree.pathFromRoot(['', 'pressly', 'news', ''], () => Promise.resolve(true))
 
     expect(result.map(r => r.node.value.data.uid)).toEqual([
       'ROOT',

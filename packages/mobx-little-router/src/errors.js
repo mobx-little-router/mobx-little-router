@@ -14,13 +14,13 @@ export class GuardFailure {
 }
 
 export class NoMatch {
-  parts: string[]
+  segments: string[]
   path: MatchResult[]
-  constructor(parts: string[], path: MatchResult[]) {
-    this.parts = parts
+  constructor(segments: string[], path: MatchResult[]) {
+    this.segments = segments
     this.path = path
   }
   toString() {
-    return `No match for parts ["${this.parts.join('", "')}"]`
+    return `No match for segments ["${this.segments.join('", "')}"]`
   }
 }

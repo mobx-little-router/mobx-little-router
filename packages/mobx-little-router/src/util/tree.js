@@ -1,6 +1,10 @@
+import type { IObservableArray } from 'mobx'
 // @flow
 import { extendObservable, observable } from 'mobx'
-import type { IObservableArray } from 'mobx'
+
+type ShouldContinue = boolean
+
+export type OnExhaustedFn<T> = (node: TreeNode<T>) => Promise<ShouldContinue>
 
 export class TreeNode<T> {
   value: T
@@ -14,11 +18,12 @@ export class TreeNode<T> {
   }
 }
 
-type Visitor<T> = (n: TreeNode<T>, segment: string) => Promise<boolean>
+type Predicate<T> = (n: TreeNode<T>, segment: string) => Promise<boolean>
 
 // Asynchronous DFS from root node for a matching path based on return of visitor function.
 export async function findPath<T>(
-  visitor: Visitor<T>,
+  predicate: Predicate<T>,
+  onExhausted: OnExhaustedFn<T>,
   node: TreeNode<T>,
   path: string[]
 ): Promise<TreeNode<T>[]> {
@@ -29,16 +34,30 @@ export async function findPath<T>(
     return []
   }
 
-  const result = await visitor(node, curr)
+  const result = await predicate(node, curr)
 
   if (result) {
+    const isPathExhausted = rest.length > 0 && node.children.length === 0
+    if (isPathExhausted) {
+      // We've exhausted children, but still have unmatched parts.
+      const shouldContinue = await onExhausted(node)
+      if (!shouldContinue) {
+        return [node]
+      }
+    }
+
+    // Continue matching on each child recursively.
+    // The children may have been mutated since the previous exhaustion check.
     for (const child of node.children) {
-      const path = await findPath(visitor, child, rest)
+      const path = await findPath(predicate, onExhausted, child, rest)
+      // Matched on child.
       if (path.length > 0) {
-        path.unshift(node)
+        path.unshift(node) // Add current node to beginning of matched path.
         return path
       }
     }
+
+    // No child match, continue to next sibling.
     return [node]
   }
 

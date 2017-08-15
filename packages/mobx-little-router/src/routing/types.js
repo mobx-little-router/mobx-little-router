@@ -16,11 +16,24 @@ export type Location = $Shape<
 
 export type Href = Location | string
 
-export type Config = {
+export type Config = StaticChildrenConfig | DynamicChildrenConfig
+
+export type LoadChildrenConfigFn = () => Promise<Config[]>
+
+export type DynamicChildrenConfig = {
   path: string,
   data?: Object,
+  [HookType]: LifecycleFn[],
+  children?: empty,
+  loadChildren: void | LoadChildrenConfigFn
+}
+
+export type StaticChildrenConfig = {
+  path: string,
+  data?: Object,
+  [HookType]: LifecycleFn[],
   children?: Config[],
-  [HookType]: LifecycleFn[]
+  loadChildren?: empty
 }
 
 export const HookTypes = {
@@ -35,6 +48,8 @@ export type HookType = $Keys<typeof HookTypes>
 
 export type Hooks = { [HookType]: LifecycleFn[] }
 
+export type LoadChildrenRouteNode = () => Promise<RouteNode[]>
+
 export type RouteValue = {
   key: string,
   // Original path provided to this route node.
@@ -48,6 +63,7 @@ export type RouteValue = {
   data: Object,
   // Allows us to keep track of activated and deactivated states.
   isActive: boolean,
+  loadChildren?: null | LoadChildrenRouteNode,
   // Lifecycle utilities
   hooks: Hooks
 }

@@ -3,17 +3,17 @@ import type { MatchResult } from './types'
 import { NoMatch } from '../errors'
 
 /*
- * Helper function to ensure that the matched result is the length we expected from the pat parts.
+ * Helper function to ensure that the matched result is the length we expected from the pat segments.
  * If not, then we reduce over the `onError` hooks of each matched node until one resolved.
  * If no node can resolve, then the returned promise is rejected.
  */
-export default async function matchResults(parts: string[], path: MatchResult[]): Promise<void> {
-  if (parts.length === path.length) {
+export default async function assertMatchFullyMatched(segments: string[], path: MatchResult[]): Promise<void> {
+  if (segments.length === path.length) {
     // If length is same or less, than we're good
     return
-  } else if (parts.length === path.length + 1 && parts[parts.length - 1] === '') {
+  } else if (segments.length === path.length + 1 && segments[segments.length - 1] === '') {
     // If we mismatched on a missing index route, just ignore it.
-    // e.g. ['a', 'b', ''] should match on parts ['a', 'b'] since index route is optional.
+    // e.g. ['a', 'b', ''] should match on segments ['a', 'b'] since index route is optional.
     return
   }
 
@@ -38,7 +38,8 @@ export default async function matchResults(parts: string[], path: MatchResult[])
   // Handler will either bubble rejection until it resolves, or rejects.
   try {
     await handler
+    return
   } catch(err) {
-    throw new NoMatch(parts, path)
+    throw new NoMatch(segments, path)
   }
 }

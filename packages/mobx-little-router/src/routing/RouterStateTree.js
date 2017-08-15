@@ -2,7 +2,8 @@
 import { observable, extendObservable } from 'mobx'
 import { findNode } from '../util/tree'
 import type { RouteNode } from './types'
-import pathFromRoot from '../matching/pathFromRoot'
+import findPathFromRoot from '../matching/findPathFromRoot'
+import type { OnExhaustedFn } from '../matching/findPathFromRoot'
 import type { MatchResult } from '../matching/types'
 
 export default class RouterStateTree {
@@ -18,8 +19,7 @@ export default class RouterStateTree {
     return findNode(predicate, this.root)
   }
 
-  // TODO: We should handle `loadChildren` to resolve dynamically. See: #2
-  async pathFromRoot(path: string[]): Promise<MatchResult[]> {
-    return pathFromRoot(this.root, path)
+  async pathFromRoot(path: string[], onExhausted: OnExhaustedFn): Promise<MatchResult[]> {
+    return findPathFromRoot(this.root, path, onExhausted)
   }
 }

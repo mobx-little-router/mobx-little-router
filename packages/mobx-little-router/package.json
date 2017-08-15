@@ -15,7 +15,8 @@
   "scripts": {
     "flow": "flow",
     "test": "node scripts/test.js",
-    "build": "node scripts/build.js"
+    "clean": "rm -rf es lib",
+    "build": "yarn run clean && node scripts/build.js"
   },
   "dependencies": {
     "history": "^4.6.3",
