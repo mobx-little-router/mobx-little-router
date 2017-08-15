@@ -1,4 +1,5 @@
 // @flow
+import { autorun } from 'mobx'
 import { createMemoryHistory } from 'history'
 import { install } from './'
 
@@ -23,6 +24,13 @@ describe('Routing', () => {
   })
 
   test('reaction to push navigation', async () => {
+    let reactedCount = 0
+
+    autorun(() => {
+      const pathname = m.store.location && m.store.location.pathname
+      reactedCount++
+    })
+
     m.start()
 
     m.history.push('/foo')
@@ -44,6 +52,8 @@ describe('Routing', () => {
     await delay(0)
 
     expect(m.store.location && m.store.location.pathname).toEqual('/quux/')
+
+    expect(reactedCount).toEqual(6)
 
     m.stop()
   })
