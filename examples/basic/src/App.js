@@ -19,13 +19,8 @@ const module = install({
     { path: '', data: { component: Index } },
     { path: 'about', data: { component: About } },
     {
-      path: 'posts',
-      children: [
-        {
-          path: ':id',
-          data: { component: Post }
-        }
-      ]
+      path: 'posts/:id',
+      data: { component: Post }
     }
   ]
 })
@@ -40,7 +35,7 @@ class App extends Component {
     return (
       <RouterProvider module={module}>
         <div>
-          <p>pathname = {location && JSON.stringify(location.pathname)}</p>
+          <p>pathname = {JSON.stringify(location.pathname)}</p>
           <Link to="/">Index</Link>
           <Link to="/about">About</Link>
           <Link to="/posts/1">Post 1</Link>
