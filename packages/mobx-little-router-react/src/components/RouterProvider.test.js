@@ -3,9 +3,9 @@ import React from 'react'
 import { shallow } from 'enzyme'
 import { createMemoryHistory } from 'history'
 import { install } from 'mobx-little-router'
-import MobXRouterProvider from './MobXRouterProvider'
+import RouterProvider from './RouterProvider'
 
-describe('MobXRouterProvider', () => {
+describe('RouterProvider', () => {
   let module
 
   beforeEach(() => {
@@ -17,7 +17,7 @@ describe('MobXRouterProvider', () => {
 
   test('it renders', () => {
     const wrapper = shallow(
-      <MobXRouterProvider module={module}><div>Hello!</div></MobXRouterProvider>
+      <RouterProvider module={module}><div>Hello!</div></RouterProvider>
     )
 
     expect(wrapper.text()).toEqual('Hello!')

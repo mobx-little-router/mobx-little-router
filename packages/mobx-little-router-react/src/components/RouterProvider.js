@@ -3,7 +3,7 @@ import React, { Children, Component } from 'react'
 import { RouterStore } from 'mobx-little-router'
 import { RouterType } from './propTypes'
 
-export default class MobXRouterProvider extends Component {
+export default class RouterProvider extends Component {
   props: {
     module: {
       store: RouterStore,
