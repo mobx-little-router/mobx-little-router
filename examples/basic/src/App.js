@@ -18,6 +18,7 @@ const module = install({
   routes: [
     { path: '', data: { component: Index } },
     { path: 'about', data: { component: About } },
+    { path: 'asd', data: { component: About } },
     {
       path: 'posts/:id',
       data: { component: Post }
@@ -38,6 +39,7 @@ class App extends Component {
           <p>pathname = {JSON.stringify(location.pathname)}</p>
           <Link to="/">Index</Link>
           <Link to="/about">About</Link>
+          <Link to="/asd">asd</Link>
           <Link to="/posts/1">Post 1</Link>
           Hello
         </div>

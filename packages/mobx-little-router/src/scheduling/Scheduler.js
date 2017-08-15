@@ -1,9 +1,10 @@
 // @flow
 import type { Action } from 'history'
 import { autorun, extendObservable, runInAction } from 'mobx'
+import type { LifecycleFn } from './types'
 import type { MatchResult } from '../matching/types'
 import matchResults from '../matching/matchResults'
-import type { HookType, Location } from '../routing/types'
+import type { HookType, Location, RouteNode } from '../routing/types'
 import type RouterStore from '../routing/RouterStore'
 import areNodesEqual from '../routing/areNodesEqual'
 import shallowEqual from '../util/shallowEqual'
@@ -135,13 +136,15 @@ export default class Scheduler {
     const { params, node } = curr
     const { value: { hooks } } = node
 
-    const guard = hooks[type].reduce((acc, f) => {
-      return acc.then(() =>
-        f(node, params).catch(error => {
-          throw new GuardFailure(error, node, params)
-        })
-      )
-    }, Promise.resolve())
+    const guard =
+      hooks[type] &&
+      hooks[type].reduce((acc, f) => {
+        return acc.then(() =>
+          f(node, params).catch(error => {
+            throw new GuardFailure(error, node, params)
+          })
+        )
+      }, Promise.resolve())
 
     try {
       await guard
