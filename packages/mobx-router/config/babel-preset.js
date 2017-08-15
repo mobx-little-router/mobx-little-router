@@ -23,7 +23,7 @@ if (process.env.BABEL_ENV === 'umd') {
 module.exports = {
   presets: [
     'flow',
-    ['env', { modules: process.env.BABEL_ENV !== 'cjs' ? false : 'commonjs' }]
+    ['env', { modules: ['cjs', 'test'].includes(process.env.BABEL_ENV) ? 'commonjs' : false }]
   ],
   plugins: plugins
 }

@@ -2,10 +2,16 @@
   "name": "mobx-router",
   "version": "1.0.0",
   "description": "Implementation of an universal router that uses mobx to manage state.",
-  "main": "index.js",
   "repository": "git@github.com:jaysoo/mobx-router.git",
   "author": "Jack Hsu <jack.hsu@gmail.com>",
   "license": "MIT",
+  "files": [
+    "cjs",
+    "es",
+    "umd"
+  ],
+  "main": "cjs/index.js",
+  "module": "es/index.js",
   "scripts": {
     "flow": "flow",
     "test": "node scripts/test.js",
@@ -52,6 +58,9 @@
     "collectCoverageFrom": [
       "src/**/*.js"
     ],
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    },
     "setupFiles": [
       "<rootDir>/config/jest.js"
     ],
@@ -60,5 +69,8 @@
       "<rootDir>/src/**/?(*.)test.js"
     ],
     "testEnvironment": "node"
+  },
+  "babel": {
+    "presets": ["./config/babel-preset"]
   }
 }
