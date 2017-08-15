@@ -3,6 +3,7 @@
 .*node_modules/fbjs.*
 .*/node_modules/styled-components/.*
 .*/node_modules/react\(-dom\)?/.*
+.*/mobx-router/lib
 
 [include]
 
@@ -15,7 +16,6 @@ node_modules/mobx/lib/mobx.js.flow
 include_warnings=true
 esproposal.class_static_fields=enable
 esproposal.class_instance_fields=enable
-esproposal.decorators=ignore
 unsafe.enable_getters_and_setters=true
 module.file_ext=.js
 module.system=haste

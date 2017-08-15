@@ -1,6 +1,6 @@
 // @flow
 import type { Action } from 'history'
-import { action, autorun, observable, runInAction } from 'mobx'
+import { autorun, observable, runInAction } from 'mobx'
 import type { Location } from '../history/types'
 import type { MatchResult } from '../matching/types'
 import matchResults from '../matching/matchResults'
@@ -68,9 +68,10 @@ export default class Scheduler {
     })
   }
 
-  @action
   clearNavigation() {
-    this.navigation = null
+    runInAction(() => {
+      this.navigation = null
+    })
   }
 
   processNavigation = async () => {

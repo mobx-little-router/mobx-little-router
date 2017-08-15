@@ -8,7 +8,7 @@ coverage/
 
 # production
 cjs/
-es/
+lib/
 umd/
 
 # misc

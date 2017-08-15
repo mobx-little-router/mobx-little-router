@@ -4,7 +4,6 @@ import { TreeNode } from '../util/tree'
 import createKey from '../util/createKey'
 import UrlPattern from 'url-pattern'
 
-
 function alwaysContinue(__: *, ___: *) {
   return Promise.resolve()
 }

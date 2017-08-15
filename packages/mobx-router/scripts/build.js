@@ -17,9 +17,13 @@ exec('babel src -d cjs --ignore "*.test.js"', {
 
 console.log('\nBuilding ES modules ...')
 
-exec('babel src -d es --ignore "*.test.js"', {
+exec('babel src -d lib --ignore "*.test.js"', {
   BABEL_ENV: 'es'
 })
+
+console.log('\nBuilding Flow modules ...')
+
+exec('./node_modules/.bin/flow-copy-source -v -i **/*.test.js src lib')
 
 console.log('\nBuilding mobx-router.js ...')
 
