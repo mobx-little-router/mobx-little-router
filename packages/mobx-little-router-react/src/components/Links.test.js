@@ -3,7 +3,7 @@ import React from 'react'
 import { mount } from 'enzyme'
 import { createMemoryHistory } from 'history'
 import { install } from 'mobx-little-router'
-import MobXRouterProvider from './MobXRouterProvider'
+import RouterProvider from './RouterProvider'
 import Link from './Link'
 
 describe('Link', () => {
@@ -19,12 +19,12 @@ describe('Link', () => {
 
   test('it handles clicks', async () => {
     const wrapper = mount(
-      <MobXRouterProvider module={module}>
+      <RouterProvider module={module}>
         <div>
           <Link className="index" to="/">Index</Link>
           <Link className="foo" to="/foo">Foo</Link>
         </div>
-      </MobXRouterProvider>
+      </RouterProvider>
     )
 
     wrapper.find('.foo').simulate('click')

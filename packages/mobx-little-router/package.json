@@ -49,6 +49,7 @@
     "flow-copy-source": "^1.2.0",
     "gzip-size": "^3.0.0",
     "jest": "^20.0.4",
+    "mobx": "^3.2.2",
     "pretty-bytes": "^4.0.2",
     "rollup": "^0.47.4",
     "rollup-plugin-babel": "^2.7.1",
