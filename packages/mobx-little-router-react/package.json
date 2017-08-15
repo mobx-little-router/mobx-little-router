@@ -18,7 +18,9 @@
     "build": "node scripts/build.js"
   },
   "peerDependencies": {
-    "react": "^15"
+    "react": "^15",
+    "mobx": "^3.2.2",
+    "mobx-react": "^4.2.2"
   },
   "dependencies": {
     "mobx-little-router": "^0.9.4"
@@ -52,8 +54,6 @@
     "history": "^4.6.3",
     "jest": "^20.0.4",
     "jsdom": "^11.1.0",
-    "mobx": "^3.2.2",
-    "mobx-react": "^4.2.2",
     "pretty-bytes": "^4.0.2",
     "prop-types": "^15.5.10",
     "react": "^15.6.1",

@@ -10,6 +10,10 @@ import RouterStateTree from './RouterStateTree';
 
 import createRouteNode from './createRouteNode';
 
+
+console.log('inside observable', observable);
+window.observable1 = observable;
+
 var RouterStore = function () {
 
   // Create a map of all nodes in tree so we can perform faster lookup.
