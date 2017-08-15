@@ -1,7 +1,7 @@
 {
   "name": "mobx-router",
   "version": "1.0.0",
-  "description": "Implementation of an universal router that uses mobx to manage state.",
+  "description": "Implementation of an universal router that uses MobX to manage state.",
   "repository": "git@github.com:jaysoo/mobx-router.git",
   "author": "Jack Hsu <jack.hsu@gmail.com>",
   "license": "MIT",
