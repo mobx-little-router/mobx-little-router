@@ -24,10 +24,10 @@ describe('Scheduler', () => {
       await scheduler.processNavigation()
 
       // Navigation should be blocked.
-      expect(store.location).toBe(null)
+      expect(toJS(store.location)).toBe(null)
 
       // Navigation is cleared.
-      expect(scheduler.navigation).toBe(null)
+      expect(toJS(scheduler.navigation)).toBe(null)
 
       // Enter lifecycle method should not be called.
       expect(spy).toHaveBeenCalledTimes(1)
@@ -49,7 +49,7 @@ describe('Scheduler', () => {
       expect(toJS(store.location)).toEqual({ pathname: '/todos/123/' })
 
       // Navigation is cleared.
-      expect(scheduler.navigation).toBe(null)
+      expect(toJS(scheduler.navigation)).toBe(null)
 
       // Enter lifecycle method should be called.
       expect(spy).toHaveBeenCalledTimes(3)
@@ -79,10 +79,10 @@ describe('Scheduler', () => {
     await scheduler.processNavigation()
 
     // Navigation should be processed.
-    expect(store.location).toBe(null)
+    expect(toJS(store.location)).toBe(null)
 
     // Navigation is cleared.
-    expect(scheduler.navigation).toBe(null)
+    expect(toJS(scheduler.navigation)).toBe(null)
 
     // Deactivation rejection blocks remaining nodes up the path.
     expect(rootSpy).not.toHaveBeenCalled()
@@ -107,7 +107,7 @@ describe('Scheduler', () => {
     expect(toJS(store.location)).toEqual({ pathname: '/' })
 
     // Navigation is cleared.
-    expect(scheduler.navigation).toBe(null)
+    expect(toJS(scheduler.navigation)).toBe(null)
 
     // Deactivation hook is called.
     expect(spy).toHaveBeenCalledTimes(2)
@@ -120,7 +120,7 @@ describe('Scheduler', () => {
   test('Handling unmatched parts', async () => {
     scheduler.scheduleNavigation({ pathname: '/nope/nope/nope' }, 'PUSH')
     await scheduler.processNavigation()
-    expect(store.location).toBe(null)
+    expect(toJS(store.location)).toBe(null)
     expect(store.error).toBeDefined()
     expect(store.error && store.error.toString()).toMatch(/No match/)
   })
