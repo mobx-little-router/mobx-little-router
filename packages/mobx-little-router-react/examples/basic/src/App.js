@@ -1,15 +1,17 @@
 import React, { Component } from 'react'
-import { observable, extendObservable } from 'mobx'
+import { autorun, observable, extendObservable } from 'mobx'
 import { observer } from 'mobx-react'
-import { install } from 'mobx-little-router'
+import { install } from '../../../../mobx-little-router/src'
 import { createHashHistory } from 'history'
-import { RouterProvider, Link } from 'mobx-little-router-react'
+import { RouterProvider, Link } from '../../../src'
 
 const Index = () => <div>Index</div>
 
 const About = () => <div>About</div>
 
 const Post = () => <div>I'm a post</div>
+
+window.autorun=autorun
 
 const module = install({
   createHistory: createHashHistory,
@@ -28,7 +30,7 @@ module.start()
 window.store = module.store
 
 const PrintLocation = observer(({ x, location }) => (
-  <p>I'm at {location.pathname}, and x is {x}</p>
+  <p>I'm at {location && location.pathname}, and x is {x}</p>
 ))
 
 class App extends Component {
@@ -38,6 +40,7 @@ class App extends Component {
       x: 1
     })
   }
+
   render() {
     return (
       <RouterProvider module={module}>

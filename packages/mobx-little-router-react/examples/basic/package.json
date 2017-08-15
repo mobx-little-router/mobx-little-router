@@ -7,8 +7,6 @@
   },
   "dependencies": {
     "mobx": "^3.2.2",
-    "mobx-little-router": "^0.9.4",
-    "mobx-little-router-react": "^0.9.4",
     "react": "^15.6.1",
     "react-dom": "^15.6.1"
   },
