@@ -2,7 +2,7 @@
 import React from 'react'
 import { shallow } from 'enzyme'
 import { createMemoryHistory } from 'history'
-import { install } from 'mobx-router'
+import { install } from 'mobx-little-router'
 import MobXRouterProvider from './MobXRouterProvider'
 
 describe('MobXRouterProvider', () => {
