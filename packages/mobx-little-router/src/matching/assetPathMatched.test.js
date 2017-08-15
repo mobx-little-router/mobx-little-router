@@ -1,8 +1,8 @@
 // @flow
-import matchResults from './matchResults'
+import assertPathMatched from './assertPathMatched'
 import createRouteNode from '../routing/createRouteNode'
 
-describe('matchResults', () => {
+describe('assertPathMatched', () => {
   let routes
 
   beforeEach(() => {
@@ -32,7 +32,7 @@ describe('matchResults', () => {
         params: {}
       }
     ]
-    await expect(mapErrorString(matchResults(['a', 'nope'], results))).rejects.toMatch(/No match/)
+    await expect(mapErrorString(assertPathMatched(['a', 'nope'], results))).rejects.toMatch(/No match/)
   })
 
   test('Handled no match error', async () => {
@@ -41,7 +41,7 @@ describe('matchResults', () => {
       { node: routes[0], segment: 'a', params: {} }
     ]
 
-    await expect(matchResults(['a', 'b', 'c', 'nope'], results)).resolves.toBe(undefined)
+    await expect(assertPathMatched(['a', 'b', 'c', 'nope'], results)).resolves.toBe(undefined)
 
     // Now set handler on all nodes. Only leaf should call.
     routes[0].value.hooks.onError = [jest.fn(() => Promise.resolve())]
@@ -53,7 +53,7 @@ describe('matchResults', () => {
       { node: routes[0].children[0].children[0], segment: 'c', params: {} }
     ]
 
-    await expect(matchResults(['a', 'b', 'c', 'nope'], results)).resolves.toBe(undefined)
+    await expect(assertPathMatched(['a', 'b', 'c', 'nope'], results)).resolves.toBe(undefined)
     expect(routes[0].value.hooks.onError[0]).not.toHaveBeenCalled()
     expect(routes[0].children[0].value.hooks.onError[0]).not.toHaveBeenCalled()
     expect(routes[0].children[0].children[0].value.hooks.onError[0]).toHaveBeenCalledTimes(1)
@@ -70,7 +70,7 @@ describe('matchResults', () => {
       { node: routes[0].children[0].children[0], segment: 'c', params: {} }
     ]
 
-    await expect(mapErrorString(matchResults(['a', 'b', 'c', 'nope'], results))).rejects.toMatch(/No match/)
+    await expect(mapErrorString(assertPathMatched(['a', 'b', 'c', 'nope'], results))).rejects.toMatch(/No match/)
     expect(routes[0].value.hooks.onError[0]).toHaveBeenCalled()
     expect(routes[0].children[0].value.hooks.onError[0]).toHaveBeenCalled()
     expect(routes[0].children[0].children[0].value.hooks.onError[0]).toHaveBeenCalled()
@@ -83,7 +83,7 @@ describe('matchResults', () => {
       { node: routes[0].children[0].children[0], segment: 'c', params: {} }
     ]
 
-    await expect(mapErrorString(matchResults(['a', 'b', 'c', ''], results))).resolves.toBe(undefined)
+    await expect(mapErrorString(assertPathMatched(['a', 'b', 'c', ''], results))).resolves.toBe(undefined)
   })
 })
 

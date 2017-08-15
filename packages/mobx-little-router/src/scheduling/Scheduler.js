@@ -3,7 +3,7 @@ import type { Action } from 'history'
 import { autorun, extendObservable, runInAction } from 'mobx'
 import type { LifecycleFn } from './types'
 import type { MatchResult } from '../matching/types'
-import matchResults from '../matching/matchResults'
+import assertPathMatched from '../matching/assertPathMatched'
 import type { HookType, Location, RouteNode } from '../routing/types'
 import type RouterStore from '../routing/RouterStore'
 import areNodesEqual from '../routing/areNodesEqual'
@@ -87,7 +87,7 @@ export default class Scheduler {
 
     try {
       const path: MatchResult[] = await this.store.state.pathFromRoot(parts)
-      await matchResults(parts, path)
+      await assertPathMatched(parts, path)
       await this.doActivate(path)
       this.store.setLocation(location)
       this.store.setActiveNodes(path.map(x => {

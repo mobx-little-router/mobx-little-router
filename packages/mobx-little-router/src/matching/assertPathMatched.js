@@ -2,7 +2,12 @@
 import type { MatchResult } from './types'
 import { NoMatch } from '../errors'
 
-export default async function matchResults(parts: string[], path: MatchResult[]) {
+/*
+ * Helper function to ensure that the matched result is the length we expected from the pat parts.
+ * If not, then we reduce over the `onError` hooks of each matched node until one resolved.
+ * If no node can resolve, then the returned promise is rejected.
+ */
+export default async function matchResults(parts: string[], path: MatchResult[]): Promise<void> {
   if (parts.length === path.length) {
     // If length is same or less, than we're good
     return
