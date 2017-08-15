@@ -31,6 +31,10 @@ cd mobx-router
 yarn install
 ```
 
+### Building
+
+To build packages, run `yarn build` from either the root, or a package directory.
+
 ### Running tests
 
-Tests can be run in the individual packages, or from the project root by using the command `yarn test`.
+To run tests, run `yarn test` from either the root or a package directory.
