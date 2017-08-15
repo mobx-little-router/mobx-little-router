@@ -1,6 +1,7 @@
 // @flow
 import type { IObservableArray } from 'mobx'
-import { action, observable, ObservableMap } from 'mobx'
+import { action, observable } from 'mobx'
+import type {ObservableMap} from 'mobx'
 import RouterStateTree from './RouterStateTree'
 import type { RouteNode, RouteValue } from '../routing/types'
 import createRouteNode from './createRouteNode'

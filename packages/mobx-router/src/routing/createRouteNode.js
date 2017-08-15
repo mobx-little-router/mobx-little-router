@@ -1,5 +1,5 @@
 // @flow
-import type { RouteValue, HookType, Config  } from './types'
+import type { Config, RouteValue } from './types'
 import { TreeNode } from '../util/tree'
 import createKey from '../util/createKey'
 import UrlPattern from 'url-pattern'

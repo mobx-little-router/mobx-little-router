@@ -1,6 +1,6 @@
 // @flow
 import type { Action } from 'history'
-import { action, autorun, computed, observable, runInAction, toJS, when } from 'mobx'
+import { action, autorun, observable, runInAction } from 'mobx'
 import type { Location } from '../history/types'
 import type { MatchResult } from '../matching/types'
 import matchResults from '../matching/matchResults'
@@ -9,7 +9,7 @@ import type RouterStore from '../routing/RouterStore'
 import areNodesEqual from '../routing/areNodesEqual'
 import shallowEqual from '../util/shallowEqual'
 import { differenceWith } from '../util/functional'
-import { NoMatch, GuardFailure } from '../errors'
+import { GuardFailure } from '../errors'
 
 type NavigationParams = {
   location: Location,

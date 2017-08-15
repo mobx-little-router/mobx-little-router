@@ -1,0 +1,3 @@
+{
+  "presets": ["./config/babel-preset"]
+}
