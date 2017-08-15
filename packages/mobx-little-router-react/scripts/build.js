@@ -23,7 +23,7 @@ exec('babel src -d lib --ignore "*.test.js"', {
 
 console.log('\nBuilding Flow modules ...')
 
-exec('./node_modules/.bin/flow-copy-source -v -i **/*.test.js src lib')
+exec('./node_modules/.bin/flow-copy-source -v -i **/*.test.js src cjs')
 
 console.log('\nBuilding mobx-little-router-react.js ...')
 
