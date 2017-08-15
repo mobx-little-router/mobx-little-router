@@ -1,10 +1,9 @@
 // @flow
 import type { Action } from 'history'
-import { autorun, extendObservable, observable, runInAction } from 'mobx'
-import type { Location } from '../history/types'
+import { autorun, extendObservable, runInAction } from 'mobx'
 import type { MatchResult } from '../matching/types'
 import matchResults from '../matching/matchResults'
-import type { HookType } from '../routing/types'
+import type { HookType, Location } from '../routing/types'
 import type RouterStore from '../routing/RouterStore'
 import areNodesEqual from '../routing/areNodesEqual'
 import shallowEqual from '../util/shallowEqual'

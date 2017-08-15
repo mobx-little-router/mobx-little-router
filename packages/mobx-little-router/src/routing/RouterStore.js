@@ -1,16 +1,15 @@
 // @flow
 import type { IObservableArray } from 'mobx'
 import { extendObservable, runInAction, observable } from 'mobx'
-import type {ObservableMap} from 'mobx'
+import type { ObservableMap } from 'mobx'
 import RouterStateTree from './RouterStateTree'
-import type { RouteNode, RouteValue } from '../routing/types'
+import type { Location, RouteNode, RouteValue } from '../routing/types'
 import createRouteNode from './createRouteNode'
-import type { Location } from '../history/types'
 
 type RouteValueChange = $Shape<RouteValue>
 
 class RouterStore {
-  location: null | Location
+  location: Location
   error: null | Object
   state: RouterStateTree
 
@@ -22,12 +21,12 @@ class RouterStore {
   // transitioning to a new state.
   activeNodes: IObservableArray<RouteNode>
 
-  constructor(children: void | RouteNode[]) {
+  constructor(location: Location, children: void | RouteNode[]) {
     const root = createRouteNode({ path: '', onError: [this.handleRootError] }) // Initial root.
     this.state = new RouterStateTree(root)
 
     extendObservable(this, {
-      location: null,
+      location: location,
       error: null,
       cache: observable.map({ [root.value.key]: root }),
       activeNodes: observable.array([])

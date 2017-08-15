@@ -14,7 +14,13 @@ describe('Routing', () => {
 
   beforeEach(() => {
     m = install({
-      createHistory: createMemoryHistory,
+      createHistory: [
+        createMemoryHistory,
+        {
+          initialEntries: ['/'],
+          initialIndex: 0
+        }
+      ],
       routes: [
         {
           path: ':whatever'
@@ -24,11 +30,10 @@ describe('Routing', () => {
   })
 
   test('reaction to push navigation', async () => {
-    let reactedCount = 0
+    const changes = []
 
     autorun(() => {
-      const pathname = m.store.location && m.store.location.pathname
-      reactedCount++
+      changes.push(m.store.location.pathname)
     })
 
     m.start()
@@ -53,7 +58,7 @@ describe('Routing', () => {
 
     expect(m.store.location && m.store.location.pathname).toEqual('/quux/')
 
-    expect(reactedCount).toEqual(6)
+    expect(changes).toEqual(['/', '/foo/', '/bar/', '/foo/', '/bar/', '/quux/'])
 
     m.stop()
   })

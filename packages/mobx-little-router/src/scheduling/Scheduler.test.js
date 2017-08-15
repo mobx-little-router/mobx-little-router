@@ -24,7 +24,7 @@ describe('Scheduler', () => {
       await scheduler.processNavigation()
 
       // Navigation should be blocked.
-      expect(toJS(store.location)).toBe(null)
+      expect(store.location.pathname).toEqual('/')
 
       // Navigation is cleared.
       expect(toJS(scheduler.navigation)).toBe(null)
@@ -70,16 +70,16 @@ describe('Scheduler', () => {
     const rootNode = store.state.root
     const todosRootNode = store.state.root.children[1]
     const todosViewNode = store.state.root.children[1].children[1]
-    store.updateNode(todosRootNode, { hooks: { canDeactivate: [viewSpy] } })
+    store.updateNode(todosRootNode, { hooks: { canDeactivate: [rootSpy] } })
     store.updateNode(todosViewNode, { hooks: { canDeactivate: [viewSpy] } })
-    // Active path for "/todos/:id"
+    store.location.pathname = '/todos/123'
     store.activateNodes([rootNode, todosRootNode, todosViewNode])
     scheduler.scheduleNavigation({ pathname: '/' }, 'PUSH')
 
     await scheduler.processNavigation()
 
     // Navigation should be processed.
-    expect(toJS(store.location)).toBe(null)
+    expect(toJS(store.location.pathname)).toEqual('/todos/123')
 
     // Navigation is cleared.
     expect(toJS(scheduler.navigation)).toBe(null)
@@ -97,7 +97,7 @@ describe('Scheduler', () => {
     const todosViewNode = store.state.root.children[1].children[1]
     store.updateNode(todosRootNode, { hooks: { canDeactivate: [spy] } })
     store.updateNode(todosViewNode, { hooks: { canDeactivate: [spy] } })
-    // Active path for "/todos/:id"
+    store.location.pathname = '/todos/123'
     store.activateNodes([rootNode, todosRootNode, todosViewNode])
     scheduler.scheduleNavigation({ pathname: '/' }, 'PUSH')
 
@@ -120,14 +120,14 @@ describe('Scheduler', () => {
   test('Handling unmatched parts', async () => {
     scheduler.scheduleNavigation({ pathname: '/nope/nope/nope' }, 'PUSH')
     await scheduler.processNavigation()
-    expect(toJS(store.location)).toBe(null)
+    expect(store.location.pathname).toEqual('/')
     expect(store.error).toBeDefined()
     expect(store.error && store.error.toString()).toMatch(/No match/)
   })
 })
 
 function createStore() {
-  const store = new RouterStore()
+  const store = new RouterStore({ pathname: '/' })
   store.replaceChildren(store.state.root, [
     createRouteNode({
       path: '',

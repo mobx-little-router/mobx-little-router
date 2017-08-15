@@ -2,8 +2,8 @@
 
 import RouterStore from './routing/RouterStore'
 import createRouteNode from './routing/createRouteNode'
-import HistoryManager from './history/HistoryManager'
-import type { HistoryCreatorFn } from './history/types'
+import Router from './Router'
+import type { HistoryCreatorFn } from './Router'
 import type { Config } from './routing/types'
 import type { History } from 'history'
 
@@ -15,16 +15,15 @@ type Module = {
 }
 
 type Options = {
-  createHistory: HistoryCreatorFn,
+  createHistory: HistoryCreatorFn | [HistoryCreatorFn, Object],
   routes: Config[]
 }
 
 export default function install(opts: Options): Module {
-  const store = new RouterStore(opts.routes.map(createRouteNode))
-  const manager = new HistoryManager(opts.createHistory, store)
+  const manager = new Router(opts.createHistory, opts.routes.map(createRouteNode))
   return {
     history: manager.history,
-    store,
+    store: manager.store,
     start: () => manager.start(),
     stop: () => manager.stop()
   }

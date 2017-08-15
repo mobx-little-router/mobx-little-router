@@ -1,7 +1,6 @@
 // @flow
 import type { MatchResult } from './matching/types'
-import type { RouteNode } from './routing/types'
-import type { Params } from './history/types'
+import type { Params, RouteNode } from './routing/types'
 
 export class GuardFailure {
   error: any

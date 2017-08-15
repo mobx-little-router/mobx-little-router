@@ -1,27 +1,36 @@
 // @flow
 import type { History } from 'history'
-import RouterStore from '../routing/RouterStore'
-import type { HistoryCreatorFn } from './types'
-import Scheduler from '../scheduling/Scheduler'
+import RouterStore from './routing/RouterStore'
+import type { RouteNode } from './routing/types'
+import Scheduler from './scheduling/Scheduler'
 
-class HistoryManager {
+export type HistoryCreatorFn = (opts: any) => History
+
+class Router {
   store: RouterStore
   scheduler: Scheduler
   history: History
   dispose: null | Function
 
-  constructor(historyCreator: HistoryCreatorFn, store: RouterStore) {
+  constructor(
+    historyCreator: HistoryCreatorFn | [HistoryCreatorFn, Object],
+    routes: RouteNode[]
+  ) {
     this.dispose = null
 
-    this.history = historyCreator({
-      getUserConfirmation: this.scheduleTransition
-    })
+    this.history = typeof historyCreator === 'function'
+      ? historyCreator({
+          getUserConfirmation: this.scheduleTransition
+        })
+      : historyCreator[0]({
+          ...historyCreator[1],
+          getUserConfirmation: this.scheduleTransition
+        })
 
     // Block history on every transition, and we'll let the scheduler handle the lifecycle.
     this.history.block('') // This message is never actually used, just a placeholder.
-
-    this.scheduler = new Scheduler(store)
-    this.store = store
+    this.store = new RouterStore(this.history.location, routes)
+    this.scheduler = new Scheduler(this.store)
   }
 
   start() {
@@ -42,4 +51,4 @@ class HistoryManager {
   }
 }
 
-export default HistoryManager
+export default Router
