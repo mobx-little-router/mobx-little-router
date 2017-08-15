@@ -61,6 +61,15 @@ describe('Scheduler', () => {
 
       // Matched params are passed to hook.
       expect(spy.mock.calls[2][1]).toEqual({ id: '123' })
+
+      // Nodes are marked as active
+      expect(store.activeNodes.length).toEqual(3)
+      expect(store.activeNodes.map(node => node.value.path)).toEqual(['', 'todos', ':id'])
+      expect(store.activeNodes.map(node => node.value.params)).toEqual([
+        {},
+        {},
+        { id: '123' }
+      ])
     })
   })
 
@@ -115,6 +124,10 @@ describe('Scheduler', () => {
     // Deactivation is called in bottom-up order.
     expect(spy.mock.calls[0][0]).toEqual(todosViewNode)
     expect(spy.mock.calls[1][0]).toEqual(todosRootNode)
+
+    // Nodes are marked as active
+    expect(store.activeNodes.length).toEqual(2)
+    expect(store.activeNodes.map(node => node.value.path)).toEqual(['', ''])
   })
 
   test('Handling unmatched parts', async () => {

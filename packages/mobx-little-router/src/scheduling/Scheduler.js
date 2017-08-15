@@ -90,6 +90,10 @@ export default class Scheduler {
       await matchResults(parts, path)
       await this.doActivate(path)
       this.store.setLocation(location)
+      this.store.setActiveNodes(path.map(x => {
+        x.node.value.params = x.params
+        return x.node
+      }))
     } catch (err) {
       this.store.setError(err)
     } finally {

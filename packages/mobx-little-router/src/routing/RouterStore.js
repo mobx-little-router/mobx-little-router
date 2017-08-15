@@ -81,6 +81,12 @@ class RouterStore {
     })
   }
 
+  setActiveNodes(nodes: RouteNode[]) {
+    runInAction(() => {
+      this.activeNodes.replace(nodes)
+    })
+  }
+
   setError(err: Object) {
     runInAction(() => {
       this.error = err
