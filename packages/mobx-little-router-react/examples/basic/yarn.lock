@@ -2859,10 +2859,6 @@ hoek@2.x.x:
   version "2.16.3"
   resolved "https://registry.yarnpkg.com/hoek/-/hoek-2.16.3.tgz#20bb7403d3cea398e91dc4710a8ff1b8274a25ed"
 
-hoist-non-react-statics@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-1.2.0.tgz#aa448cf0986d55cc40773b17174b7dd066cb7cfb"
-
 home-or-tmp@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/home-or-tmp/-/home-or-tmp-2.0.0.tgz#e36c3f2d2cae7d746a857e38d18d5f32a7882db8"
@@ -4042,31 +4038,19 @@ mkdirp@0.5.1, mkdirp@0.5.x, "mkdirp@>=0.5 0", mkdirp@^0.5.0, mkdirp@^0.5.1, mkdi
   dependencies:
     minimist "0.0.8"
 
-mobx-little-router-react@../../../mobx-little-router-react:
+mobx-little-router-react@^0.9.4:
   version "0.9.4"
+  resolved "https://registry.yarnpkg.com/mobx-little-router-react/-/mobx-little-router-react-0.9.4.tgz#909470b7b2ef302dd5d2d083541048eabaed9e67"
   dependencies:
-    mobx-little-router "^0.9.4"
-    mobx-react "^4.2.2"
+    mobx-little-router "0.9.0"
 
-mobx-little-router@../../../mobx-little-router:
+mobx-little-router@0.9.0, mobx-little-router@^0.9.4:
   version "0.9.4"
+  resolved "https://registry.yarnpkg.com/mobx-little-router/-/mobx-little-router-0.9.4.tgz#c6e4e4dbe0e145f12ae5aa82c8eefef7f7112868"
   dependencies:
     history "^4.6.3"
     mobx "^3.2.2"
     url-pattern "^1.0.3"
-
-mobx-little-router@^0.9.4:
-  version "0.9.4"
-  dependencies:
-    history "^4.6.3"
-    mobx "^3.2.2"
-    url-pattern "^1.0.3"
-
-mobx-react@^4.2.2:
-  version "4.2.2"
-  resolved "https://registry.yarnpkg.com/mobx-react/-/mobx-react-4.2.2.tgz#db9cc3cafefbd830d0584c1149af5aae67829201"
-  dependencies:
-    hoist-non-react-statics "^1.2.0"
 
 mobx@^3.2.2:
   version "3.2.2"

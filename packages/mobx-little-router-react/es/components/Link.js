@@ -25,7 +25,8 @@ var Link = function (_Component) {
       args[_key] = arguments[_key];
     }
 
-    return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = Link.__proto__ || Object.getPrototypeOf(Link)).call.apply(_ref, [this].concat(args))), _this), _this.onClick = function () {
+    return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = Link.__proto__ || Object.getPrototypeOf(Link)).call.apply(_ref, [this].concat(args))), _this), _this.onClick = function (evt) {
+      evt.preventDefault();
       _this.context.router.history.push(_this.props.to);
     }, _temp), _possibleConstructorReturn(_this, _ret);
   }
@@ -34,13 +35,14 @@ var Link = function (_Component) {
     key: 'render',
     value: function render() {
       var _props = this.props,
+          to = _props.to,
           className = _props.className,
           style = _props.style,
           children = _props.children;
 
       return React.createElement(
         'a',
-        { className: className, style: style, onClick: this.onClick },
+        { href: to, className: className, style: style, onClick: this.onClick },
         children
       );
     }
