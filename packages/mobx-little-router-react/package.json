@@ -6,12 +6,12 @@
   "author": "Jack Hsu <jack.hsu@gmail.com>",
   "license": "MIT",
   "files": [
-    "cjs",
     "lib",
+    "es",
     "umd"
   ],
-  "main": "cjs/index.js",
-  "module": "lib/index.js",
+  "main": "lib/index.js",
+  "module": "es/index.js",
   "scripts": {
     "flow": "flow",
     "test": "node scripts/test.js",

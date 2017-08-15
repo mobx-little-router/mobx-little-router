@@ -11,19 +11,19 @@ const exec = (command, extraEnv) =>
 
 console.log('Building CommonJS modules ...')
 
-exec('babel src -d cjs --ignore "*.test.js"', {
+exec('babel src -d lib --ignore "*.test.js"', {
   BABEL_ENV: 'cjs'
 })
 
 console.log('\nBuilding ES modules ...')
 
-exec('babel src -d lib --ignore "*.test.js"', {
+exec('babel src -d es --ignore "*.test.js"', {
   BABEL_ENV: 'es'
 })
 
 console.log('\nBuilding Flow modules ...')
 
-exec('./node_modules/.bin/flow-copy-source -v -i **/*.test.js src cjs')
+exec('./node_modules/.bin/flow-copy-source -v -i **/*.test.js src lib')
 
 console.log('\nBuilding mobx-little-router-react.js ...')
 
