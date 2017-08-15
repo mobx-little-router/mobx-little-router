@@ -9,15 +9,17 @@ const exec = (command, extraEnv) =>
     env: Object.assign({}, process.env, extraEnv)
   })
 
+const BABEL_BIN = `${process.cwd()}/node_modules/.bin/babel`
+
 console.log('Building CommonJS modules ...')
 
-exec('babel src -d lib --ignore "*.test.js"', {
+exec(`${BABEL_BIN} src -d lib --ignore "*.test.js"`, {
   BABEL_ENV: 'cjs'
 })
 
 console.log('\nBuilding ES modules ...')
 
-exec('babel src -d es --ignore "*.test.js"', {
+exec(`${BABEL_BIN} src -d es --ignore "*.test.js"`, {
   BABEL_ENV: 'es'
 })
 
