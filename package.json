@@ -10,7 +10,8 @@
     "test": "lerna run test --stream"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "examples/*"
   ],
   "devDependencies": {
     "lerna": "^2.0.0"

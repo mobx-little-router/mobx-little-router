@@ -2,8 +2,8 @@ import React, { Component } from 'react'
 import { autorun, observable, extendObservable } from 'mobx'
 import { observer } from 'mobx-react'
 import { createHashHistory } from 'history'
-import { install, RouterStore } from '../../../../mobx-little-router/es'
-import { RouterProvider, Link } from '../../../es'
+import { install, RouterStore } from 'mobx-little-router'
+import { RouterProvider, Link } from 'mobx-little-router-react'
 
 const Index = () => <div>Index</div>
 
