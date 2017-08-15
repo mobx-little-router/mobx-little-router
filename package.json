@@ -1,10 +1,11 @@
 {
-  "private": true,
+  "name": "mobx-little-router-packges",
   "repository": "git@github.com:jaysoo/mobx-router.git",
   "author": "Jack Hsu <jack.hsu@gmail.com>",
   "license": "MIT",
   "scripts": {
     "build": "lerna run build --stream",
+    "publish": "lerna run publish",
     "test": "lerna run test --stream"
   },
   "workspaces": [
@@ -12,5 +13,6 @@
   ],
   "devDependencies": {
     "lerna": "^2.0.0"
-  }
+  },
+  "version": "0.9.3"
 }
