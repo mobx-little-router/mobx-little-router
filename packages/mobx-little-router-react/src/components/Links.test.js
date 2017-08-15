@@ -30,12 +30,12 @@ describe('Link', () => {
     wrapper.find('.foo').simulate('click')
     await delay(0)
 
-    expect(module.store.location.pathname).toEqual('/foo/')
+    expect(module.store.location && module.store.location.pathname).toEqual('/foo/')
 
     wrapper.find('.index').simulate('click')
     await delay(0)
     
-    expect(module.store.location.pathname).toEqual('/')
+    expect(module.store.location && module.store.location.pathname).toEqual('/')
   })
 })
 
