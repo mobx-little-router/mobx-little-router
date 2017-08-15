@@ -1,7 +1,8 @@
 // @flow
+import { when } from 'mobx'
 import type { History } from 'history'
 import RouterStore from './routing/RouterStore'
-import type { RouteNode } from './routing/types'
+import type { Href, RouteNode } from './routing/types'
 import Scheduler from './scheduling/Scheduler'
 
 export type HistoryCreatorFn = (opts: any) => History
@@ -43,6 +44,30 @@ class Router {
   stop() {
     this.scheduler.stop()
     this.dispose && this.dispose()
+  }
+
+  push(href: Href) {
+    this.history.push(href)
+
+    return new Promise(res => {
+      when(() => this.scheduler.navigation === null, res)
+    })
+  }
+
+  replace(href: Href) {
+    this.history.replace(href)
+
+    return new Promise(res => {
+      when(() => this.scheduler.navigation === null, res)
+    })
+  }
+
+  goBack() {
+    this.history.goBack()
+
+    return new Promise(res => {
+      when(() => this.scheduler.navigation === null, res)
+    })
   }
 
   // TODO: THis should push the callback into a queue somewhere so we can pick it up in scheduler.

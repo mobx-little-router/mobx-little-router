@@ -14,6 +14,8 @@ export type Location = $Shape<
   }
 >
 
+export type Href = Location | string
+
 export type Config = {
   path: string,
   data?: Object,

@@ -10,10 +10,10 @@ function delay(ms: number) {
 }
 
 describe('Routing', () => {
-  let m
+  let router
 
   beforeEach(() => {
-    m = install({
+    router = install({
       createHistory: [
         createMemoryHistory,
         {
@@ -33,33 +33,52 @@ describe('Routing', () => {
     const changes = []
 
     autorun(() => {
-      changes.push(m.store.location.pathname)
+      changes.push(router.store.location.pathname)
     })
 
-    m.start()
+    router.start()
 
-    m.history.push('/foo')
-    m.history.push('/bar')
+    router.push('/foo')
+    await router.push('/bar')
 
-    await delay(0)
+    expect(router.store.location && router.store.location.pathname).toEqual('/bar/')
 
-    expect(m.store.location && m.store.location.pathname).toEqual('/bar/')
+    await router.goBack()
 
-    m.history.goBack()
+    expect(router.store.location && router.store.location.pathname).toEqual('/foo/')
 
-    await delay(0)
+    router.push('/bar')
+    await router.replace('/quux')
 
-    expect(m.store.location && m.store.location.pathname).toEqual('/foo/')
-
-    m.history.push('/bar')
-    m.history.replace('/quux')
-
-    await delay(0)
-
-    expect(m.store.location && m.store.location.pathname).toEqual('/quux/')
+    expect(router.store.location && router.store.location.pathname).toEqual('/quux/')
 
     expect(changes).toEqual(['/', '/foo/', '/bar/', '/foo/', '/bar/', '/quux/'])
 
-    m.stop()
+    router.stop()
+  })
+
+  test('multiple navigation', async () => {
+    const changes = []
+
+    autorun(() => {
+      changes.push(router.store.location.pathname)
+    })
+
+    router.start()
+
+    router.push('/1')
+    router.push('/2')
+    router.push('/3')
+    router.push('/4')
+    router.push('/5')
+    router.push('/6')
+    router.push('/7')
+    router.push('/8')
+    router.push('/9')
+    await router.push('/10')
+
+    expect(changes).toEqual(['/', '/1/', '/2/', '/3/', '/4/', '/5/', '/6/', '/7/', '/8/', '/9/', '/10/'])
+
+    router.stop()
   })
 })
