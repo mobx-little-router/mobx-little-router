@@ -2,6 +2,8 @@
   "name": "mobx-little-router-react",
   "version": "0.9.4",
   "description": "React adapter components for mobx-router.",
+  "repository": "git@github.com:jaysoo/mobx-router.git",
+  "author": "Jack Hsu <jack.hsu@gmail.com>",
   "license": "MIT",
   "files": [
     "cjs",
