@@ -11,15 +11,18 @@ class Link extends Component {
 
   props: {
     to: string,
-    children: React.Element<*>
+    className?: string,
+    style?: Object,
+    children?: React.Element<*>
   }
 
-  onClick() {
+  onClick = () => {
     this.context.router.history.push(this.props.to)
   }
 
   render() {
-    return <a onClick={this.onClick}>{this.props.children}</a>
+    const { className, style, children } = this.props
+    return <a className={className} style={style} onClick={this.onClick}>{children}</a>
   }
 }
 
