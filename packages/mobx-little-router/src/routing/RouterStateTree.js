@@ -1,15 +1,17 @@
 // @flow
-import { observable } from 'mobx'
+import { observable, extendObservable } from 'mobx'
 import { findNode } from '../util/tree'
 import type { RouteNode } from './types'
 import pathFromRoot from '../matching/pathFromRoot'
 import type { MatchResult } from '../matching/types'
 
 export default class RouterStateTree {
-  @observable root: RouteNode
+  root: RouteNode
 
   constructor(root: RouteNode) {
-    this.root = root
+    extendObservable(this, {
+      root: root
+    })
   }
 
   find(predicate: (x: RouteNode) => boolean) {

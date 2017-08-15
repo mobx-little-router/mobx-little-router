@@ -1,7 +1,7 @@
 // @flow
 import React, { Children, Component } from 'react'
-import { RouterStore } from 'mobx-router'
-import PropTypes from 'prop-types'
+import { RouterStore } from 'mobx-little-router'
+import { RouterType } from './propTypes'
 
 export default class MobXRouterProvider extends Component {
   props: {
@@ -13,11 +13,7 @@ export default class MobXRouterProvider extends Component {
   }
 
   static childContextTypes = {
-    router: PropTypes.shape({
-      store: PropTypes.object,
-      history: PropTypes.object
-    })
-
+    router: RouterType
   }
 
   getChildContext() {

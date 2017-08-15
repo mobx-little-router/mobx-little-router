@@ -1,6 +1,6 @@
 // @flow
 import type { Action } from 'history'
-import { autorun, observable, runInAction } from 'mobx'
+import { autorun, extendObservable, observable, runInAction } from 'mobx'
 import type { Location } from '../history/types'
 import type { MatchResult } from '../matching/types'
 import matchResults from '../matching/matchResults'
@@ -20,12 +20,14 @@ type NavigationParams = {
 export default class Scheduler {
   store: RouterStore
   disposer: null | Function
-  @observable navigation: null | NavigationParams
+  navigation: null | NavigationParams
 
   constructor(store: RouterStore) {
     this.store = store
     this.disposer = null
-    this.navigation = null
+    extendObservable(this, {
+      navigation: null
+    })
   }
 
   start() {

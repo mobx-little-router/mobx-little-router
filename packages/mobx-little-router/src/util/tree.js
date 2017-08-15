@@ -1,14 +1,16 @@
 // @flow
-import { observable } from 'mobx'
+import { extendObservable, observable } from 'mobx'
 import type { IObservableArray } from 'mobx'
 
 export class TreeNode<T> {
-  @observable value: T
-  @observable children: IObservableArray<TreeNode<T>>
+  value: T
+  children: IObservableArray<TreeNode<T>>
 
   constructor(value: T, children: TreeNode<T>[]) {
-    this.value = value
-    this.children = observable.array(children)
+    extendObservable(this, {
+      value: value,
+      children: observable.array(children)
+    })
   }
 }
 

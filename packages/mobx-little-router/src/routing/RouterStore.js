@@ -1,6 +1,6 @@
 // @flow
 import type { IObservableArray } from 'mobx'
-import { runInAction, observable } from 'mobx'
+import { extendObservable, runInAction, observable } from 'mobx'
 import type {ObservableMap} from 'mobx'
 import RouterStateTree from './RouterStateTree'
 import type { RouteNode, RouteValue } from '../routing/types'
@@ -20,15 +20,18 @@ class RouterStore {
 
   // Keep a list of activated nodes so we can track differences when
   // transitioning to a new state.
-  @observable activeNodes: IObservableArray<RouteNode>
+  activeNodes: IObservableArray<RouteNode>
 
   constructor(children: void | RouteNode[]) {
     const root = createRouteNode({ path: '', onError: [this.handleRootError] }) // Initial root.
-    this.location = observable(null)
-    this.error = observable(null)
-    this.cache = observable.map({ [root.value.key]: root })
-    this.activeNodes = observable.array()
     this.state = new RouterStateTree(root)
+
+    extendObservable(this, {
+      location: null,
+      error: null,
+      cache: observable.map({ [root.value.key]: root }),
+      activeNodes: observable.array([])
+    })
 
     if (children) {
       this.replaceChildren(root, children)

@@ -6,11 +6,15 @@ import resolve from 'rollup-plugin-node-resolve'
 
 const config = {
   entry: 'src/index.js',
-  moduleName: 'mobxLittleRouter',
+  moduleName: 'mobxLittleRouterReact',
   globals: {
+    'mobx-little-router': 'mobxLittleRouter',
+    'mobx-react': 'mobxReact',
     mobx: 'mobx'
   },
   external: [
+    'mobx-little-router',
+    'mobx-react',
     'mobx'
   ],
   plugins: [

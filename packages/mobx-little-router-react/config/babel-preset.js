@@ -2,7 +2,6 @@ const plugins = [
   'syntax-dynamic-import',
   'transform-export-extensions',
   'transform-object-rest-spread',
-  'transform-decorators-legacy',
   'transform-class-properties',
   'transform-flow-strip-types',
   'transform-regenerator',
