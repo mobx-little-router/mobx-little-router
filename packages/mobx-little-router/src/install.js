@@ -1,9 +1,8 @@
 // @flow
 
-import RouterStore from './routing/RouterStore'
 import createRouteNode from './routing/createRouteNode'
-import Router from './Router'
 import type { HistoryCreatorFn } from './Router'
+import Router from './Router'
 import type { Config } from './routing/types'
 import type { History } from 'history'
 
