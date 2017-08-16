@@ -2,9 +2,10 @@ import React, { Component } from 'react'
 import { autorun, observable, extendObservable } from 'mobx'
 import { observer } from 'mobx-react'
 import { createHashHistory } from 'history'
-import { install, RouterStore } from 'mobx-little-router'
+import { install } from 'mobx-little-router'
 import { RouterProvider, Link } from 'mobx-little-router-react'
 import styled, { injectGlobal } from 'styled-components'
+import cx from 'classnames'
 
 import Header from './components/Header'
 
@@ -44,6 +45,7 @@ class App extends Component {
 
   render() {
     const { location } = module.store
+
     return (
       <RouterProvider module={module}>
         <div>

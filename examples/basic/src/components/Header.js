@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Link } from 'mobx-little-router-react'
 import styled from 'styled-components'
+import cx from 'classnames'
 
 export default class Header extends Component {
   render() {
@@ -8,8 +9,8 @@ export default class Header extends Component {
       <Container>
         <ul>
           <li className="title">Basic Example</li>
-          <li><Link to="/">Home</Link></li>
-          <li><Link to="/about">About</Link></li>
+          <li><Link to="/" activeClassName="active" exact={true}>Home</Link></li>
+          <li><Link to="/about" activeClassName="active">About</Link></li>
         </ul>
       </Container>
     )
