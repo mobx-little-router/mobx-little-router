@@ -1,11 +1,39 @@
 # MobX Router
 
-A view-agnostic router that uses [MobX](https://mobx.js.org/) to manage its internal state.
-This differs from other router libraries that are component-based.
+A view-agnostic router that uses [MobX](https://mobx.js.org/) to manage its internal state. Built
+to handle the complex requirements of modern-day, universal web applications.
 
-## TODO
+## Why?
 
-Write up more docs...
+Our development team use [MobX](https://mobx.js.org) as the state management library for most of our
+applications.
+
+Routing has become increasingly complex in recent times, and we believe that routing libraries should
+be updated to reflect this reality. We've tried several existing routers in the React + MobX ecosystem, but
+none has met our requirements or functioned exactly the way we want it to. And so we built our own router.
+
+Here are what you get from `mobx-little-router` out of the box.
+
+- State management and change detection that lives completely within MobX, so you have one source of
+  truth for all data in your application, and one way for data to change.
+
+- Support for dynamically loaded routes on both client and server environments. This is key for
+  building modern-day [progressive web apps](https://developers.google.com/web/progressive-web-apps/).
+
+- View-agnostic routing capabilities. This means adapters other than React can be created by hooking
+  into the router state.
+
+- Extensible `data` objects that is provided on each route node. This allows additional data and
+  behaviour to be created for future use cases.
+
+- Static type support for Flow.
+
+## Learn more
+
+For more information, you may refer to the README files for each of the packages under MobX Little Router.
+
+- [`mobx-little-router`](./packages/mobx-little-router)
+- [`mobx-little-router-react`](./packages/mobx-little-router-react)
 
 ## Development
 
