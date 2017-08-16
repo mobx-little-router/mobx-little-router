@@ -1,11 +1,17 @@
 import React, { Component } from 'react'
 import { observer } from 'mobx-react'
-import { observable } from 'mobx'
+import { extendObservable } from 'mobx'
 import { Link } from 'mobx-little-router-react'
 import styled from 'styled-components'
 
 class IndexRoute extends Component {
-  collection = observable([])
+  constructor(props) {
+    super(props)
+
+    extendObservable(this, {
+      collection: []
+    })
+  }
 
   componentDidMount() {
     this.onSearch('gundam')
@@ -15,8 +21,7 @@ class IndexRoute extends Component {
     const res = await fetch(`https://api.tvmaze.com/search/shows?q=${query}`)
     const data = await res.json()
 
-    this.collection.clear()
-    data.forEach(({ show }) => this.collection.push(show))
+    this.collection = data.map(({ show }) => show)
   }
 
   render() {
@@ -28,7 +33,7 @@ class IndexRoute extends Component {
         <SearchResults>
           {this.collection.map(show =>
             <Show key={show.id}>
-              <CoverImage style={{backgroundImage: `url(${show.image && show.image.medium})` }} />
+              <CoverImage to={`/shows/${show.id}`} style={{backgroundImage: `url(${show.image && show.image.medium})` }}/>
               <Abstract>
                 <ShowType>{show.type}</ShowType>
                 <ShowName to={`/shows/${show.id}`}>{show.name}</ShowName>
@@ -69,13 +74,6 @@ const Abstract = styled.div`
   padding: 9px;
   position: absolute;
   bottom: 0;
-  background-image: linear-gradient(transparent, rgba(0,0,0,0.8));
-  width: 100%;
-  height: 50%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-
 `
 
 const ShowType = styled.div`
@@ -99,13 +97,23 @@ const SearchHeader = styled.div`
   width: 100%;
 `
 
-const CoverImage = styled.div`
+const CoverImage = styled(Link)`
+  display: block;
   background-size: cover;
   background-position: 50% 50%;
   background-color: #eee;
   box-shadow: 0 1px 8px rgba(0,0,0,0.2) inset;
   width: 100%;
   height: 100%;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    background-image: linear-gradient(transparent, rgba(0,0,0,0.8));
+    width: 100%;
+    height: 50%;
+  }
 `
 
 const SearchInput = styled.input.attrs({
