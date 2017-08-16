@@ -140,7 +140,7 @@ describe('Scheduler', () => {
 })
 
 function createStore() {
-  const store = new RouterStore({ pathname: '/' })
+  const store = new RouterStore()
   store.replaceChildren(store.state.root, [
     createRouteNode({
       path: '',
