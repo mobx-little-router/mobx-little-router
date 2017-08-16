@@ -30,15 +30,22 @@ class Router {
 
     // Block history on every transition, and we'll let the scheduler handle the lifecycle.
     this.history.block('') // This message is never actually used, just a placeholder.
-    this.store = new RouterStore(this.history.location, routes)
+    this.store = new RouterStore(routes)
     this.scheduler = new Scheduler(this.store)
   }
 
-  start() {
+  async start() {
     this.scheduler.start()
-    this.dispose = this.history.listen((location, action) => {
+
+    // Schedule initial navigation.
+    await this.scheduler.scheduleNavigation(this.history.location)
+
+    // Wait until navigation is processed.
+    await this.navigated()
+
+    this.dispose = this.history.listen((location, action) =>
       this.scheduler.scheduleNavigation(location, action)
-    })
+    )
   }
 
   stop() {
@@ -46,28 +53,26 @@ class Router {
     this.dispose && this.dispose()
   }
 
-  push(href: Href) {
-    this.history.push(href)
-
+  // Waits for next navigation event to be processed and resolves.
+  navigated() {
     return new Promise(res => {
       when(() => this.scheduler.navigation === null, res)
     })
+  }
+
+  push(href: Href) {
+    this.history.push(href)
+    return this.navigated()
   }
 
   replace(href: Href) {
     this.history.replace(href)
-
-    return new Promise(res => {
-      when(() => this.scheduler.navigation === null, res)
-    })
+    return this.navigated()
   }
 
   goBack() {
     this.history.goBack()
-
-    return new Promise(res => {
-      when(() => this.scheduler.navigation === null, res)
-    })
+    return this.navigated()
   }
 
   // TODO: THis should push the callback into a queue somewhere so we can pick it up in scheduler.

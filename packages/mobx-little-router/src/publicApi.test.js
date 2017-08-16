@@ -14,57 +14,43 @@ describe('Routing', () => {
 
   beforeEach(() => {
     router = install({
-      createHistory: [
-        createMemoryHistory,
-        {
-          initialEntries: ['/'],
-          initialIndex: 0
-        }
-      ],
-      routes: [
-        {
-          path: ':whatever'
-        }
-      ]
+      createHistory: [createMemoryHistory, { initialEntries: ['/'], initialIndex: 0 }],
+      routes: [{ path: ':whatever' }]
     })
   })
 
   test('reaction to push navigation', async () => {
     const changes = []
+    await router.start()
 
-    autorun(() => {
-      changes.push(router.store.location.pathname)
-    })
-
-    router.start()
+    autorun(() => changes.push(router.store.location.pathname))
 
     router.push('/foo')
     await router.push('/bar')
 
-    expect(router.store.location && router.store.location.pathname).toEqual('/bar/')
+    expect(router.store.location.pathname).toEqual('/bar/')
 
     await router.goBack()
 
-    expect(router.store.location && router.store.location.pathname).toEqual('/foo/')
+    expect(router.store.location.pathname).toEqual('/foo/')
 
     router.push('/bar')
     await router.replace('/quux')
 
-    expect(router.store.location && router.store.location.pathname).toEqual('/quux/')
+    expect(router.store.location.pathname).toEqual('/quux/')
 
     expect(changes).toEqual(['/', '/foo/', '/bar/', '/foo/', '/bar/', '/quux/'])
+
+    expect(router.store.activeNodes.map(node => node.value.path)).toEqual(['', ':whatever'])
 
     router.stop()
   })
 
   test('multiple navigation', async () => {
     const changes = []
+    await router.start()
 
-    autorun(() => {
-      changes.push(router.store.location.pathname)
-    })
-
-    router.start()
+    autorun(() => changes.push(router.store.location.pathname))
 
     router.push('/1')
     router.push('/2')
@@ -77,7 +63,21 @@ describe('Routing', () => {
     router.push('/9')
     await router.push('/10')
 
-    expect(changes).toEqual(['/', '/1/', '/2/', '/3/', '/4/', '/5/', '/6/', '/7/', '/8/', '/9/', '/10/'])
+    expect(changes).toEqual([
+      '/',
+      '/1/',
+      '/2/',
+      '/3/',
+      '/4/',
+      '/5/',
+      '/6/',
+      '/7/',
+      '/8/',
+      '/9/',
+      '/10/'
+    ])
+
+    expect(router.store.activeNodes.map(node => node.value.path)).toEqual(['', ':whatever'])
 
     router.stop()
   })

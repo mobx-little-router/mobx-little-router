@@ -21,12 +21,12 @@ class RouterStore {
   // transitioning to a new state.
   activeNodes: IObservableArray<RouteNode>
 
-  constructor(location: Location, children: void | RouteNode[]) {
+  constructor(children: void | RouteNode[]) {
     const root = createRouteNode({ path: '', onError: [this.handleRootError] }) // Initial root.
     this.state = new RouterStateTree(root)
 
     extendObservable(this, {
-      location: location,
+      location: {},
       error: null,
       cache: observable.map({ [root.value.key]: root }),
       activeNodes: observable.array([])
