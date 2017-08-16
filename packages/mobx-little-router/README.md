@@ -10,13 +10,33 @@ Import the `install` function from package, along with your chosen history creat
 import { install } from 'mobx-little-router'
 import { createMemoryHistory } from 'history'
 
+const ROUTES = [{ path: ':whatever' }]
+
 const router = install({
   createHistory: createMemoryHistory,
-  routes: [{ path: ':whatever' }]
+  routes: ROUTES
 })
 ```
 
-The install takes the following options:
+Then run `router.start(...)` which takes in a callback when initialization finishes.
+
+```js
+import { autorun } from 'mobx'
+
+router.start(() => {
+  autorun(() => console.log(`path = ${router.store.location.pathname}`))
+
+  router.push('/a') // Prints "path = /a/"
+  router.push('/b') // Prints "path = /b/"
+  router.push('/c') // Prints "path = /c/"
+
+  router.push('/not/found') // Navigation aborts since path cannot be matched from config.
+})
+```
+
+### Install options
+
+The `install` function takes the following options:
 
 - `createHistory` - The history creator function from `history` (e.g. `createBrowserHistory`,
   `createHashHistory`, `createMemoryHistory`).
@@ -39,7 +59,24 @@ The install takes the following options:
   For more type information, check out the [`routing/types.js`](./src/routing/types.js)
   file.
 
+### Dynamic children
 
+Dynamically loaded children is useful when combined with lazy loading.
+
+```js
+const ROUTES = [
+  { path: 'todos', loadChildren: () => import('./todos/routes') }
+]
+
+// ./todos/routes.js
+export default [
+ { path: ':id',
+  children: [
+   { path: 'edit' }
+  ]
+ },
+]
+```
 
 ## Design
 
