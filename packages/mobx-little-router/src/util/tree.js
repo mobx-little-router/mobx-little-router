@@ -1,5 +1,5 @@
-import type { IObservableArray } from 'mobx'
 // @flow
+import type { IObservableArray } from 'mobx'
 import { extendObservable, observable } from 'mobx'
 
 type ShouldContinue = boolean
