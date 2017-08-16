@@ -37,7 +37,7 @@ class Router {
   // We may want the start to take in a callback with the router instance as the parameter.
   // This means we can do `.start(router => {/* do stuff with router */})`, as opposed
   // to `.start().then(() => {/* do stuff with router in original scope */})`
-  async start() {
+  async start(callback: ?Function) {
     this.scheduler.start()
 
     // Schedule initial navigation.
@@ -49,6 +49,8 @@ class Router {
     this.dispose = this.history.listen((location, action) =>
       this.scheduler.scheduleNavigation(location, action)
     )
+
+    callback && callback(this)
   }
 
   stop() {

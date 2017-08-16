@@ -1,5 +1,6 @@
 // @flow
 export { default as RouterStore } from './routing/RouterStore'
+export { default as Router } from './Router'
 export type {
   Href,
   Location,

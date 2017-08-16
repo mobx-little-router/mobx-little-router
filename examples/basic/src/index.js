@@ -8,13 +8,7 @@ import { RouterProvider } from 'mobx-little-router-react'
 import { IndexRoute, AboutRoute, ContactRoute, PostRoute } from './routes'
 import App from './App'
 
-const Index = () => <div>Index</div>
-
-const About = () => <div>About</div>
-
-const Post = () => <div>I'm a post</div>
-
-const module = install({
+const router = install({
   createHistory: createHashHistory,
   routes: [
     { path: '', data: { component: IndexRoute } },
@@ -27,12 +21,12 @@ const module = install({
   ]
 })
 
-window.store = module.store
+window.store = router.store
 window.mobx = mobx
 
-module.start().then(() => {
+router.start().then(() => {
   ReactDOM.render(
-    <RouterProvider module={module}>
+    <RouterProvider router={router}>
       <App />
     </RouterProvider>,
     document.getElementById('root')

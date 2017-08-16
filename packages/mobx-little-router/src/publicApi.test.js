@@ -14,7 +14,10 @@ describe('Routing', () => {
 
   beforeEach(() => {
     router = install({
-      createHistory: [createMemoryHistory, { initialEntries: ['/'], initialIndex: 0 }],
+      createHistory: [
+        createMemoryHistory,
+        { initialEntries: ['/initial'], initialIndex: 0 }
+      ],
       routes: [{ path: ':whatever' }]
     })
   })
@@ -39,9 +42,12 @@ describe('Routing', () => {
 
     expect(router.store.location.pathname).toEqual('/quux/')
 
-    expect(changes).toEqual(['/', '/foo/', '/bar/', '/foo/', '/bar/', '/quux/'])
+    expect(changes).toEqual(['/initial/', '/foo/', '/bar/', '/foo/', '/bar/', '/quux/'])
 
-    expect(router.store.activeNodes.map(node => node.value.path)).toEqual(['', ':whatever'])
+    expect(router.store.activeNodes.map(node => node.value.path)).toEqual([
+      '',
+      ':whatever'
+    ])
 
     router.stop()
   })
@@ -64,7 +70,7 @@ describe('Routing', () => {
     await router.push('/10')
 
     expect(changes).toEqual([
-      '/',
+      '/initial/',
       '/1/',
       '/2/',
       '/3/',
@@ -77,8 +83,32 @@ describe('Routing', () => {
       '/10/'
     ])
 
-    expect(router.store.activeNodes.map(node => node.value.path)).toEqual(['', ':whatever'])
+    expect(router.store.activeNodes.map(node => node.value.path)).toEqual([
+      '',
+      ':whatever'
+    ])
 
     router.stop()
+  })
+
+  test('callback API', done => {
+    const changes = []
+    router.start(_router => {
+      expect(_router).toBe(router)
+
+      autorun(() => changes.push(_router.store.location.pathname))
+
+      _router.push('/1').then(() => {
+        expect(changes).toEqual(['/initial/', '/1/'])
+
+        expect(_router.store.activeNodes.map(node => node.value.path)).toEqual([
+          '',
+          ':whatever'
+        ])
+
+        _router.stop()
+        done()
+      })
+    })
   })
 })

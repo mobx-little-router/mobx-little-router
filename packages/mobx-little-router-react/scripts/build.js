@@ -27,7 +27,7 @@ console.log('\nBuilding Flow modules ...')
 
 exec('./node_modules/.bin/flow-copy-source -v -i **/*.test.js src lib')
 
-console.log('\nBuilding mobx-little-router-react.js ...')
+// console.log('\nBuilding mobx-little-router-react.js ...')
 
 // exec('rollup -c -f umd -o umd/mobx-little-router-react.js', {
 //   BABEL_ENV: 'umd',

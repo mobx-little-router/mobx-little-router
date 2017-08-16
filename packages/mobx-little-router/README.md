@@ -1,10 +1,45 @@
-# mobx-router
+# mobx-little-router
 
-This package provides the core functionality of the MobX router.
+This package provides the core functionality of the MobX little router.
 
 ## Usage
 
-TODO: Write this up...
+Import the `install` function from package, along with your chosen history creator from `history` package.
+
+```js
+import { install } from 'mobx-little-router'
+import { createMemoryHistory } from 'history'
+
+const router = install({
+  createHistory: createMemoryHistory,
+  routes: [{ path: ':whatever' }]
+})
+```
+
+The install takes the following options:
+
+- `createHistory` - The history creator function from `history` (e.g. `createBrowserHistory`,
+  `createHashHistory`, `createMemoryHistory`).
+- `routes` - A list of initial route configuration of type `Config[]`, where
+
+  ```
+  type Config = {
+    path: string,
+    data?: Object,
+    children?: Config[],
+    loadChildren?: () => Promise<Config[]>
+    canActivate?: (node, params) => Promise<void>
+    onEnter?: (node, params) => Promise<void>
+    onLeave?: (node, params) => Promise<void>
+    canDeactivate?: (node, params) => Promise<void>
+    onError?: (node, params) => Promise<void>
+  }
+  ```
+
+  For more type information, check out the [`routing/types.js`](./src/routing/types.js)
+  file.
+
+
 
 ## Design
 
