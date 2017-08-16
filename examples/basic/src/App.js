@@ -1,30 +1,22 @@
 import React, { Component } from 'react'
-import { autorun, observable, extendObservable } from 'mobx'
 import { observer } from 'mobx-react'
 import { createHashHistory } from 'history'
 import { install } from 'mobx-little-router'
-import { RouterProvider, Link } from 'mobx-little-router-react'
+import { RouterProvider, Outlet } from 'mobx-little-router-react'
 import styled, { injectGlobal } from 'styled-components'
-import cx from 'classnames'
 
+import { IndexRoute, AboutRoute, ContactRoute, PostRoute } from './routes'
 import Header from './components/Header'
-
-const Index = () => <div>Index</div>
-
-const About = () => <div>About</div>
-
-const Post = () => <div>I'm a post</div>
-
-window.autorun = autorun
 
 const module = install({
   createHistory: createHashHistory,
   routes: [
-    { path: '', data: { component: Index } },
-    { path: 'about', data: { component: About } },
+    { path: '', data: { component: IndexRoute } },
+    { path: 'about', data: { component: AboutRoute } },
+    { path: 'contact', data: { component: ContactRoute } },
     {
       path: 'posts/:id',
-      data: { component: Post }
+      data: { component: PostRoute }
     }
   ]
 })
@@ -34,15 +26,6 @@ module.start()
 window.store = module.store
 
 class App extends Component {
-  collection = observable([])
-
-  componentDidMount = async () => {
-    const res = await fetch('https://api.tvmaze.com/search/shows?q=batman')
-    const data = await res.json()
-
-    data.forEach(({ show }) => this.collection.push(show))
-  }
-
   render() {
     const { location } = module.store
 
@@ -50,19 +33,20 @@ class App extends Component {
       <RouterProvider module={module}>
         <div>
           <Header />
-          <p>pathname = {JSON.stringify(location.pathname)}</p>
-          <ul>
-            {this.collection.map(show =>
-              <li key={show.id}>
-                <Link to={`/posts/${show.id}`}>{show.name}</Link>
-              </li>
-            )}
-          </ul>
+          <Viewport>
+            <p>pathname: <b>{JSON.stringify(location.pathname)}</b></p>
+
+            <Outlet/>
+          </Viewport>
         </div>
       </RouterProvider>
     )
   }
 }
+
+const Viewport = styled.div`
+  padding: 18px;
+`
 
 injectGlobal`
   body {

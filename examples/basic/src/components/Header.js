@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { Link } from 'mobx-little-router-react'
 import styled from 'styled-components'
-import cx from 'classnames'
 
 export default class Header extends Component {
   render() {
@@ -11,6 +10,7 @@ export default class Header extends Component {
           <li className="title">Basic Example</li>
           <li><Link to="/" activeClassName="active" exact={true}>Home</Link></li>
           <li><Link to="/about" activeClassName="active">About</Link></li>
+          <li><Link to="/contact" activeClassName="active">Contact Us</Link></li>
         </ul>
       </Container>
     )
@@ -43,7 +43,11 @@ const Container = styled.div`
         text-decoration: none;
         font-size: 14px;
 
-        &.active, &:hover {
+        &:hover {
+          color: white;
+        }
+        
+        &.active {
           background-color: rgb(50, 212, 212);
           color: white;
         }
