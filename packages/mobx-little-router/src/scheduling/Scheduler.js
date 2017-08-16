@@ -16,12 +16,13 @@ type NavigationParams = {
   action: ?Action
 }
 
-function toActiveNodes(path) {
+function toRouteNodes(path: MatchResult[]): RouteNode[] {
   return path.map(x => {
     x.node.value.params = x.params
     return x.node
   })
 }
+
 export default class Scheduler {
   store: RouterStore
   disposer: null | Function
@@ -83,27 +84,24 @@ export default class Scheduler {
 
   processNavigation = async () => {
     const { navigation } = this
-
-    if (!navigation) {
-      return
-    }
+    if (!navigation) return
 
     const { location, segments } = navigation
 
     try {
       // This match call may have side-effects of loading dynamic children.
-      // TODO: Perhaps there is a better way to break the side-effect out of the path search?
       const path: MatchResult[] = await this.store.state.pathFromRoot(
         segments,
-        this.maybeLoadRouteNodeChildren
+        this.handleChildNodesExhausted
       )
 
       await assertPathFullyMatched(segments, path)
-      await this.tryActivate(path)
 
-      // Commit the navigation.
-      this.store.setLocation(location)
-      this.store.setActiveNodes(toActiveNodes(path))
+      // We've found a match or unmatched error has been handled.
+      await this.runActivationHooks(path)
+
+      // If all hooks resolved, then we're good to update store state.
+      this.store.commit(location, toRouteNodes(path))
     } catch (err) {
       this.store.setError(err)
     } finally {
@@ -111,15 +109,23 @@ export default class Scheduler {
     }
   }
 
-  maybeLoadRouteNodeChildren = async (node: RouteNode) => {
-    if (node.value.loadChildren !== null) {
-      return false
+  // This method tries to resolve dynamic children on the currently matching node.
+  // If there are children available, load them and then continue by resolving `true`.
+  // Otherwise, abort by resolving `false`. Rejection means an unexpected error.
+  handleChildNodesExhausted = async (lastMatchedNode: RouteNode) => {
+    // If there are dynamic children, try to load and continue.
+    if (typeof lastMatchedNode.value.loadChildren === 'function') {
+      const children = await lastMatchedNode.value.loadChildren()
+      runInAction(() => {
+        lastMatchedNode.children.replace(children)
+      })
+      return true
     } else {
       return false
     }
   }
 
-  tryActivate = async (activating: MatchResult[]) => {
+  runActivationHooks = async (activating: MatchResult[]) => {
     try {
       const deactivating = differenceWith(
         areNodesEqual,

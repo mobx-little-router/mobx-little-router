@@ -34,6 +34,9 @@ class Router {
     this.scheduler = new Scheduler(this.store)
   }
 
+  // We may want the start to take in a callback with the router instance as the parameter.
+  // This means we can do `.start(router => {/* do stuff with router */})`, as opposed
+  // to `.start().then(() => {/* do stuff with router in original scope */})`
   async start() {
     this.scheduler.start()
 

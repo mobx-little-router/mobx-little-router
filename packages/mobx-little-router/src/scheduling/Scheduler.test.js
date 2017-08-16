@@ -13,7 +13,7 @@ describe('Scheduler', () => {
   })
 
   describe('Scheduling and processing navigation', () => {
-    test.only('Activation fails', async () => {
+    test('Activation fails', async () => {
       const spy = jest.fn(() => Promise.reject('Nope'))
       const todosRootNode = store.state.root.children[1]
       store.updateNode(todosRootNode, {
@@ -24,7 +24,7 @@ describe('Scheduler', () => {
       await scheduler.processNavigation()
 
       // Navigation should be blocked.
-      expect(store.location.pathname).toEqual('/')
+      expect(store.location.pathname).toBe(undefined)
 
       // Navigation is cleared.
       expect(toJS(scheduler.navigation)).toBe(null)
@@ -133,31 +133,43 @@ describe('Scheduler', () => {
   test('Handling unmatched segments', async () => {
     scheduler.scheduleNavigation({ pathname: '/nope/nope/nope' }, 'PUSH')
     await scheduler.processNavigation()
-    expect(store.location.pathname).toEqual('/')
+    expect(store.location.pathname).toBe(undefined)
     expect(store.error).toBeDefined()
     expect(store.error && store.error.toString()).toMatch(/No match/)
+  })
+
+  test('Expansion of nested dynamic children during navigation', async () => {
+    const todosViewNode = store.state.root.children[1].children[1]
+    store.updateNode(todosViewNode, {
+      loadChildren: () =>
+        Promise.resolve([
+          createRouteNode({
+            path: 'edit',
+            loadChildren: () =>
+              Promise.resolve([
+                {
+                  path: 'preview'
+                }
+              ])
+          })
+        ])
+    })
+
+    scheduler.scheduleNavigation({ pathname: '/todos/123/edit/preview' }, 'PUSH')
+
+    await scheduler.processNavigation()
+
+    expect(store.location.pathname).toEqual('/todos/123/edit/preview/')
   })
 })
 
 function createStore() {
   const store = new RouterStore()
   store.replaceChildren(store.state.root, [
-    createRouteNode({
-      path: '',
-      children: []
-    }),
+    createRouteNode({ path: '', children: [] }),
     createRouteNode({
       path: 'todos',
-      children: [
-        {
-          path: '',
-          children: []
-        },
-        {
-          path: ':id',
-          children: []
-        }
-      ]
+      children: [{ path: '', children: [] }, { path: ':id', children: [] }]
     })
   ])
   return store

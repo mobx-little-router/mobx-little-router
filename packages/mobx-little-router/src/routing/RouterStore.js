@@ -74,16 +74,11 @@ class RouterStore {
       this.activeNodes.replace(nodes)
     })
   }
-
-  setLocation(next: Location) {
+  
+  commit(nextLocation: Location, nextActiveNodes: RouteNode[]) {
     runInAction(() => {
-      this.location = next
-    })
-  }
-
-  setActiveNodes(nodes: RouteNode[]) {
-    runInAction(() => {
-      this.activeNodes.replace(nodes)
+      this.location = nextLocation
+      this.activeNodes.replace(nextActiveNodes)
     })
   }
 
