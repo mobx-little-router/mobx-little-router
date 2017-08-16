@@ -33,6 +33,13 @@ injectGlobal`
       box-sizing: border-box;
     }
   }
+
+  input:focus,
+  select:focus,
+  textarea:focus,
+  button:focus {
+    outline: none;
+  }
 `
 
 export default withRouter(observer(App))

@@ -13,7 +13,6 @@ class Outlet extends Component {
     const { activeNodes } = this.context.router.store
 
     if (activeNodes.length) {
-      console.log("found activeNodes", activeNodes.length, activeNodes[1].value.data.component)
       return (
         <div>
           {createElement(activeNodes[1].value.data.component)}
