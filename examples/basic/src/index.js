@@ -24,11 +24,11 @@ const router = install({
 window.store = router.store
 window.mobx = mobx
 
-router.start().then(() => {
+router.start(() => {
   ReactDOM.render(
     <RouterProvider router={router}>
       <App />
     </RouterProvider>,
     document.getElementById('root')
   )
-})
+}).catch(() => router.stop())
