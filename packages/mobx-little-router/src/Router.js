@@ -19,17 +19,10 @@ class Router {
   ) {
     this.dispose = null
 
+    // TODO: We should just be passing in the History object instead of the creator.
     this.history = typeof historyCreator === 'function'
-      ? historyCreator({
-          getUserConfirmation: this.scheduleTransition
-        })
-      : historyCreator[0]({
-          ...historyCreator[1],
-          getUserConfirmation: this.scheduleTransition
-        })
-
-    // Block history on every transition, and we'll let the scheduler handle the lifecycle.
-    this.history.block('') // This message is never actually used, just a placeholder.
+      ? historyCreator()
+      : historyCreator[0](historyCreator[1])
     this.store = new RouterStore(routes)
     this.scheduler = new Scheduler(this.store)
   }
@@ -78,11 +71,6 @@ class Router {
   goBack() {
     this.history.goBack()
     return this.navigated()
-  }
-
-  // TODO: THis should push the callback into a queue somewhere so we can pick it up in scheduler.
-  scheduleTransition = (__: string, callback: (continueTransition: boolean) => void) => {
-    this.scheduler.scheduleTransition(callback)
   }
 }
 

@@ -45,10 +45,6 @@ export default class Scheduler {
     this.disposer = null
   }
 
-  scheduleTransition = async (callback: (continueTransition: boolean) => void) => {
-    callback(true)
-  }
-
   scheduleNavigation = (nextLocation: Location, action: ?Action) => {
     const { location } = this.store
 
@@ -139,17 +135,30 @@ export default class Scheduler {
         }))
         .reverse()
 
+      // We don't need to activate nodes that are already active
+      const newlyActivating = activating.filter(x => {
+        return !this.store.activeNodes.some(y => {
+          return areNodesEqual(x.node, y)
+        })
+      })
+
       // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
-      await this.runGuards('canDeactivate', [], deactivating)
-      await this.runGuards('canActivate', [], activating)
-      // await this.runGuards(['onLeave', 'onEnter'], [], activating)
+      await this.guardOnHook('canDeactivate', [], deactivating)
+      await this.guardOnHook('canActivate', [], newlyActivating)
+
+      // Run and wait on both leave and enter hooks.
+      // TODO: Consider whether ordering here matters. Do we need to guarantee that leave is called before all enter?
+      await Promise.all([
+        this.guardOnHook('onLeave', [], deactivating),
+        this.guardOnHook('onEnter', [], newlyActivating)
+      ])
     } catch (err) {
       // Make sure we chain errors back up!
       throw err
     }
   }
 
-  runGuards = async (
+  guardOnHook = async (
     type: HookType,
     processed: MatchResult[],
     remaining: MatchResult[]
@@ -177,7 +186,7 @@ export default class Scheduler {
     try {
       await guard
       // Run the next guards.
-      await this.runGuards(type, [curr], rest)
+      await this.guardOnHook(type, [curr], rest)
     } catch (err) {
       // When we encounter a failed guard, just stop navigation.
       throw err

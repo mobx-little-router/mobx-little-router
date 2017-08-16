@@ -161,6 +161,108 @@ describe('Scheduler', () => {
 
     expect(store.location.pathname).toEqual('/todos/123/edit/preview/')
   })
+
+  test('Transition hooks', async () => {
+    // Setup
+    const leaveSpy = jest.fn(() => Promise.resolve())
+    const enterSpy = jest.fn(() => Promise.resolve())
+    const rootNode = store.state.root
+    const todosRootNode = store.state.root.children[1]
+    const todosViewNode = store.state.root.children[1].children[1]
+    const projectsRootNode = store.state.root.children[2]
+    const projectsListNode = store.state.root.children[2].children[0]
+    const projectsViewNode = store.state.root.children[2].children[1]
+    store.updateNode(todosRootNode, {
+      hooks: { onLeave: [leaveSpy], onEnter: [enterSpy] }
+    })
+    store.updateNode(todosViewNode, {
+      params: { id: '1' },
+      hooks: { onLeave: [leaveSpy], onEnter: [enterSpy] }
+    })
+    store.updateNode(projectsRootNode, {
+      hooks: { onEnter: [enterSpy], onLeave: [leaveSpy] }
+    })
+    store.updateNode(projectsViewNode, {
+      hooks: { onEnter: [enterSpy], onLeave: [leaveSpy] }
+    })
+    store.updateNode(projectsListNode, {
+      hooks: { onEnter: [enterSpy], onLeave: [leaveSpy] }
+    })
+    store.location.pathname = '/todos/1'
+    store.activateNodes([rootNode, todosRootNode, todosViewNode])
+
+    scheduler.scheduleNavigation({ pathname: '/projects/2' }, 'PUSH')
+    await scheduler.processNavigation()
+
+    expect(store.location.pathname).toEqual('/projects/2/')
+
+    // Leave transition hooks are bottom up.
+    expect(
+      leaveSpy.mock.calls.map(args => ({
+        key: args[0].value.key,
+        path: args[0].value.path
+      }))
+    ).toEqual([
+      {
+        key: todosViewNode.value.key,
+        path: ':id'
+      },
+      {
+        key: todosRootNode.value.key,
+        path: 'todos'
+      }
+    ])
+
+    // Enter transition hooks are top down.
+    expect(
+      enterSpy.mock.calls.map(args => ({
+        key: args[0].value.key,
+        path: args[0].value.path
+      }))
+    ).toEqual([
+      {
+        key: projectsRootNode.value.key,
+        path: 'projects'
+      },
+      {
+        key: projectsViewNode.value.key,
+        path: ':id'
+      }
+    ])
+
+    leaveSpy.mockClear()
+    enterSpy.mockClear()
+    scheduler.scheduleNavigation({ pathname: '/projects' }, 'PUSH')
+    await scheduler.processNavigation()
+
+    expect(store.location.pathname).toEqual('/projects/')
+
+    // Only the project view node is leaving.
+    expect(
+      leaveSpy.mock.calls.map(args => ({
+        key: args[0].value.key,
+        path: args[0].value.path
+      }))
+    ).toEqual([
+      {
+        key: projectsViewNode.value.key,
+        path: ':id'
+      }
+    ])
+
+    // Only the project list node is entering.
+    expect(
+      enterSpy.mock.calls.map(args => ({
+        key: args[0].value.key,
+        path: args[0].value.path
+      }))
+    ).toEqual([
+      {
+        key: projectsListNode.value.key,
+        path: ''
+      }
+    ])
+  })
 })
 
 function createStore() {
@@ -169,6 +271,10 @@ function createStore() {
     createRouteNode({ path: '', children: [] }),
     createRouteNode({
       path: 'todos',
+      children: [{ path: '', children: [] }, { path: ':id', children: [] }]
+    }),
+    createRouteNode({
+      path: 'projects',
       children: [{ path: '', children: [] }, { path: ':id', children: [] }]
     })
   ])
