@@ -1,12 +1,14 @@
 import React, { Component } from 'react'
 import { observer } from 'mobx-react'
 
-class PostRoute extends Component {
+class ShowRoute extends Component {
   render() {
     return (
-      <div>Post route</div>
+      <div>
+        <h1>Show</h1>
+      </div>
     )
   }
 }
 
-export default observer(PostRoute)
+export default observer(ShowRoute)
