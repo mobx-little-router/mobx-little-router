@@ -16,12 +16,19 @@ class Link extends Component {
     activeClassName?: string,
     style?: Object,
     children?: React.Element<*>,
-    exact?: boolean
+    exact?: boolean,
+    reload?: boolean
   }
 
   onClick = (evt: Event) => {
+    const { to, reload } = this.props
+
+    if (reload) {
+      return
+    }
+
     evt.preventDefault()
-    this.context.router.history.push(this.props.to)
+    this.context.router.history.push(to)
   }
 
   render() {
