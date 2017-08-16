@@ -12,19 +12,23 @@ class Outlet extends Component {
 
   render() {
     const { activeNodes } = this.context.router.store
-    const components = activeNodes.map(node => node.value.data && node.value.data.component).filter(Boolean)
 
-    if (components.length) {
-      return renderComponentTree(components)
+    if (activeNodes.length) {
+      return renderComponentTree(activeNodes)
     } else {
       return null
     }
   }
 }
 
-const renderComponentTree = (components) => {
-  return components.reduceRight((children, component) => {
-    return createElement(component, {}, children)
+const renderComponentTree = (nodes) => {
+  return nodes.reduceRight((children, node) => {
+    const { params, data } = node.value
+    const { component } = data
+
+    return component
+      ? createElement(component, { params }, children)
+      : children
   }, undefined)
 }
 
