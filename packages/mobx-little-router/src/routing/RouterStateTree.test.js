@@ -9,22 +9,28 @@ describe('Route tree tests', () => {
     tree = new RouterStateTree(
       createRouteNode({
         path: '',
-        data: {
-          uid: 'ROOT'
-        },
+        data: { uid: 'TREE_ROOT' },
         children: [
           {
-            path: ':username',
-            data: {
-              uid: 'ACCOUNT_ROOT'
-            },
+            path: '',
+            data: { uid: 'APP_ROOT' },
             children: [
               {
-                path: ':slug',
-                data: { uid: 'HUB_ROOT' },
+                path: '',
+                data: { uid: 'HOME' }
+              },
+              {
+                path: ':username',
+                data: { uid: 'ACCOUNT_ROOT' },
                 children: [
-                  { path: '', data: { uid: 'HUB_STREAM' } },
-                  { path: 'spotlight/:slug', data: { uid: 'HUB_SPOTLIGHT' } }
+                  {
+                    path: ':slug',
+                    data: { uid: 'HUB_ROOT' },
+                    children: [
+                      { path: '', data: { uid: 'HUB_STREAM' } },
+                      { path: 'spotlight/:slug', data: { uid: 'HUB_SPOTLIGHT' } }
+                    ]
+                  }
                 ]
               }
             ]
@@ -34,21 +40,20 @@ describe('Route tree tests', () => {
     )
   })
 
-  test('traversal', async () => {
-    const result = await tree.pathFromRoot(['', 'pressly', 'news', ''], () => Promise.resolve(true))
+  test.only('traversal', async () => {
+    const r1 = await tree.pathFromRoot(['', 'pressly', 'news', ''], () => {
+      return Promise.resolve(true)
+    })
 
-    expect(result.map(r => r.node.value.data.uid)).toEqual([
-      'ROOT',
+    expect(r1.map(r => r.node.value.data.uid)).toEqual([
+      'TREE_ROOT',
+      'APP_ROOT',
       'ACCOUNT_ROOT',
       'HUB_ROOT',
       'HUB_STREAM'
     ])
-
-    expect(result.map(r => r.node.value.path)).toEqual(['', ':username', ':slug', ''])
-
-    expect(result.map(r => r.segment)).toEqual(['', 'pressly', 'news', ''])
-
-    expect(result.map(r => r.params)).toEqual([
+    expect(r1.map(r => r.node.value.path)).toEqual(['', ':username', ':slug', ''])
+    expect(r1.map(r => r.params)).toEqual([
       {},
       { username: 'pressly' },
       { slug: 'news' },
