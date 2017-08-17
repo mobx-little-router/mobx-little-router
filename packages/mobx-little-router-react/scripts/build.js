@@ -25,7 +25,7 @@ exec(`${BABEL_BIN} src -d es --ignore "*.test.js"`, {
 
 console.log('\nBuilding Flow modules ...')
 
-exec('./node_modules/.bin/flow-copy-source -v -i **/*.test.js src lib')
+exec('./node_modules/.bin/flow-copy-source -v -i "**/*.test.js" src lib')
 
 // console.log('\nBuilding mobx-little-router-react.js ...')
 
