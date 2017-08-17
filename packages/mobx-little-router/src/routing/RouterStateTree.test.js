@@ -12,7 +12,7 @@ describe('Route tree tests', () => {
         data: { uid: 'TREE_ROOT' },
         children: [
           {
-            path: 'app',
+            path: '',
             data: { uid: 'APP_ROOT' },
             children: [
               {
@@ -40,8 +40,8 @@ describe('Route tree tests', () => {
     )
   })
 
-  test('traversal', async () => {
-    const r1 = await tree.pathFromRoot(['', 'app', 'pressly', 'news', ''], () => {
+  test.only('traversal', async () => {
+    const r1 = await tree.pathFromRoot(['', 'pressly', 'news', ''], () => {
       return Promise.resolve(true)
     })
 

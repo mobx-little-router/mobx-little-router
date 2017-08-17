@@ -1,5 +1,5 @@
 // @flow
-import { observable, extendObservable } from 'mobx'
+import { extendObservable } from 'mobx'
 import { findNode } from '../util/tree'
 import type { RouteNode } from './types'
 import findPathFromRoot from '../matching/findPathFromRoot'

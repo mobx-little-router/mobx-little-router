@@ -29,9 +29,7 @@ export default function createRouteNode(config: Config): RouteNode {
         pattern: curr !== '' ? new UrlPattern(curr) : null,
         params: null,
         isActive: false,
-        loadChildren: node !== null
-          ? null
-          : toLoadRouteNodeChildren(config.loadChildren),
+        loadChildren: node !== null ? null : toLoadRouteNodeChildren(config.loadChildren),
         hooks: node !== null
           ? {}
           : {

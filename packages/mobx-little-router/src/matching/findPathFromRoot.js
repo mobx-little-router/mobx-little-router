@@ -17,12 +17,12 @@ export default async function findPathFromRoot(node: RouteNode, path: string[], 
       if (pattern !== null) {
         const params = pattern.match(segment)
         if (params !== null) {
-          matched.push({ node, segment, params })
+          matched.push({ node, params })
           return Promise.resolve(true)
         }
         // If pattern does not existing, we need to match on empty string (index route).
       } else if (path === segment) {
-        matched.push({ node, segment, params: {} })
+        matched.push({ node, params: {} })
         return Promise.resolve(true)
       }
 

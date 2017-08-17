@@ -50,7 +50,7 @@ describe('createRouteNode', () => {
     }
 
     const root = createRouteNode(config)
-    const nodes = await root.value.loadChildren()
+    const nodes = root.value.loadChildren ? await root.value.loadChildren() : []
     expect(nodes.map(n => n.value.path)).toEqual(['a', 'b', 'c'])
   })
 })
