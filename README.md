@@ -52,7 +52,7 @@ yarn config set workspaces-experimental true
 
 ### Installation
 
-Then git clone and install.
+Run git clone and install.
 
 ```
 git clone git@github.com:mobx-router/mobx-router.git mobx-router
