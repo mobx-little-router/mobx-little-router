@@ -1,6 +1,6 @@
 // @flow
 import React, { Component } from 'react'
-import { RouterType } from '../components/propTypes'
+import { RouterType } from '../propTypes'
 
 export default function withRouter(Cmp: ReactClass<*>): ReactClass<*> {
   class Wrapped extends Component {

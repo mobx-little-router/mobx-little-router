@@ -2,7 +2,7 @@
 import React, { Component } from 'react'
 import { observer } from 'mobx-react'
 import type { Location } from 'mobx-little-router'
-import { RouterType } from './propTypes'
+import { RouterType } from '../propTypes'
 import cx from 'classnames'
 
 class Link extends Component {
