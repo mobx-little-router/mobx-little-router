@@ -43,13 +43,14 @@ that contains several smaller packages.
 To manage the different packages, [lerna](https://lernajs.io/)
 and yarn [workspaces](https://yarnpkg.com/blog/2017/08/02/introducing-workspaces/) are used.
 
-Make sure you have `yarn >= 0.28.0`.
+Make sure you have `yarn >= 0.28.0` and workspace enabled.
+
+```
+npm install -g yarn@">=0.28"
+yarn config set workspaces-experimental true
+```
 
 ### Installation
-
-```
-npm install -g yarn@latest
-```
 
 Then git clone and install.
 
