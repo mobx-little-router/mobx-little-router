@@ -21,7 +21,7 @@ describe('Link', () => {
     router.stop()
   })
 
-  test('it handles clicks', async () => {
+  test('Handles clicks', async () => {
     const wrapper = mount(
       <RouterProvider router={router}>
         <div>
@@ -34,12 +34,28 @@ describe('Link', () => {
     wrapper.find('.foo').simulate('click')
     await delay(0)
 
-    expect(router.store.location && router.store.location.pathname).toEqual('/foo/')
+    expect(router.store.location.pathname).toEqual('/foo/')
 
     wrapper.find('.index').simulate('click')
     await delay(0)
     
-    expect(router.store.location && router.store.location.pathname).toEqual('/')
+    expect(router.store.location.pathname).toEqual('/')
+  })
+
+  it('Supports reload prop to skip router', async () => {
+
+    const wrapper = mount(
+      <RouterProvider router={router}>
+        <div>
+          <Link reload className="foo" to="/foo">Foo</Link>
+        </div>
+      </RouterProvider>
+    )
+
+    wrapper.find('.foo').simulate('click')
+    await delay(0)
+
+    expect(router.store.location.pathname).toEqual('/')
   })
 })
 
