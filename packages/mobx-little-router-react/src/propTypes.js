@@ -9,3 +9,7 @@ export const RouterType = PropTypes.shape({
   goBack: PropTypes.func,
   navigated: PropTypes.func
 })
+
+export const OutletType = PropTypes.shape({
+  currIndex: PropTypes.number
+})

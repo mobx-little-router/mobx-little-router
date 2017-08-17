@@ -7,17 +7,30 @@ describe('Outlet', () => {
   let router
 
   beforeEach(() => {
-    router = createRouter([
-      { path: '', data: { component: HomePage } },
-      { path: 'about', children: [
-        { path: '', data: { component: AboutPage } },
-        { path: 'contact', data: { component: ContactPage } }
-      ] },
-      { path: 'posts', children: [
-        { path: '', data: { component: PostListPage } },
-        { path: ':id', data: { component: PostViewPage } }
-      ] }
-    ], '/')
+    router = createRouter(
+      [
+        {
+          path: '',
+          data: { component: RootPage },
+          children: [
+            { path: '', data: { component: HomePage } },
+            {
+              path: 'about',
+              data: { component: AboutPage },
+              children: [{ path: 'contact', data: { component: ContactPage } }]
+            },
+            {
+              path: 'posts',
+              children: [
+                { path: '', data: { component: PostListPage } },
+                { path: ':id', data: { component: PostViewPage } }
+              ]
+            }
+          ]
+        }
+      ],
+      '/'
+    )
     return router.start()
   })
 
@@ -26,19 +39,22 @@ describe('Outlet', () => {
   })
 
   test('Renders', () => {
-    const wrapper = mountInProvider(router)(
-      <div>
-        <Outlet/>
-      </div>
-    )
+    const wrapper = mountInProvider(router)(<Outlet />)
+    expect(wrapper.html()).toMatch(/RootPage/)
+  })
 
-    expect(wrapper.html()).toMatch(/HomePage/)
+  test('Supports nested routes', async () => {
+    await router.push('/about/contact')
+    const wrapper = mountInProvider(router)(<Outlet />)
+    expect(wrapper.html()).toMatch(/RootPage/)
+    expect(wrapper.html()).toMatch(/AboutPage/)
+    expect(wrapper.html()).toMatch(/ContactPage/)
   })
 })
 
-const HomePage = () => <div>HomePage</div>
-const AboutPage = () => <div>AboutPage</div>
+const RootPage = () => <div>RootPage<Outlet /></div>
+const HomePage = () => <div>HomePage<Outlet /></div>
+const AboutPage = () => <div>AboutPage<Outlet /></div>
 const ContactPage = () => <div>ContactPage</div>
 const PostListPage = () => <div>PostListPage</div>
 const PostViewPage = () => <div>PostViewPage</div>
-
