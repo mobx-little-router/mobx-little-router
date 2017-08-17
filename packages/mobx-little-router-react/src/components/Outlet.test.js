@@ -13,6 +13,7 @@ describe('Outlet', () => {
           path: '',
           data: { component: RootPage },
           children: [
+            { path: '', data: { component: HomePage } },
             {
               path: 'about',
               data: { component: AboutPage },
