@@ -12,7 +12,7 @@ describe('Route tree tests', () => {
         data: { uid: 'TREE_ROOT' },
         children: [
           {
-            path: '',
+            path: 'app',
             data: { uid: 'APP_ROOT' },
             children: [
               {
@@ -40,8 +40,8 @@ describe('Route tree tests', () => {
     )
   })
 
-  test.only('traversal', async () => {
-    const r1 = await tree.pathFromRoot(['', 'pressly', 'news', ''], () => {
+  test('traversal', async () => {
+    const r1 = await tree.pathFromRoot(['', 'app', 'pressly', 'news', ''], () => {
       return Promise.resolve(true)
     })
 
@@ -52,8 +52,9 @@ describe('Route tree tests', () => {
       'HUB_ROOT',
       'HUB_STREAM'
     ])
-    expect(r1.map(r => r.node.value.path)).toEqual(['', ':username', ':slug', ''])
+    expect(r1.map(r => r.node.value.path)).toEqual(['', 'app', ':username', ':slug', ''])
     expect(r1.map(r => r.params)).toEqual([
+      {},
       {},
       { username: 'pressly' },
       { slug: 'news' },
