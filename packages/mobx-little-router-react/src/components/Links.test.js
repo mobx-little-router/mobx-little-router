@@ -17,6 +17,10 @@ describe('Link', () => {
     router.start(done)
   })
 
+  afterEach(() => {
+    router.stop()
+  })
+
   test('it handles clicks', async () => {
     const wrapper = mount(
       <RouterProvider router={router}>
