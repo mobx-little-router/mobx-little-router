@@ -7,19 +7,19 @@ import RouterProvider from './RouterProvider'
 import Link from './Link'
 
 describe('Link', () => {
-  let module
+  let router
 
-  beforeEach(() => {
-    module = install({
+  beforeEach((done) => {
+    router = install({
       createHistory: createMemoryHistory,
       routes: [{ path: '' }, { path: 'foo' }]
     })
-    module.start()
+    router.start(done)
   })
 
   test('it handles clicks', async () => {
     const wrapper = mount(
-      <RouterProvider module={module}>
+      <RouterProvider router={router}>
         <div>
           <Link className="index" to="/">Index</Link>
           <Link className="foo" to="/foo">Foo</Link>
@@ -30,12 +30,12 @@ describe('Link', () => {
     wrapper.find('.foo').simulate('click')
     await delay(0)
 
-    expect(module.store.location && module.store.location.pathname).toEqual('/foo/')
+    expect(router.store.location && router.store.location.pathname).toEqual('/foo/')
 
     wrapper.find('.index').simulate('click')
     await delay(0)
     
-    expect(module.store.location && module.store.location.pathname).toEqual('/')
+    expect(router.store.location && router.store.location.pathname).toEqual('/')
   })
 })
 

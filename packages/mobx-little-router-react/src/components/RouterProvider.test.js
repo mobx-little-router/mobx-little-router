@@ -6,18 +6,20 @@ import { install } from 'mobx-little-router'
 import RouterProvider from './RouterProvider'
 
 describe('RouterProvider', () => {
-  let module
+  let router
 
   beforeEach(() => {
-    module = install({
+    router = install({
       createHistory: createMemoryHistory,
       routes: [{ path: '' }]
     })
   })
 
-  test('it renders', () => {
+  test('it renders child', () => {
     const wrapper = shallow(
-      <RouterProvider module={module}><div>Hello!</div></RouterProvider>
+      <RouterProvider router={router}>
+        <div>Hello!</div>
+      </RouterProvider>
     )
 
     expect(wrapper.text()).toEqual('Hello!')
