@@ -1,20 +1,14 @@
 // @flow
 import React from 'react'
-import { mount } from 'enzyme'
-import { createMemoryHistory } from 'history'
-import { install } from 'mobx-little-router'
-import RouterProvider from './RouterProvider'
+import { createRouter, mountInProvider } from '../testUtil'
 import Link from './Link'
 
 describe('Link', () => {
   let router
 
-  beforeEach((done) => {
-    router = install({
-      createHistory: createMemoryHistory,
-      routes: [{ path: '' }, { path: 'foo' }]
-    })
-    router.start(done)
+  beforeEach(() => {
+    router = createRouter( [{ path: '' }, { path: 'foo' }])
+    return router.start()
   })
 
   afterEach(() => {
@@ -22,13 +16,11 @@ describe('Link', () => {
   })
 
   test('Handles clicks', async () => {
-    const wrapper = mount(
-      <RouterProvider router={router}>
-        <div>
-          <Link className="index" to="/">Index</Link>
-          <Link className="foo" to="/foo">Foo</Link>
-        </div>
-      </RouterProvider>
+    const wrapper = mountInProvider(router)(
+      <div>
+        <Link className="index" to="/">Index</Link>
+        <Link className="foo" to="/foo">Foo</Link>
+      </div>
     )
 
     wrapper.find('.foo').simulate('click')
@@ -43,13 +35,10 @@ describe('Link', () => {
   })
 
   it('Supports reload prop to skip router', async () => {
-
-    const wrapper = mount(
-      <RouterProvider router={router}>
-        <div>
-          <Link reload className="foo" to="/foo">Foo</Link>
-        </div>
-      </RouterProvider>
+    const wrapper = mountInProvider(router)(
+      <div>
+        <Link reload className="foo" to="/foo">Foo</Link>
+      </div>
     )
 
     wrapper.find('.foo').simulate('click')

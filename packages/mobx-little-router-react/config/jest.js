@@ -1,8 +1,8 @@
 // Jest setup
-const mobx = require('mobx')
-const { JSDOM } = require('jsdom')
+import { useStrict } from 'mobx'
+import { JSDOM } from 'jsdom'
 
-mobx.useStrict(true)
+useStrict(true)
 
 const jsdom = new JSDOM('<!doctype html><html><body></body></html>')
 const { window } = jsdom

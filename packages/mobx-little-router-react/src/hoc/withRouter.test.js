@@ -1,34 +1,21 @@
 // @flow
 import React from 'react'
-import { render } from 'enzyme'
+import { createRouter, renderInProvider } from '../testUtil'
 import withRouter from './withRouter'
-import { createMemoryHistory } from 'history'
-import RouterProvider from '../components/RouterProvider'
-import { install } from 'mobx-little-router'
 
 describe('withRouter', () => {
-  let router
-
-  beforeEach(() => {
-    router = install({
-      createHistory: createMemoryHistory,
-      routes: []
-    })
-  })
-
   test('Provides router instance on props', () => {
+    const router = createRouter([])
     let _router = null
+
     const MyComponent = ({ router }: any) => {
       _router = router
-      return <div/>
+      return null
     }
 
     const MyComponentWithRouter = withRouter(MyComponent)
 
-    render(
-      <RouterProvider router={router}>
-        <MyComponentWithRouter/>
-      </RouterProvider>)
+    renderInProvider(router)(<MyComponentWithRouter />)
 
     expect(_router).toBe(router)
   })
