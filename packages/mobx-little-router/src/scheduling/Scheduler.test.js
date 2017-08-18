@@ -65,11 +65,7 @@ describe('Scheduler', () => {
       // Nodes are marked as active
       expect(store.nodes.length).toEqual(3)
       expect(store.nodes.map(node => node.value.path)).toEqual(['', 'todos', ':id'])
-      expect(store.nodes.map(node => node.value.params)).toEqual([
-        {},
-        {},
-        { id: '123' }
-      ])
+      expect(store.nodes.map(node => node.value.params)).toEqual([{}, {}, { id: '123' }])
     })
   })
 
@@ -145,12 +141,7 @@ describe('Scheduler', () => {
         Promise.resolve([
           createRouteNode({
             path: 'edit',
-            loadChildren: () =>
-              Promise.resolve([
-                {
-                  path: 'preview'
-                }
-              ])
+            loadChildren: () => Promise.resolve([{ path: 'preview' }])
           })
         ])
     })
@@ -162,7 +153,7 @@ describe('Scheduler', () => {
     expect(store.location.pathname).toEqual('/todos/123/edit/preview/')
   })
 
-  test('Transition hooks', async () => {
+  test('Transition hooks are called in order', async () => {
     // Setup
     const leaveSpy = jest.fn(() => Promise.resolve())
     const enterSpy = jest.fn(() => Promise.resolve())
@@ -262,6 +253,41 @@ describe('Scheduler', () => {
         path: ''
       }
     ])
+  })
+
+  test.only('In progress transition will set nextNodes in store', async () => {
+    // Setup
+    let nextNodesDuringLeave = []
+    let nextNodesDuringEnter = []
+    const rootNode = store.state.root
+    const todosRootNode = store.state.root.children[1]
+    const todosListNode = store.state.root.children[1].children[0]
+    const todosViewNode = store.state.root.children[1].children[1]
+    // Prepare spies and futures to assert in the middle of activation.
+    const listLeaveSpy = jest.fn(
+      () =>
+        new Promise(res => {
+          nextNodesDuringLeave = store.nextNodes.slice()
+          res()
+        })
+    )
+    const viewEnterSpy = jest.fn(
+      () =>
+        new Promise(res => {
+          nextNodesDuringEnter = store.nextNodes.slice()
+          res()
+        })
+    )
+    store.updateNode(todosListNode, { hooks: { onLeave: [listLeaveSpy] } })
+    store.updateNode(todosViewNode, { hooks: { onEnter: [viewEnterSpy] } })
+    store.location.pathname = '/todos'
+    store.activateNodes([rootNode, todosRootNode, todosListNode])
+
+    scheduler.scheduleNavigation({ pathname: '/todos/1' }, 'PUSH')
+    await scheduler.processNavigation()
+
+    expect(nextNodesDuringLeave.length).toBe(3)
+    expect(nextNodesDuringEnter.length).toBe(3)
   })
 })
 

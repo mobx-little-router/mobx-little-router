@@ -146,6 +146,10 @@ export default class Scheduler {
       await this.guardOnHook('canDeactivate', [], deactivating)
       await this.guardOnHook('canActivate', [], newlyActivating)
 
+      runInAction(() => {
+        this.store.nextNodes.replace(activating.map(x => x.node))
+      })
+
       // Run and wait on both leave and enter hooks.
       // TODO: Consider whether ordering here matters. Do we need to guarantee that leave is called before all enter?
       await Promise.all([
