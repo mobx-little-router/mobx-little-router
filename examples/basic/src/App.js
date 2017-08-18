@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { observer } from 'mobx-react'
-import { install } from 'mobx-little-router'
-import { withRouter, Link, Outlet } from 'mobx-little-router-react'
+import { withRouter, Outlet } from 'mobx-little-router-react'
 import styled, { injectGlobal } from 'styled-components'
 import Header from './components/Header'
 

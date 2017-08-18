@@ -11,12 +11,19 @@ import App from './App'
 const router = install({
   createHistory: createHashHistory,
   routes: [
-    { path: '', data: { component: IndexRoute } },
+    {
+      path: '',
+      data: { component: IndexRoute }
+    },
     { path: 'about', data: { component: AboutRoute } },
     { path: 'contact', data: { component: ContactRoute } },
     {
-      path: 'shows/:id',
-      data: { component: ShowRoute }
+      path: 'shows',
+      data: { component: IndexRoute },
+      children: [{
+        path: ':id',
+        data: { component: ShowRoute }
+      }]
     },
     {
       path: 'tags/:tag',
