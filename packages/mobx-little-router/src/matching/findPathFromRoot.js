@@ -1,38 +1,62 @@
 // @flow
-import type { RouteNode } from '../routing/types'
 import { findPath } from '../util/tree'
-import type { MatchResult } from './types'
+import type { Params, RouteNode } from '../routing/types'
 
 type ShouldContinue = boolean
 
 export type OnExhaustedFn = (node: RouteNode) => Promise<ShouldContinue>
 
-export default async function findPathFromRoot(node: RouteNode, path: string[], onExhausted: OnExhaustedFn): Promise<MatchResult[]> {
-  const matched: MatchResult[] = []
-  await findPath(
-    (node: RouteNode, segment) => {
-      const { value: { pattern, path } } = node
+export type MatchResult = {
+  node: RouteNode,
+  params: Params
+}
 
-      // Try to match pattern if it exists.
-      if (pattern !== null) {
+export default async function findPathFromRoot(
+  node: RouteNode,
+  segments: string[],
+  onExhausted: OnExhaustedFn
+): Promise<MatchResult[]> {
+  const matchedParams: { [string]: Params } = {}
+  const path = await findPath(
+    // TODO: We should install different matchers on the RouteNode instances instead of having this function know this muych logic.
+    (node: RouteNode, remainingSegments: string[]) => {
+      const { value: { key, pattern, path } } = node
+      const segment = remainingSegments[0]
+
+      // Try to match params from current segment.
+      if (pattern) {
         const params = pattern.match(segment)
-        if (params !== null) {
-          matched.push({ node, params })
-          return Promise.resolve(true)
+        if (params) {
+          matchedParams[key] = params
+          return Promise.resolve({
+            consumedSegments: [segment],
+            lastSegmentIndex: 1
+          })
         }
-        // If pattern does not existing, we need to match on empty string (index route).
-      } else if (path === segment) {
-        matched.push({ node, params: {} })
-        return Promise.resolve(true)
       }
 
-      // No match.
-      return Promise.resolve(false)
+      // Empty path means we consume the a segment, but we don't change the last segment index.
+      if (path === '') {
+        matchedParams[key] = {}
+        return Promise.resolve({
+          consumedSegments: [''],
+          lastSegmentIndex: 0
+        })
+      }
+
+      // No matches.
+      return Promise.resolve({
+        consumedSegments: [],
+        lastSegmentIndex: 0
+      })
     },
     onExhausted,
     node,
-    path
+    segments
   )
 
-  return matched
+  return path.map(node => ({
+    node,
+    params: matchedParams[node.value.key]
+  }))
 }

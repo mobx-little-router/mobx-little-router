@@ -3,8 +3,8 @@ import { extendObservable } from 'mobx'
 import { findNode } from '../util/tree'
 import type { RouteNode } from './types'
 import findPathFromRoot from '../matching/findPathFromRoot'
+import type { MatchResult } from '../matching/findPathFromRoot'
 import type { OnExhaustedFn } from '../matching/findPathFromRoot'
-import type { MatchResult } from '../matching/types'
 
 export default class RouterStateTree {
   root: RouteNode

@@ -3,55 +3,119 @@ import createRouteNode from './createRouteNode'
 import RouterStateTree from './RouterStateTree'
 
 describe('Route tree tests', () => {
-  let tree
-
-  beforeEach(() => {
-    tree = new RouterStateTree(
+  test('Finding path with simple matches', async () => {
+    const tree = new RouterStateTree(
       createRouteNode({
-        path: '',
-        data: { uid: 'TREE_ROOT' },
+        path: 'a',
+        data: { uid: 'NODE_A' },
         children: [
           {
-            path: ':username',
-            data: { uid: 'ACCOUNT_ROOT' },
-            children: [
-              {
-                path: ':slug',
-                data: { uid: 'HUB_ROOT' },
-                children: [
-                  { path: '', data: { uid: 'HUB_STREAM' } },
-                  { path: 'spotlight/:slug', data: { uid: 'HUB_SPOTLIGHT' } }
-                ]
-              }
-            ]
+            path: 'b',
+            data: { uid: 'NODE_B' },
+            children: [{ path: 'c', data: { uid: 'NODE_C' } }]
           }
         ]
       })
     )
+
+    const result = await tree.pathFromRoot(['a', 'b', 'c'], () => Promise.resolve(true))
+
+    expect(result.map(r => r.node.value.data.uid)).toEqual(['NODE_A', 'NODE_B', 'NODE_C'])
   })
 
-  test.only('traversal', async () => {
-    const r1 = await tree.pathFromRoot(['', 'pressly', 'news', ''], () => {
-      return Promise.resolve(true)
-    })
+  test('Finding path with param matching', async () => {
+    const tree = new RouterStateTree(
+      createRouteNode({
+        path: 'a',
+        data: { uid: 'NODE_A' },
+        children: [
+          {
+            path: ':what',
+            data: { uid: 'NODE_B' },
+            children: [{ path: 'c', data: { uid: 'NODE_C' } }]
+          }
+        ]
+      })
+    )
 
-    expect(r1.map(r => r.node.value.data.uid)).toEqual([
-      'TREE_ROOT',
-      'ACCOUNT_ROOT',
-      'HUB_ROOT',
-      'HUB_STREAM'
-    ])
-    expect(r1.map(r => r.node.value.path)).toEqual(['', ':username', ':slug', ''])
-    expect(r1.map(r => r.params)).toEqual([
-      {},
-      { username: 'pressly' },
-      { slug: 'news' },
-      {}
-    ])
+    const result = await tree.pathFromRoot(['a', 'b', 'c'], () => Promise.resolve(true))
+
+    expect(result.map(r => r.node.value.data.uid)).toEqual(['NODE_A', 'NODE_B', 'NODE_C'])
+  })
+
+  test('Finding path with empty paths', async () => {
+    const tree = new RouterStateTree(
+      createRouteNode({
+        path: 'a',
+        data: { uid: 'NODE_A' },
+        children: [
+          {
+            path: '',
+            data: { uid: 'NODE_EMPTY' },
+            children: [{ path: 'c', data: { uid: 'NODE_C' } }]
+          }
+        ]
+      })
+    )
+
+    const result = await tree.pathFromRoot(['a', 'c'], () => Promise.resolve(true))
+
+    expect(result.map(r => r.node.value.data.uid)).toEqual(['NODE_A', 'NODE_EMPTY', 'NODE_C'])
+  })
+
+  test('No match from path', async () => {
+    const tree = new RouterStateTree(
+      createRouteNode({
+        path: 'a',
+        data: { uid: 'NODE_A' },
+        children: [
+          {
+            path: '',
+            data: { uid: 'NODE_EMPTY' },
+            children: [{ path: 'c', data: { uid: 'NODE_C' } }]
+          }
+        ]
+      })
+    )
+
+    const result = await tree.pathFromRoot(['a', 'd'], () => Promise.resolve(true))
+
+    expect(result.map(r => r.node.value.data.uid)).toEqual(['NODE_A', 'NODE_EMPTY'])
+  })
+
+  test('Exhausting route nodes on search', async () => {
+    const tree = new RouterStateTree(
+      createRouteNode({
+        path: 'a',
+        data: { uid: 'NODE_A' },
+        children: [
+          { path: 'b', data: { uid: 'NODE_B' } }
+        ]
+      })
+    )
+
+    const onExhausted = jest.fn(() => Promise.resolve())
+    const result = await tree.pathFromRoot(['a', 'b', 'c'], onExhausted)
+
+    expect(result.map(r => r.node.value.data.uid)).toEqual(['NODE_A', 'NODE_B'])
+    expect(onExhausted).toHaveBeenCalledTimes(1)
   })
 
   test('find', () => {
+    const tree = new RouterStateTree(
+      createRouteNode({
+        path: 'a',
+        data: { uid: 'NODE_A' },
+        children: [
+          {
+            path: '',
+            data: { uid: 'NODE_EMPTY' },
+            children: [{ path: 'c', data: { uid: 'NODE_C' } }]
+          }
+        ]
+      })
+    )
     expect(tree.find(x => x.value.data.uid === 'NOPE')).toBe(null)
-    expect(tree.find(x => x.value.data.uid === 'HUB_SPOTLIGHT')).not.toBe(null)
+    expect(tree.find(x => x.value.data.uid === 'NODE_C')).not.toBe(null)
   })
 })

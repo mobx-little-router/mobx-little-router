@@ -22,50 +22,49 @@ export class TreeNode<T> {
   }
 }
 
-type Predicate<T> = (n: TreeNode<T>, segment: string) => Promise<boolean>
+export type Matcher<T> = (n: TreeNode<T>, segments: string[]) => Promise<MatchResult>
+
+export type MatchResult = {
+  consumedSegments: string[],
+  lastSegmentIndex: number
+}
 
 // Asynchronous DFS from root node for a matching path based on return of visitor function.
 export async function findPath<T>(
-  predicate: Predicate<T>,
+  match: Matcher<T>,
   onExhausted: OnExhaustedFn<T>,
   node: TreeNode<T>,
-  path: string[]
+  segments: string[]
 ): Promise<TreeNode<T>[]> {
-  const [curr, ...rest] = path
-
   // No more segments to parse.
-  if (curr === undefined) {
+  if (segments.length === 0) {
     return []
   }
 
-  const result = await predicate(node, curr)
+  const { consumedSegments, lastSegmentIndex } = await match(node, segments)
+  const newSegments = segments.slice(lastSegmentIndex)
 
-  if (result) {
-    const isPathExhausted = rest.length > 0 && node.children.length === 0
+
+  if (consumedSegments.length > 0) {
+    const isPathExhausted = newSegments.length > 0 && node.children.length === 0
     if (isPathExhausted) {
-      // We've exhausted children, but still have unmatched parts.
       const shouldContinue = await onExhausted(node)
       if (!shouldContinue) {
         return [node]
       }
     }
 
-    // Continue matching on each child recursively.
-    // The children may have been mutated since the previous exhaustion check.
     for (const child of node.children) {
-      const path = await findPath(predicate, onExhausted, child, rest)
-      // Matched on child.
-      if (path.length > 0) {
-        path.unshift(node) // Add current node to beginning of matched path.
-        return path
+      const childPath = await findPath(match, onExhausted, child, newSegments)
+      if (childPath.length > 0) {
+        childPath.unshift(node)
+        return childPath
       }
     }
 
-    // No child match, continue to next sibling.
     return [node]
   }
 
-  // Nothing matched here.
   return []
 }
 
