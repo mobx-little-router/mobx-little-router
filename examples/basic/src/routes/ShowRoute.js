@@ -33,7 +33,8 @@ class ShowRoute extends Component {
   render() {
     if (this.model) {
       return (
-        <Overlay>
+        <div>
+          <Overlay to="/" />
           <Container>
             <CloseButton to="/" />
             <CoverImage style={{ backgroundImage: `url(${this.model.image.original})` }} />
@@ -44,7 +45,7 @@ class ShowRoute extends Component {
               <Tags>{this.model.genres.map((genre, idx) => <Link key={idx} to={`/tags/${genre}`}>{genre}</Link>)}</Tags>
             </Abstract>
           </Container>
-        </Overlay>
+        </div>
       )
     } else {
       return null
@@ -68,13 +69,14 @@ const Container = styled.div`
   overflow: hidden;
 `
 
-const Overlay = styled.div`
+const Overlay = styled(Link)`
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   background-color: rgba(0,0,0,0.8);
+  cursor: default;
 `
 
 const CloseButton = styled(Link)`
