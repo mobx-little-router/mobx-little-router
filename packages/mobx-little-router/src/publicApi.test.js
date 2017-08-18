@@ -44,7 +44,7 @@ describe('Routing', () => {
 
     expect(changes).toEqual(['/initial/', '/foo/', '/bar/', '/foo/', '/bar/', '/quux/'])
 
-    expect(router.store.activeNodes.map(node => node.value.path)).toEqual([
+    expect(router.store.nodes.map(node => node.value.path)).toEqual([
       '',
       ':whatever'
     ])
@@ -83,7 +83,7 @@ describe('Routing', () => {
       '/10/'
     ])
 
-    expect(router.store.activeNodes.map(node => node.value.path)).toEqual([
+    expect(router.store.nodes.map(node => node.value.path)).toEqual([
       '',
       ':whatever'
     ])
@@ -101,7 +101,7 @@ describe('Routing', () => {
       _router.push('/1').then(() => {
         expect(changes).toEqual(['/initial/', '/1/'])
 
-        expect(_router.store.activeNodes.map(node => node.value.path)).toEqual([
+        expect(_router.store.nodes.map(node => node.value.path)).toEqual([
           '',
           ':whatever'
         ])

@@ -60,9 +60,9 @@ describe('RouterStore', () => {
     store.replaceChildren(store.state.root, [a])
     store.activateNodes([store.state.root, a])
 
-    expect(store.activeNodes.length).toBe(2)
-    expect(store.activeNodes[0].value.path).toEqual('')
-    expect(store.activeNodes[1].value.path).toEqual('a')
+    expect(store.nodes.length).toBe(2)
+    expect(store.nodes[0].value.path).toEqual('')
+    expect(store.nodes[1].value.path).toEqual('a')
   })
 
   test('Node update', () => {

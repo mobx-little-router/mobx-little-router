@@ -125,7 +125,7 @@ export default class Scheduler {
     try {
       const deactivating = differenceWith(
         areNodesEqual,
-        this.store.activeNodes.slice(),
+        this.store.nodes.slice(),
         activating.map(x => x.node)
       )
         .map(node => ({
@@ -137,7 +137,7 @@ export default class Scheduler {
 
       // We don't need to activate nodes that are already active
       const newlyActivating = activating.filter(x => {
-        return !this.store.activeNodes.some(y => {
+        return !this.store.nodes.some(y => {
           return areNodesEqual(x.node, y)
         })
       })
