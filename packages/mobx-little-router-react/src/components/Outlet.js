@@ -33,7 +33,6 @@ class Outlet extends Component {
   getChildContext() {
     return {
       outlet: {
-        nodes: this.getNodes(),
         currentIndex: this.getCurrentIndex() + 1
       }
     }
@@ -41,11 +40,9 @@ class Outlet extends Component {
 
   // Filter out only active nodes that provide a component.
   getNodes() {
-    return typeof this.context.outlet === 'undefined'
-      ? this.props.router.store.nodes.filter(x => {
-        return typeof x.value.data.component !== 'undefined'
-      })
-      : this.context.outlet.nodes
+    return this.props.router.store.nodes.filter(x => {
+      return typeof x.value.data.component !== 'undefined'
+    })
   }
 
   getCurrentIndex() {
