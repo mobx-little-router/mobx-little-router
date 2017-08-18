@@ -34,9 +34,9 @@ class ShowRoute extends Component {
     if (this.model) {
       return (
         <div>
-          <Overlay to="/" />
+          <Overlay to="/shows" />
           <Container>
-            <CloseButton to="/" />
+            <CloseButton to="/shows" />
             <CoverImage style={{ backgroundImage: `url(${this.model.image.original})` }} />
             <Abstract>
               <ShowType>{this.model.type}</ShowType>

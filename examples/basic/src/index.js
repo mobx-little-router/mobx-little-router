@@ -5,21 +5,18 @@ import { createHashHistory } from 'history'
 import { install } from 'mobx-little-router'
 import { RouterProvider } from 'mobx-little-router-react'
 
-import { IndexRoute, AboutRoute, ContactRoute, ShowRoute, TagRoute } from './routes'
+import { IndexRoute, ShowsRoute, AboutRoute, ContactRoute, ShowRoute, TagRoute } from './routes'
 import App from './App'
 
 const router = install({
   createHistory: createHashHistory,
   routes: [
-    {
-      path: '',
-      data: { component: IndexRoute }
-    },
+    { path: '', data: { component: IndexRoute } },
     { path: 'about', data: { component: AboutRoute } },
     { path: 'contact', data: { component: ContactRoute } },
     {
       path: 'shows',
-      data: { component: IndexRoute },
+      data: { component: ShowsRoute },
       children: [{
         path: ':id',
         data: { component: ShowRoute }
