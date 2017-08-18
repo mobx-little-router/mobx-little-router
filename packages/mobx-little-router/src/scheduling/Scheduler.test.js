@@ -255,7 +255,7 @@ describe('Scheduler', () => {
     ])
   })
 
-  test.only('In progress transition will set nextNodes in store', async () => {
+  test('In progress transition will set nextNodes in store', async () => {
     // Setup
     let nextNodesDuringLeave = []
     let nextNodesDuringEnter = []
@@ -288,6 +288,7 @@ describe('Scheduler', () => {
 
     expect(nextNodesDuringLeave.length).toBe(3)
     expect(nextNodesDuringEnter.length).toBe(3)
+    expect(nextNodesDuringEnter[2].value.params.id).toEqual('1')
   })
 })
 
