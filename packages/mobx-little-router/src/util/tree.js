@@ -4,7 +4,7 @@ import { extendObservable, observable } from 'mobx'
 
 type ShouldContinue = boolean
 
-export type OnExhaustedFn<T> = (node: TreeNode<T>) => Promise<ShouldContinue>
+export type onLeafReached<T> = (node: TreeNode<T>) => Promise<ShouldContinue>
 
 export class TreeNode<T> {
   value: T
@@ -22,40 +22,27 @@ export class TreeNode<T> {
   }
 }
 
-export type Matcher<T> = (n: TreeNode<T>, segments: string[]) => Promise<MatchResult>
+export type Matcher<T> = (n: TreeNode<T>) => Promise<boolean>
 
-export type MatchResult = {
-  consumedSegments: string[],
-  lastSegmentIndex: number
-}
 
 // Asynchronous DFS from root node for a matching path based on return of visitor function.
 export async function findPath<T>(
   match: Matcher<T>,
-  onExhausted: OnExhaustedFn<T>,
   node: TreeNode<T>,
-  segments: string[]
+  onLeafReached: onLeafReached<T>
 ): Promise<TreeNode<T>[]> {
-  // No more segments to parse.
-  if (segments.length === 0) {
-    return []
-  }
-
-  const { consumedSegments, lastSegmentIndex } = await match(node, segments)
-  const newSegments = segments.slice(lastSegmentIndex)
-
-
-  if (consumedSegments.length > 0) {
-    const isPathExhausted = newSegments.length > 0 && node.children.length === 0
+  const matched = await match(node)
+  if (matched) {
+    const isPathExhausted = matched && node.children.length === 0
     if (isPathExhausted) {
-      const shouldContinue = await onExhausted(node)
+      const shouldContinue = await onLeafReached(node)
       if (!shouldContinue) {
         return [node]
       }
     }
 
     for (const child of node.children) {
-      const childPath = await findPath(match, onExhausted, child, newSegments)
+      const childPath = await findPath(match, child, onLeafReached)
       if (childPath.length > 0) {
         childPath.unshift(node)
         return childPath

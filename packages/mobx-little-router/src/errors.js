@@ -1,6 +1,5 @@
 // @flow
-import type { MatchResult } from './matching/types'
-import type { Params, RouteNode } from './routing/types'
+import type { MatchResult, Params, RouteNode } from './routing/types'
 
 export class GuardFailure {
   error: any
@@ -14,13 +13,13 @@ export class GuardFailure {
 }
 
 export class NoMatch {
-  segments: string[]
-  path: MatchResult[]
-  constructor(segments: string[], path: MatchResult[]) {
-    this.segments = segments
+  url: string
+  path: any[]
+  constructor(url: string, path: MatchResult[]) {
+    this.url = url
     this.path = path
   }
   toString() {
-    return `No match for segments ["${this.segments.join('", "')}"]`
+    return `No match for url "${this.url}"`
   }
 }

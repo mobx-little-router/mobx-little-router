@@ -3,43 +3,28 @@ import { TreeNode, findPath, findNode } from './tree'
 
 describe('Tree tests', () => {
   test('findPath with matched and unmatched segments', async () => {
-    const shouldContinue = jest.fn(() => Promise.resolve(true))
-    const root = new TreeNode({ x: 'a' }, [
-      new TreeNode({ x: 'b' }, []),
-      new TreeNode({ x: 'c' }, [
-        new TreeNode({ x: 'd' }, []),
-        new TreeNode({ x: 'e' }, [])
+    const onLeafReached = jest.fn(() => Promise.resolve(true))
+    const root = new TreeNode({ x: 'a', y: 5 }, [
+      new TreeNode({ x: 'b', y: 1 }, []),
+      new TreeNode({ x: 'a', y: 6 }, [
+        new TreeNode({ x: 'a', y: 2 }, []),
+        new TreeNode({ x: 'b', y: 3 }, []),
+        new TreeNode({ x: 'c', y: 4 }, []),
+        new TreeNode({ x: 'd', y: 7 }, [])
       ])
     ])
-    const eq = (node: TreeNode<*>, segments: string[]) => {
-      const matchOnFirst = node.value.x === segments[0]
-      return Promise.resolve({
-        consumedSegments: matchOnFirst ? [segments[0]] : [],
-        lastSegmentIndex: matchOnFirst ? 1 : 0
-      })
-    }
+    const eq = x => (node: TreeNode<*>) => Promise.resolve(node.value.x === x)
+    const gte = y => (node: TreeNode<*>) => Promise.resolve(node.value.y >= y)
 
-    const r1 = await findPath(eq, shouldContinue, root, ['a', 'c'])
-    expect(r1.map(n => n.value.x)).toEqual(['a', 'c'])
+    const r1 = await findPath(eq('a'), root, onLeafReached)
+    expect(r1.map(n => n.value.x)).toEqual(['a', 'a', 'a'])
 
-    const r2 = await findPath(eq, shouldContinue, root, ['a', 'c', 'd'])
-    expect(r2.map(n => n.value.x)).toEqual(['a', 'c', 'd'])
+    const r2 = await findPath(gte(5), root, onLeafReached)
+    expect(r2.map(n => n.value.y)).toEqual([5, 6, 7])
 
-    // Another search but with segments that will not match
-    const r3 = await findPath(eq, shouldContinue, root, [
-      'a',
-      'c',
-      'd',
-      'this',
-      'will',
-      'not',
-      'match'
-    ])
-    expect(r3.map(n => n.value.x)).toEqual(['a', 'c', 'd'])
-
-    // Did not match remaining paths, so it `shouldContinue` must be called.
-    expect(shouldContinue).toHaveBeenCalledTimes(1)
-    expect(shouldContinue.mock.calls[0][0].value.x).toEqual('d') // Last matched node is passed as argument.
+    expect(onLeafReached).toHaveBeenCalledTimes(2)
+    expect(onLeafReached.mock.calls[0].map(n => n.value.x)).toEqual(['a']) // Last matched node is passed as argument.
+    expect(onLeafReached.mock.calls[1].map(n => n.value.y)).toEqual([7])   // Last matched node is passed as argument.
   })
 
   test('findNode', () => {

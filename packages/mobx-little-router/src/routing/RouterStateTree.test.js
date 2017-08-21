@@ -18,7 +18,7 @@ describe('Route tree tests', () => {
       })
     )
 
-    const result = await tree.pathFromRoot(['a', 'b', 'c'], () => Promise.resolve(true))
+    const result = await tree.pathFromRoot('/a/b/c', () => Promise.resolve(true))
 
     expect(result.map(r => r.node.value.data.uid)).toEqual(['NODE_A', 'NODE_B', 'NODE_C'])
   })
@@ -38,7 +38,7 @@ describe('Route tree tests', () => {
       })
     )
 
-    const result = await tree.pathFromRoot(['a', 'b', 'c'], () => Promise.resolve(true))
+    const result = await tree.pathFromRoot('/a/b/c', () => Promise.resolve(true))
 
     expect(result.map(r => r.node.value.data.uid)).toEqual(['NODE_A', 'NODE_B', 'NODE_C'])
   })
@@ -46,8 +46,8 @@ describe('Route tree tests', () => {
   test('Finding path with empty paths', async () => {
     const tree = new RouterStateTree(
       createRouteNode({
-        path: 'a',
-        data: { uid: 'NODE_A' },
+        path: '',
+        data: { uid: 'NODE_ROOT' },
         children: [
           {
             path: '',
@@ -58,9 +58,9 @@ describe('Route tree tests', () => {
       })
     )
 
-    const result = await tree.pathFromRoot(['a', 'c'], () => Promise.resolve(true))
+    const result = await tree.pathFromRoot('/c', () => Promise.resolve(true))
 
-    expect(result.map(r => r.node.value.data.uid)).toEqual(['NODE_A', 'NODE_EMPTY', 'NODE_C'])
+    expect(result.map(r => r.node.value.data.uid)).toEqual(['NODE_ROOT', 'NODE_EMPTY', 'NODE_C'])
   })
 
   test('No match from path', async () => {
@@ -78,7 +78,7 @@ describe('Route tree tests', () => {
       })
     )
 
-    const result = await tree.pathFromRoot(['a', 'd'], () => Promise.resolve(true))
+    const result = await tree.pathFromRoot('/a/d', () => Promise.resolve(true))
 
     expect(result.map(r => r.node.value.data.uid)).toEqual(['NODE_A', 'NODE_EMPTY'])
   })
@@ -95,7 +95,7 @@ describe('Route tree tests', () => {
     )
 
     const onExhausted = jest.fn(() => Promise.resolve())
-    const result = await tree.pathFromRoot(['a', 'b', 'c'], onExhausted)
+    const result = await tree.pathFromRoot('/a/b/c', onExhausted)
 
     expect(result.map(r => r.node.value.data.uid)).toEqual(['NODE_A', 'NODE_B'])
     expect(onExhausted).toHaveBeenCalledTimes(1)

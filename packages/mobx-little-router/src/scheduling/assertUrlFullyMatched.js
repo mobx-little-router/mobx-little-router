@@ -1,5 +1,5 @@
 // @flow
-import type { MatchResult } from './types'
+import type { MatchResult } from '../routing/types'
 import { NoMatch } from '../errors'
 
 /*
@@ -7,13 +7,10 @@ import { NoMatch } from '../errors'
  * If not, then we reduce over the `onError` hooks of each matched node until one resolved.
  * If no node can resolve, then the returned promise is rejected.
  */
-export default async function assertMatchFullyMatched(segments: string[], path: MatchResult[]): Promise<void> {
-  if (segments.length === path.length) {
-    // If length is same or less, than we're good
-    return
-  } else if (segments.length === path.length + 1 && segments[segments.length - 1] === '') {
-    // If we mismatched on a missing index route, just ignore it.
-    // e.g. ['a', 'b', ''] should match on segments ['a', 'b'] since index route is optional.
+export default async function assertUrlFullyMatched(url: string, path: MatchResult[]): Promise<void> {
+  const lastMatch = path[path.length - 1]
+
+  if (lastMatch.remaining === '' || lastMatch.remaining === '/') {
     return
   }
 
@@ -38,8 +35,7 @@ export default async function assertMatchFullyMatched(segments: string[], path: 
   // Handler will either bubble rejection until it resolves, or rejects.
   try {
     await handler
-    return
   } catch(err) {
-    throw new NoMatch(segments, path)
+    throw new NoMatch(url, path)
   }
 }

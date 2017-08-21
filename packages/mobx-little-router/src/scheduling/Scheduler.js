@@ -1,19 +1,16 @@
 // @flow
 import type { Action } from 'history'
 import { autorun, extendObservable, runInAction } from 'mobx'
-import assertPathFullyMatched from '../matching/assertPathFullyMatched'
-import type { MatchResult } from '../matching/types'
-import type { GuardType, Location, RouteNode } from '../routing/types'
+import assertUrlFullyMatched from './assertUrlFullyMatched'
+import type { MatchResult, GuardType, Location, RouteNode } from '../routing/types'
 import type RouterStore from '../routing/RouterStore'
 import areNodesEqual from '../routing/areNodesEqual'
 import shallowEqual from '../util/shallowEqual'
 import { differenceWith } from '../util/functional'
 import { GuardFailure } from '../errors'
-import { EventTypes } from '../events'
 
 type NavigationParams = {
   location: Location,
-  segments: string[],
   action: ?Action
 }
 
@@ -67,7 +64,6 @@ export default class Scheduler {
           ...nextLocation,
           pathname
         },
-        segments: pathname.split('/'),
         action
       }
     })
@@ -83,16 +79,16 @@ export default class Scheduler {
     const { navigation } = this
     if (!navigation) return
 
-    const { location, segments } = navigation
+    const { location } = navigation
 
     try {
       // This match call may have side-effects of loading dynamic children.
       const path: MatchResult[] = await this.store.state.pathFromRoot(
-        segments,
+        location.pathname,
         this.handleChildNodesExhausted
       )
 
-      await assertPathFullyMatched(segments, path)
+      await assertUrlFullyMatched(location.pathname, path)
 
       // We've found a match or unmatched error has been handled.
       await this.runActivation(path)
@@ -131,7 +127,7 @@ export default class Scheduler {
       )
         .map(node => ({
           node,
-          segment: '',
+          remaining: '',
           params: node.value.params || {}
         }))
         .reverse()
