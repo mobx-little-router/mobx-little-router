@@ -7,7 +7,7 @@ describe('Link', () => {
   let router
 
   beforeEach(() => {
-    router = createRouter( [{ path: '' }, { path: 'foo' }])
+    router = createRouter( [{ path: '', match: 'full'}, { path: 'foo' }])
     return router.start()
   })
 
