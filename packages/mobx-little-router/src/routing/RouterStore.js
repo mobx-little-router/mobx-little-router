@@ -19,8 +19,7 @@ class RouterStore {
 
   // Keep a list of activated nodes so we can track differences when transitioning to a new state.
   nodes: IObservableArray<RouteNode>
-
-  nextNodes: IObservableArray<RouteNode>
+  prevNodes: IObservableArray<RouteNode>
 
   constructor(children: void | RouteNode[]) {
     const root = createRouteNode({ path: '', onError: [this.handleRootError] }) // Initial root.
@@ -31,7 +30,7 @@ class RouterStore {
       error: null,
       cache: observable.map({ [root.value.key]: root }),
       nodes: observable.array([]),
-      nextNodes: observable.array([])
+      prevNodes: observable.array([])
     })
 
     if (children) {
@@ -71,16 +70,24 @@ class RouterStore {
     })
   }
 
-  activateNodes(nodes: RouteNode[]) {
+  updateNodes(nodes: RouteNode[]) {
     runInAction(() => {
+      this.prevNodes.replace(this.nodes.slice())
       this.nodes.replace(nodes)
     })
   }
   
-  commit(nextLocation: Location, nextActiveNodes: RouteNode[]) {
+  commit(nextLocation: Location) {
     runInAction(() => {
       this.location = nextLocation
-      this.nodes.replace(nextActiveNodes)
+      this.prevNodes.replace([])
+    })
+  }
+
+  rollback() {
+    runInAction(() => {
+      this.nodes.replace(this.prevNodes.slice())
+      this.prevNodes.replace([])
     })
   }
 

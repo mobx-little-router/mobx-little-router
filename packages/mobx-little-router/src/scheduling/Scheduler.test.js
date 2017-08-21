@@ -78,7 +78,7 @@ describe('Scheduler', () => {
     store.updateNode(todosRootNode, { hooks: { canDeactivate: [rootSpy] } })
     store.updateNode(todosViewNode, { hooks: { canDeactivate: [viewSpy] } })
     store.location.pathname = '/todos/123'
-    store.activateNodes([rootNode, todosRootNode, todosViewNode])
+    store.updateNodes([rootNode, todosRootNode, todosViewNode])
     scheduler.scheduleNavigation({ pathname: '/' }, 'PUSH')
 
     await scheduler.processNavigation()
@@ -103,7 +103,7 @@ describe('Scheduler', () => {
     store.updateNode(todosRootNode, { hooks: { canDeactivate: [spy] } })
     store.updateNode(todosViewNode, { hooks: { canDeactivate: [spy] } })
     store.location.pathname = '/todos/123'
-    store.activateNodes([rootNode, todosRootNode, todosViewNode])
+    store.updateNodes([rootNode, todosRootNode, todosViewNode])
     scheduler.scheduleNavigation({ pathname: '/' }, 'PUSH')
 
     await scheduler.processNavigation()
@@ -180,7 +180,7 @@ describe('Scheduler', () => {
       hooks: { onEnter: [enterSpy], onLeave: [leaveSpy] }
     })
     store.location.pathname = '/todos/1'
-    store.activateNodes([rootNode, todosRootNode, todosViewNode])
+    store.updateNodes([rootNode, todosRootNode, todosViewNode])
 
     scheduler.scheduleNavigation({ pathname: '/projects/2' }, 'PUSH')
     await scheduler.processNavigation()
@@ -255,10 +255,12 @@ describe('Scheduler', () => {
     ])
   })
 
-  test('In progress transition will set nextNodes in store', async () => {
+  test('In progress transition will set nodes and prevNodes in store', async () => {
     // Setup
-    let nextNodesDuringLeave = []
-    let nextNodesDuringEnter = []
+    let nodesDuringLeave = []
+    let nodesDuringEnter = []
+    let prevNodesDuringLeave = []
+    let prevNodesDuringEnter = []
     const rootNode = store.state.root
     const todosRootNode = store.state.root.children[1]
     const todosListNode = store.state.root.children[1].children[0]
@@ -267,28 +269,35 @@ describe('Scheduler', () => {
     const listLeaveSpy = jest.fn(
       () =>
         new Promise(res => {
-          nextNodesDuringLeave = store.nextNodes.slice()
+          prevNodesDuringLeave = store.prevNodes.slice()
+          nodesDuringLeave = store.nodes.slice()
           res()
         })
     )
     const viewEnterSpy = jest.fn(
       () =>
         new Promise(res => {
-          nextNodesDuringEnter = store.nextNodes.slice()
+          prevNodesDuringEnter = store.prevNodes.slice()
+          nodesDuringEnter = store.nodes.slice()
           res()
         })
     )
     store.updateNode(todosListNode, { hooks: { onLeave: [listLeaveSpy] } })
     store.updateNode(todosViewNode, { hooks: { onEnter: [viewEnterSpy] } })
     store.location.pathname = '/todos'
-    store.activateNodes([rootNode, todosRootNode, todosListNode])
+    store.updateNodes([rootNode, todosRootNode, todosListNode])
 
     scheduler.scheduleNavigation({ pathname: '/todos/1' }, 'PUSH')
     await scheduler.processNavigation()
 
-    expect(nextNodesDuringLeave.length).toBe(3)
-    expect(nextNodesDuringEnter.length).toBe(3)
-    expect(nextNodesDuringEnter[2].value.params.id).toEqual('1')
+    expect(nodesDuringLeave.length).toBe(3)
+    expect(nodesDuringEnter.length).toBe(3)
+    expect(prevNodesDuringLeave.length).toBe(3)
+    expect(prevNodesDuringEnter.length).toBe(3)
+    expect(prevNodesDuringEnter.map(x => x.value.path)).toEqual(['', 'todos', ''])
+    expect(nodesDuringEnter.map(x => x.value.path)).toEqual(['', 'todos', ':id'])
+    expect(nodesDuringEnter[2].value.params.id).toEqual('1')
+    expect(store.prevNodes.length).toBe(0) // Previous nodes are cleared after navigation ends.
   })
 })
 

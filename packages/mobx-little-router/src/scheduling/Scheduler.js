@@ -3,12 +3,13 @@ import type { Action } from 'history'
 import { autorun, extendObservable, runInAction } from 'mobx'
 import assertPathFullyMatched from '../matching/assertPathFullyMatched'
 import type { MatchResult } from '../matching/types'
-import type { HookType, Location, RouteNode } from '../routing/types'
+import type { GuardType, Location, RouteNode } from '../routing/types'
 import type RouterStore from '../routing/RouterStore'
 import areNodesEqual from '../routing/areNodesEqual'
 import shallowEqual from '../util/shallowEqual'
 import { differenceWith } from '../util/functional'
 import { GuardFailure } from '../errors'
+import { EventTypes } from '../events'
 
 type NavigationParams = {
   location: Location,
@@ -94,10 +95,10 @@ export default class Scheduler {
       await assertPathFullyMatched(segments, path)
 
       // We've found a match or unmatched error has been handled.
-      await this.runActivationHooks(path)
+      await this.runActivation(path)
 
       // If all hooks resolved, then we're good to update store state.
-      this.store.commit(location, toRouteNodes(path))
+      this.store.commit(location)
     } catch (err) {
       this.store.setError(err)
     } finally {
@@ -121,7 +122,7 @@ export default class Scheduler {
     }
   }
 
-  runActivationHooks = async (activating: MatchResult[]) => {
+  runActivation = async (activating: MatchResult[]) => {
     try {
       const deactivating = differenceWith(
         areNodesEqual,
@@ -146,9 +147,7 @@ export default class Scheduler {
       await this.guardOnHook('canDeactivate', [], deactivating)
       await this.guardOnHook('canActivate', [], newlyActivating)
 
-      runInAction(() => {
-        this.store.nextNodes.replace(activating.map(x => x.node))
-      })
+      this.store.updateNodes(toRouteNodes(activating))
 
       // Run and wait on both leave and enter hooks.
       // TODO: Consider whether ordering here matters. Do we need to guarantee that leave is called before all enter?
@@ -163,7 +162,7 @@ export default class Scheduler {
   }
 
   guardOnHook = async (
-    type: HookType,
+    type: GuardType,
     processed: MatchResult[],
     remaining: MatchResult[]
   ) => {

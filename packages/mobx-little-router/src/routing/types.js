@@ -23,7 +23,7 @@ export type LoadChildrenConfigFn = () => Promise<Config[]>
 export type DynamicChildrenConfig = {
   path: string,
   data?: Object,
-  [HookType]: LifecycleFn[],
+  [GuardType]: LifecycleFn[],
   children?: empty,
   loadChildren: void | LoadChildrenConfigFn
 }
@@ -31,12 +31,12 @@ export type DynamicChildrenConfig = {
 export type StaticChildrenConfig = {
   path: string,
   data?: Object,
-  [HookType]: LifecycleFn[],
+  [GuardType]: LifecycleFn[],
   children?: Config[],
   loadChildren?: empty
 }
 
-export const HookTypes = {
+export const GuardTypes = {
   canActivate: 'canActivate',
   onEnter: 'onEnter',
   onLeave: 'onLeave',
@@ -44,9 +44,9 @@ export const HookTypes = {
   onError: 'onError'
 }
 
-export type HookType = $Keys<typeof HookTypes>
+export type GuardType = $Keys<typeof GuardTypes>
 
-export type Hooks = { [HookType]: LifecycleFn[] }
+export type Hooks = { [GuardType]: LifecycleFn[] }
 
 export type LoadChildrenRouteNode = () => Promise<RouteNode[]>
 
