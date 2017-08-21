@@ -41,6 +41,7 @@ describe('Outlet', () => {
   test('Renders', () => {
     const wrapper = mountInProvider(router)(<Outlet />)
     expect(wrapper.html()).toMatch(/RootPage/)
+    expect(wrapper.html()).toMatch(/HomePage/)
   })
 
   test('Supports nested routes', async () => {
