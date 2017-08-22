@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 import { extendObservable } from 'mobx'
 import styled from 'styled-components'
 import { Link } from 'mobx-little-router-react'
+import cx from 'classnames'
 
 class ShowRoute extends Component {
   constructor(props) {
@@ -31,21 +32,25 @@ class ShowRoute extends Component {
   }
 
   render() {
+    const { className } = this.props
+
     if (this.model) {
       return (
-        <div>
-          <Overlay to="/shows" />
-          <Container>
-            <CloseButton to="/shows" />
-            <CoverImage style={{ backgroundImage: `url(${this.model.image.original})` }} />
-            <Abstract>
-              <ShowType>{this.model.type}</ShowType>
-              <Title>{this.model.name}</Title>
-              <Summary dangerouslySetInnerHTML={{ __html: this.model.summary }} />
-              <Tags>{this.model.genres.map((genre, idx) => <Link key={idx} to={`/tags/${genre}`}>{genre}</Link>)}</Tags>
-            </Abstract>
-          </Container>
-        </div>
+        <Modal className={cx('modal', className)}>
+          <ModalOverlay to="/shows" />
+          <ModalContainer>
+            <ModalDialog>
+              <CloseButton to="/shows" />
+              <CoverImage style={{ backgroundImage: `url(${this.model.image.original})` }} />
+              <Abstract>
+                <ShowType>{this.model.type}</ShowType>
+                <Title>{this.model.name}</Title>
+                <Summary dangerouslySetInnerHTML={{ __html: this.model.summary }} />
+                <Tags>{this.model.genres.map((genre, idx) => <Link key={idx} to={`/tags/${genre}`}>{genre}</Link>)}</Tags>
+              </Abstract>
+            </ModalDialog>
+          </ModalContainer>
+        </Modal>
       )
     } else {
       return null
@@ -53,23 +58,28 @@ class ShowRoute extends Component {
   }
 }
 
-const Container = styled.div`
+const ModalContainer = styled.div`
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translateX(-50%) translateY(-50%);
-  display: flex;
-  flex-direction: row;
   max-width: 900px;
-  background-color: white;
   width: 80%;
   height: 600px;
-  border-radius: 2px;
-  box-shadow: 0 1px 4px 1px rgba(0,0,0,0.5);
-  overflow: hidden;
 `
 
-const Overlay = styled(Link)`
+const ModalDialog = styled.div`
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  overflow: hidden;
+  box-shadow: 0 1px 4px 1px rgba(0,0,0,0.5);
+  border-radius: 2px;
+  display: flex;
+  flex-direction: row;
+`
+
+const ModalOverlay = styled(Link)`
   position: fixed;
   top: 0;
   left: 0;
@@ -77,6 +87,62 @@ const Overlay = styled(Link)`
   height: 100%;
   background-color: rgba(0,0,0,0.8);
   cursor: default;
+`
+
+const Modal = styled.div`  
+  &.transitioning {
+    ${ModalOverlay} {
+      transition: opacity 400ms ease-out;
+    }
+
+    ${ModalDialog} {
+      transition: all 400ms ease-out;
+    }
+
+    &.leaving {
+      ${ModalOverlay} {
+        opacity: 1;
+      }
+
+      ${ModalDialog} {
+        opacity: 1;
+        transform: translateY(0%);
+      }
+
+      &.leave {
+        ${ModalOverlay} {
+          opacity: 0;
+        }
+
+        ${ModalDialog} {
+          opacity: 0;
+          transform: translateY(-100%);
+        }
+      }
+    }
+
+    &.entering {
+      ${ModalOverlay} {
+        opacity: 0;
+      }
+
+      ${ModalDialog} {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+
+      &.enter {
+        ${ModalOverlay} {
+          opacity: 1;
+        }
+
+        ${ModalDialog} {
+          opacity: 1;
+          transform: translateY(0%);
+        }
+      }
+    }
+  }
 `
 
 const CloseButton = styled(Link)`
