@@ -91,7 +91,7 @@ class RouterStore {
     })
   }
 
-  setError(err: Object) {
+  setError(err: null | Object) {
     runInAction(() => {
       this.error = err
     })

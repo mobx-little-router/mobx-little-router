@@ -1,13 +1,8 @@
 // @flow
 import { autorun } from 'mobx'
 import { createMemoryHistory } from 'history'
+import { EventTypes } from './events'
 import { install } from './'
-
-function delay(ms: number) {
-  return new Promise(res => {
-    setTimeout(() => res(), ms)
-  })
-}
 
 describe('Routing', () => {
   let router
@@ -44,10 +39,7 @@ describe('Routing', () => {
 
     expect(changes).toEqual(['/initial/', '/foo/', '/bar/', '/foo/', '/bar/', '/quux/'])
 
-    expect(router.store.nodes.map(node => node.value.path)).toEqual([
-      '',
-      ':whatever'
-    ])
+    expect(router.store.nodes.map(node => node.value.path)).toEqual(['', ':whatever'])
 
     router.stop()
   })
@@ -83,10 +75,7 @@ describe('Routing', () => {
       '/10/'
     ])
 
-    expect(router.store.nodes.map(node => node.value.path)).toEqual([
-      '',
-      ':whatever'
-    ])
+    expect(router.store.nodes.map(node => node.value.path)).toEqual(['', ':whatever'])
 
     router.stop()
   })
@@ -109,6 +98,34 @@ describe('Routing', () => {
         _router.stop()
         done()
       })
+    })
+  })
+
+  describe('Events', () => {
+    test('Subscription', async () => {
+      const spy = jest.fn()
+      const dispose = router.subscribeEvent(spy)
+      await router.start()
+
+      await router.push('/bar')
+
+      expect(spy).toHaveBeenCalled()
+
+      expect(spy.mock.calls.map(x => x[0].type)).toEqual(
+        expect.arrayContaining([
+          EventTypes.NAVIGATION_START,
+          EventTypes.NAVIGATION_END
+        ])
+      )
+
+      expect(spy.mock.calls.map(x => x[0].location.pathname)).toEqual(
+        expect.arrayContaining([
+          '/initial/',
+          '/bar/'
+        ])
+      )
+
+      dispose()
     })
   })
 })

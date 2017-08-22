@@ -10,3 +10,5 @@ export type {
   RouteValue
 } from './routing/types'
 export { default as install } from './install'
+export { EventTypes } from './events'
+export type { Event } from './events'

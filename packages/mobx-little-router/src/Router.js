@@ -1,9 +1,10 @@
 // @flow
-import { when } from 'mobx'
+import { autorun, when } from 'mobx'
 import type { History } from 'history'
 import RouterStore from './routing/RouterStore'
 import type { Href, RouteNode } from './routing/types'
 import Scheduler from './scheduling/Scheduler'
+import type { Event } from './events'
 
 export type HistoryCreatorFn = (opts: any) => History
 
@@ -49,6 +50,15 @@ class Router {
   stop() {
     this.scheduler.stop()
     this.dispose && this.dispose()
+  }
+
+  subscribeEvent(f: (x: Event) => void): () => void {
+    return autorun(() => {
+      const { event } = this.scheduler
+      if (event !== null) {
+        f(event)
+      }
+    })
   }
 
   // Waits for next navigation event to be processed and resolves.

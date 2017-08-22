@@ -8,6 +8,9 @@ import areNodesEqual from '../routing/areNodesEqual'
 import shallowEqual from '../util/shallowEqual'
 import { differenceWith } from '../util/functional'
 import { GuardFailure } from '../errors'
+import { EventTypes } from '../events'
+import type { Event } from '../events'
+import maybeCallErrorHandler from './maybeCallErrorHandler'
 
 type NavigationParams = {
   location: Location,
@@ -25,12 +28,14 @@ export default class Scheduler {
   store: RouterStore
   disposer: null | Function
   navigation: null | NavigationParams
+  event: null | Event
 
   constructor(store: RouterStore) {
     this.store = store
     this.disposer = null
     extendObservable(this, {
-      navigation: null
+      navigation: null,
+      event: null
     })
   }
 
@@ -41,6 +46,13 @@ export default class Scheduler {
   stop() {
     this.disposer && this.disposer()
     this.disposer = null
+  }
+
+  // Emit navigation events.
+  emit(evt: Event) {
+    runInAction(() => {
+      this.event = evt
+    })
   }
 
   scheduleNavigation = (nextLocation: Location, action: ?Action) => {
@@ -59,6 +71,7 @@ export default class Scheduler {
     const pathname = normalizePath(nextLocation.pathname)
 
     runInAction(() => {
+      this.store.error = null
       this.navigation = {
         location: {
           ...nextLocation,
@@ -82,6 +95,8 @@ export default class Scheduler {
     const { location } = navigation
 
     try {
+      this.emit({ type: EventTypes.NAVIGATION_START, location })
+
       // This match call may have side-effects of loading dynamic children.
       const path: MatchResult[] = await this.store.state.pathFromRoot(
         location.pathname,
@@ -91,14 +106,16 @@ export default class Scheduler {
       await assertUrlFullyMatched(location.pathname, path)
 
       // We've found a match or unmatched error has been handled.
-      await this.runActivation(path)
+      await this.runPathActivation(path)
 
       // If all hooks resolved, then we're good to update store state.
       this.store.commit(location)
-    } catch (err) {
-      this.store.setError(err)
+    } catch (error) {
+      this.store.setError(error)
+      this.emit({ type: EventTypes.NAVIGATION_ERROR, error, location })
     } finally {
       this.clearNavigation()
+      this.emit({ type: EventTypes.NAVIGATION_END, location })
     }
   }
 
@@ -118,7 +135,7 @@ export default class Scheduler {
     }
   }
 
-  runActivation = async (activating: MatchResult[]) => {
+  runPathActivation = async (activating: MatchResult[]) => {
     try {
       const deactivating = differenceWith(
         areNodesEqual,

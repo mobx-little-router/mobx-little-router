@@ -1,6 +1,7 @@
 // @flow
 import type { MatchResult } from '../routing/types'
 import { NoMatch } from '../errors'
+import maybeCallErrorHandler from './maybeCallErrorHandler'
 
 /*
  * Helper function to ensure that the matched result is the length we expected from the pat segments.
@@ -14,27 +15,9 @@ export default async function assertUrlFullyMatched(url: string, path: MatchResu
     return
   }
 
-  // Try to recover from error by bubbling the error from last matched no, to the first.
-  let idx = path.length - 1
-
-  // Default handler will reject with error.
-  let handler = Promise.reject()
-
-  while (idx >= 0) {
-    const result = path[idx]
-    const { node: { value: { hooks } } } = result
-    // Reduce from handler until it resolves.
-    handler = hooks.onError ? hooks.onError.reduce((acc, handler) => {
-      return acc.catch(() => {
-        return handler(result.node, result.params)
-      })
-    }, handler) : handler
-    idx--
-  }
-
   // Handler will either bubble rejection until it resolves, or rejects.
   try {
-    await handler
+    await maybeCallErrorHandler(path)
   } catch(err) {
     throw new NoMatch(url, path)
   }

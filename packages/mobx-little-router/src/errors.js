@@ -23,3 +23,15 @@ export class NoMatch {
     return `No match for url "${this.url}"`
   }
 }
+
+export class NavigationError {
+  node: RouteNode
+  params: Params
+  constructor(node: RouteNode, params: Params) {
+    this.node = node
+    this.params = params
+  }
+  toString() {
+    return 'Unhandled navigation error'
+  }
+}

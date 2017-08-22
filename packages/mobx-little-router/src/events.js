@@ -104,5 +104,6 @@ export type NavigationEnd = {
 
 export type NavigationError = {
   type: 'NAVIGATION_ERROR',
+  location: Location,
   error: any
 }
