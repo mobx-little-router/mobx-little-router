@@ -11,7 +11,7 @@ import App from './App'
 const router = install({
   createHistory: createHashHistory,
   routes: [
-    { path: '', data: { component: IndexRoute } },
+    { path: '', match: 'full', data: { component: IndexRoute } },
     { path: 'about', data: { component: AboutRoute } },
     { path: 'contact', data: { component: ContactRoute } },
     {
