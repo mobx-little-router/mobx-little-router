@@ -1,9 +1,11 @@
 // @flow
-import React, { createElement, Children, Component } from 'react'
+import React, { Component } from 'react'
 import withRouter from '../hoc/withRouter'
 import { observer } from 'mobx-react'
 import { Router } from 'mobx-little-router'
 import { OutletType, RouterType } from '../propTypes'
+
+import TransitionGroup from './TransitionGroup'
 
 /*
  * Outlet component is responsible for rendering the matched components
@@ -45,10 +47,16 @@ class Outlet extends Component {
     })
   }
 
+  getPrevNodes() {
+    return this.props.router.store.prevNodes.filter(x => {
+      return typeof x.value.data.component !== 'undefined'
+    })
+  }
+
   getCurrentIndex() {
-    return typeof this.context.outlet === 'undefined'
-      ? 0
-      : this.context.outlet.currentIndex
+    return typeof this.context.outlet !== 'undefined'
+      ? this.context.outlet.currentIndex
+      : 0
   }
 
   render() {
@@ -56,14 +64,20 @@ class Outlet extends Component {
     const nodes = this.getNodes()
     const node = nodes[idx]
 
-    // Did we match?
-    if (node) {
-      const { params, data } = node.value
-      const { component } = data
-      return createElement(component, { params })
-    } else {
-      return null
+    const prevNodes = this.getPrevNodes()
+    const prevNode = prevNodes[idx]
+
+    const isTransitioning = !!(prevNodes.length && node !== prevNode)
+
+    if (idx === 1) {
+      console.log("\n\nRendering outlet", isTransitioning ? "transitioning" : "landed. ---")
     }
+    
+    return (
+      <div className={`outlet outlet-depth-${idx}`}>
+        <TransitionGroup from={prevNode} to={node} isTransitioning={isTransitioning} idx={idx} />
+      </div>
+    )
   }
 }
 
