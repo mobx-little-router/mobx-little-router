@@ -25,12 +25,13 @@ class ActorRoute extends Component {
   fetchModel = async (props) => {
     const { params } = props
 
-    const res = await fetch(`https://api.tvmaze.com/people/${params.id}`)
-    const data = await res.json()
+    const actorRes = await fetch(`https://api.tvmaze.com/people/${params.id}`)
+    const actorData = await actorRes.json()
 
-    //const res = await fetch(`https://api.tvmaze.com/people/${params.id}/castcredits?embed=show`)
+    const creditsRes = await fetch(`https://api.tvmaze.com/people/${params.id}/castcredits?embed=show`)
+    const creditsData = await creditsRes.json()
 
-    this.model = data
+    this.model = { ...actorData, credits: creditsData }
   }
 
   render() {
@@ -50,12 +51,11 @@ class ActorRoute extends Component {
 
                   <Credits>
                     <h2>Credits</h2>
-                    {/* {this.model._embedded.cast.map((member, idx) => 
-                      <CastMember key={idx}>
-                        <Character>{member.character.name}</Character>
-                        <Actor to={`/shows/${this.model.id}/actors/${member.person.id}`}>{member.person.name}</Actor>
-                      </CastMember>
-                    )} */}
+                    {this.model.credits.map((credit, idx) => 
+                      <Show key={idx} to={`/shows/${credit._embedded.show.id}`}>
+                        {credit._embedded.show.name}
+                      </Show>
+                    )}
                   </Credits>
                 </Abstract>
               </Content>
@@ -270,20 +270,12 @@ const Tags = styled.div`
 const Credits = styled.div`
   font-size: 13px;
   line-height: 18px;
-  margin: 18px 0 36px;
+  margin: 36px 0;
 `
 
-const CastMember = styled.div`
-  display: flex;
-  flex-direction: row;
-`
-
-const Character = styled.div`
-  width: 50%;
-`
-
-const Actor = styled(Link)`
-  width: 50%;
+const Show = styled(Link)`
+  display: block;
+  padding: 9px 0;
 
   color: #777;
 
