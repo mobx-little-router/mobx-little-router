@@ -20,6 +20,8 @@ class TransitionGroup extends Component {
     isTransitioning: boolean
   }
 
+  transitionState: string
+
   constructor(props) {
     super(props)
 
@@ -50,7 +52,9 @@ class TransitionGroup extends Component {
     const { from, to, isTransitioning } = this.props
     const nodes = []
 
-    let fromClassName, toClassName
+    let fromClassName = ''
+    let toClassName = ''
+
     if (isTransitioning) {
       if (from) {
         fromClassName = `${classNames.transitioning} ${classNames.leaving}`

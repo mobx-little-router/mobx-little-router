@@ -40,41 +40,48 @@ class Outlet extends Component {
     }
   }
 
-  // Filter out only active nodes that provide a component.
-  getNodes() {
-    return this.props.router.store.nodes.filter(x => {
-      return typeof x.value.data.component !== 'undefined'
-    })
-  }
-
-  getPrevNodes() {
-    return this.props.router.store.prevNodes.filter(x => {
-      return typeof x.value.data.component !== 'undefined'
-    })
-  }
-
   getCurrentIndex() {
     return typeof this.context.outlet !== 'undefined'
       ? this.context.outlet.currentIndex
       : 0
   }
 
-  render() {
+  findNode(nodes) {
+    const { name } = this.props
     const idx = this.getCurrentIndex()
-    const nodes = this.getNodes()
-    const node = nodes[idx]
 
-    const prevNodes = this.getPrevNodes()
-    const prevNode = prevNodes[idx]
+    if (name) {
+      return nodes.find(node => node.value.data.outlet === name)
+    } else {
+      return nodes[idx]
+    }
+  }
 
-    const isTransitioning = !!(prevNodes.length && node !== prevNode)
+  render() {
+    const { router, name } = this.props
+    const idx = this.getCurrentIndex()
+
+    const currentNodes = filterNodes(router.store.nodes)
+    const prevNodes = filterNodes(router.store.prevNodes)
+
+    const currentNode = this.findNode(currentNodes)
+    const prevNode = this.findNode(prevNodes)
+
+    const isTransitioning = !!(prevNodes.length && currentNode !== prevNode)
     
+    const dataProps = {
+      'data-depth': idx,
+      'data-name': name
+    }
+
     return (
-      <div className={`outlet outlet-depth-${idx}`}>
-        <TransitionGroup from={prevNode} to={node} isTransitioning={isTransitioning} idx={idx} />
+      <div className={`outlet`} {...dataProps}>
+        <TransitionGroup from={prevNode} to={currentNode} isTransitioning={isTransitioning} />
       </div>
     )
   }
 }
+
+const filterNodes = (nodes) => nodes.filter(node => node.value.data.component)
 
 export default withRouter(observer(Outlet))
