@@ -5,7 +5,7 @@ import type {
   LoadChildrenConfigFn,
   LoadChildrenRouteNode
 } from './types'
-import { TreeNode } from '../util/tree'
+import { createTreeNode } from '../util/tree'
 import createKey from '../util/createKey'
 import * as m from './matchers'
 
@@ -13,7 +13,7 @@ async function nop() {}
 
 export default function createRouteNode(config: Config): RouteNode {
   const matcher = config.match ? m[config.match] : m.partial
-  return new TreeNode(
+  return createTreeNode(
     {
       key: typeof config.key === 'string' ? config.key : createKey(6),
       path: config.path,
@@ -30,7 +30,7 @@ export default function createRouteNode(config: Config): RouteNode {
 
       // Lifecycle callback
       onError: config.onError || null,
-      onTransition: config.onTransition || nop,
+      onTransition: config.onTransition || null,
       onEnter: config.onEnter || nop,
       onLeave: config.onLeave || nop
     },

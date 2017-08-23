@@ -47,11 +47,12 @@ The `install` function takes the following options:
     path: string,
     data?: Object,
     children?: Config[],
-    loadChildren?: () => Promise<Config[]>
-    canActivate?: (node, params) => Promise<void>
-    onEnter?: (node, params) => Promise<void>
-    onLeave?: (node, params) => Promise<void>
-    canDeactivate?: (node, params) => Promise<void>
+    loadChildren?: () => Promise<Config[]>,
+    canActivate?: (node, params) => Promise<void>,
+    canDeactivate?: (node, params) => Promise<void>,
+    onTransition?: (evt: TransitionEvent) => Promise<void>,
+    onEnter?: (node, params) => Promise<void>,
+    onLeave?: (node, params) => Promise<void>,
     onError?: (node, params) => Promise<void>
   }
   ```
@@ -78,7 +79,7 @@ export default [
 ]
 ```
 
-## Design
+## Architecture
 
 This router stores all of the routing data inside of a single store class, which contains
 `@observable` properties that leverages MobX's change detection system.
@@ -100,10 +101,21 @@ This package is split into three separate concerns.
 2. **Scheduling**
 
   The `Scheduler` class handles all incoming navigation requests. Each request is processed
-  in order, and all lifecycle hooks (`canActivate`, `canDeactivate`, etc.) are executed
-  on each route node. If a lifecycle hook is rejected on any one node, then the navigation
+  in order, and all guards (`canActivate`, `canDeactivate`) are executed
+  on each route node. If a guard is rejected on any one node, then the navigation
   is cancelled altogether.
 
-3. **History management**
+3. **Transitions**
 
-  Coordinates history events and transitions, and passes the requests down to the `Scheduler`.
+  Transitions happen after a navigation has cleared all guards. Each deactivating and activating
+  nodes will have its `onTransition` callback invoked in order or deactivation and activation.
+
+  The `onTransition` callback is passed a single [`TransitionEvent`](./src/transitions/types.js)
+  object. The current transition type, node, and a `cancel` function is available from this
+  event object.
+
+  A node will have its `node.isTransitioning` property set to true before its `onTransition`
+  callback is invoked, and revert to `false` once it is completed.
+
+  The `.cancel()` method on the event object will cancel all of the currently queued transition
+  events. This is useful if you want to cancel animations.

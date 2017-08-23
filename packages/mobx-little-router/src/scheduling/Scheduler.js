@@ -2,8 +2,9 @@
 import type { Action } from 'history'
 import { autorun, extendObservable, runInAction } from 'mobx'
 import assertUrlFullyMatched from './assertUrlFullyMatched'
-import type { MatchResult, Location, RouteNode } from '../routing/types'
+import type { Location, RouteNode } from '../routing/types'
 import type RouterStore from '../routing/RouterStore'
+import TransitionManager from '../transitions/TransitionManager'
 import areNodesEqual from '../routing/areNodesEqual'
 import shallowEqual from '../util/shallowEqual'
 import { differenceWith } from '../util/functional'
@@ -18,12 +19,14 @@ type NavigationParams = {
 
 export default class Scheduler {
   store: RouterStore
+  transitionMgr: TransitionManager
   disposer: null | Function
   navigation: null | NavigationParams
   event: null | Event
 
   constructor(store: RouterStore) {
     this.store = store
+    this.transitionMgr = new TransitionManager()
     this.disposer = null
     extendObservable(this, {
       navigation: null,
@@ -151,8 +154,8 @@ export default class Scheduler {
 
       // Run and wait on transition of deactivating and newly activating nodes.
       await Promise.all([
-        this.transitionNodes('leaving', deactivating),
-        this.transitionNodes('entering', newlyActivating)
+        this.transitionMgr.run('leaving', deactivating),
+        this.transitionMgr.run('entering', newlyActivating)
       ])
     } catch (err) {
       // Make sure we chain errors back up!
@@ -174,26 +177,6 @@ export default class Scheduler {
           throw new GuardFailure(error, node)
         })
       await guard
-    }
-  }
-
-  // Runs all transition callback for each node in order.
-  // While a node is in the middle of a transition, its `isTransitioning` property will be `true`.
-  transitionNodes = async (type: 'entering' | 'leaving', nodes: RouteNode[]) => {
-    for (const node of nodes) {
-      const { value } = node
-      if (typeof value.onTransition === 'function') {
-        runInAction(() => {
-          node.value.isTransitioning = true
-        })
-        try {
-          await value.onTransition(node, type)
-        } finally {
-          runInAction(() => {
-            node.value.isTransitioning = true
-          })
-        }
-      }
     }
   }
 }

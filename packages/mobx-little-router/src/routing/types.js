@@ -1,5 +1,6 @@
 // @flow
-import { TreeNode } from '../util/tree'
+import type { ITreeNode } from '../util/tree'
+import type { TransitionFn } from '../transitions/types'
 import type { MatchFn } from './matchers'
 import type { History, Location as HistoryLocation } from 'history'
 
@@ -38,7 +39,6 @@ export type LoadChildrenConfigFn = () => Promise<Config[]>
 export type GuardFn = (node: RouteNode) => Promise<void>
 
 export type LifecycleFn = (node: RouteNode) => Promise<void>
-export type TransitionFn  = (node: RouteNode, type: 'entering' | 'leaving') => Promise<void>
 
 export type ErrorHandler = (node: RouteNode) => Promise<void>
 
@@ -59,12 +59,12 @@ export type RouteValue = {
   canActivate: GuardFn,
   canDeactivate: GuardFn,
   onError: null | ErrorHandler,
-  onTransition: TransitionFn,
+  onTransition: null | TransitionFn,
   onEnter: LifecycleFn,
   onLeave: LifecycleFn
 }
 
-export type RouteNode = TreeNode<RouteValue>
+export type RouteNode = ITreeNode<RouteValue>
 
 export type MatchResult = {
   node: RouteNode,

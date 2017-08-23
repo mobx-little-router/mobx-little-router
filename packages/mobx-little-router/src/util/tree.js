@@ -4,29 +4,28 @@ import { extendObservable, observable } from 'mobx'
 
 type ShouldContinue = boolean
 
-export type onLeafReached<T> = (node: TreeNode<T>) => Promise<ShouldContinue>
+export type onLeafReached<T> = (node: ITreeNode<T>) => Promise<ShouldContinue>
 
-export class TreeNode<T> {
-  value: T
-  children: IObservableArray<TreeNode<T>>
-
-  constructor(value: T, children: TreeNode<T>[]) {
-    extendObservable(this, {
-      value: value,
-      children: observable.array(children)
-    })
-  }
+export type ITreeNode<T> = {
+  value: T,
+  children: IObservableArray<ITreeNode<T>>
 }
 
-export type Matcher<T> = (n: TreeNode<T>) => Promise<boolean>
+export function createTreeNode<T>(value: T, children: ITreeNode<T>[]): ITreeNode<T> {
+  return extendObservable({}, {
+    value: value,
+    children: observable.array(children)
+  })
+}
 
+export type Matcher<T> = (n: ITreeNode<T>) => Promise<boolean>
 
 // Asynchronous DFS from root node for a matching path based on return of visitor function.
 export async function findPath<T>(
   match: Matcher<T>,
-  node: TreeNode<T>,
+  node: ITreeNode<T>,
   onLeafReached: onLeafReached<T>
-): Promise<TreeNode<T>[]> {
+): Promise<ITreeNode<T>[]> {
   const matched = await match(node)
   if (matched) {
     const isPathExhausted = matched && node.children.length === 0
@@ -53,9 +52,9 @@ export async function findPath<T>(
 
 // DFS for finding a matching node by predicate.
 export function findNode<T>(
-  predicate: (x: TreeNode<T>) => boolean,
-  node: TreeNode<T>
-): TreeNode<T> | null {
+  predicate: (x: ITreeNode<T>) => boolean,
+  node: ITreeNode<T>
+): ITreeNode<T> | null {
   if (predicate(node)) return node
 
   for (const child of node.children) {

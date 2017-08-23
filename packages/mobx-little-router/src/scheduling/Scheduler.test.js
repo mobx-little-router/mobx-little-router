@@ -161,6 +161,7 @@ describe('Scheduler', () => {
     })
   })
 
+  // TODO: This should be extracted to the Router.
   describe('Events', () => {
     test('Navigation start, error, end', async () => {
       const spy = jest.fn()
@@ -224,9 +225,9 @@ describe('Scheduler', () => {
         // Leave transition hooks are bottom up.
         expect(
           spy.mock.calls.map(args => ({
-            key: args[0].value.key,
-            path: args[0].value.path,
-            type: args[1]
+            type: args[0].type,
+            key: args[0].node.value.key,
+            path: args[0].node.value.path
           }))
         ).toEqual([
           {
@@ -235,14 +236,14 @@ describe('Scheduler', () => {
             type: 'leaving'
           },
           {
-            key: todosRootNode.value.key,
-            path: 'todos',
-            type: 'leaving'
-          },
-          {
             key: projectsRootNode.value.key,
             path: 'projects',
             type: 'entering'
+          },
+          {
+            key: todosRootNode.value.key,
+            path: 'todos',
+            type: 'leaving'
           },
           {
             key: projectsViewNode.value.key,
@@ -260,9 +261,9 @@ describe('Scheduler', () => {
         // Only the project view node is leaving.
         expect(
           spy.mock.calls.map(args => ({
-            key: args[0].value.key,
-            path: args[0].value.path,
-            type: args[1]
+            type: args[0].type,
+            key: args[0].node.value.key,
+            path: args[0].node.value.path
           }))
         ).toEqual([
           {
