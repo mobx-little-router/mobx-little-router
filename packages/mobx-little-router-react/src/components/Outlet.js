@@ -67,7 +67,7 @@ class Outlet extends Component {
     const currentNode = this.findNode(currentNodes)
     const prevNode = this.findNode(prevNodes)
 
-    const isTransitioning = !!(prevNodes.length && currentNode !== prevNode)
+    const isTransitioning = !!(prevNodes.length && ((currentNode && currentNode.value.key) !== (prevNode && prevNode.value.key)))
     
     const dataProps = {
       'data-depth': idx,
