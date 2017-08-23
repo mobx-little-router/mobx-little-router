@@ -53,7 +53,7 @@ class Outlet extends Component {
     if (name) {
       return nodes.find(node => node.value.data.outlet === name)
     } else {
-      return nodes[idx]
+      return nodes.filter(node => !node.value.data.outlet)[idx]
     }
   }
 
