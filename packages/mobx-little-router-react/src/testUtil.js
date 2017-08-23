@@ -6,7 +6,7 @@ import RouterProvider from './components/RouterProvider'
 import { createMemoryHistory } from 'history'
 
 export function createRouter(routes: Array<*>, initialEntry: ?string = '/') {
-  return initialEntry ? install({
+  return typeof initialEntry === 'string' ? install({
     createHistory: [
       createMemoryHistory,
       { initialEntries: [initialEntry] }

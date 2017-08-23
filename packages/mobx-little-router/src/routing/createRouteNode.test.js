@@ -1,8 +1,5 @@
 // @flow
 import createRouteNode from './createRouteNode'
-import type { RouteNode } from './types'
-
-async function nop() {}
 
 describe('createRouteNode', () => {
   test('Handles nesting and compound paths', () => {
@@ -11,10 +8,10 @@ describe('createRouteNode', () => {
       children: [
         {
           path: 'a/b/c',
-          onEnter: [nop],
-          onLeave: [nop],
-          canActivate: [nop],
-          canDeactivate: [nop],
+          onEnter: () => {},
+          onLeave: () => {},
+          canActivate: async () => {},
+          canDeactivate: async () => {},
           data: { msg: 'hello' },
           children: [{ path: 'd' }]
         },
@@ -29,10 +26,10 @@ describe('createRouteNode', () => {
     expect(root.children.map(x => x.value.path)).toEqual(['a/b/c', 'e', 'f'])
     expect(root.children[0].children.map(x => x.value.path)).toEqual(['d'])
     expect(root.children[0].value.data.msg).toEqual('hello')
-    expect(root.children[0].value.hooks.onEnter[0]).toBeInstanceOf(Function)
-    expect(root.children[0].value.hooks.onLeave[0]).toBeInstanceOf(Function)
-    expect(root.children[0].value.hooks.canActivate[0]).toBeInstanceOf(Function)
-    expect(root.children[0].value.hooks.canDeactivate[0]).toBeInstanceOf(Function)
+    expect(root.children[0].value.onEnter).toBeInstanceOf(Function)
+    expect(root.children[0].value.onLeave).toBeInstanceOf(Function)
+    expect(root.children[0].value.canActivate).toBeInstanceOf(Function)
+    expect(root.children[0].value.canDeactivate).toBeInstanceOf(Function)
   })
 
   test('Sets correct dynamic children loader', async () => {

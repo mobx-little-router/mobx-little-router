@@ -3,6 +3,8 @@ import { TreeNode } from '../util/tree'
 import type { MatchFn } from './matchers'
 import type { History, Location as HistoryLocation } from 'history'
 
+export type { MatchFn }
+
 export type Query = { [key: string]: string }
 export type Params = { [key: string]: string }
 
@@ -18,29 +20,23 @@ export type Href = Location | string
 export type Config = {
   path: string,
   data?: Object,
-  [GuardType]: GuardFn[],
   children?: Config[],
   loadChildren?: LoadChildrenConfigFn,
-  match?: 'full' | 'partial'
+  match?: 'full' | 'partial',
+  canActivate?: GuardFn,
+  canDeactivate?: GuardFn,
+  onError?: ErrorHandler,
+  onEnter?: LifecycleFn,
+  onLeave?: LifecycleFn
 }
 
 export type LoadChildrenConfigFn = () => Promise<Config[]>
 
-export type GuardFn = (node: RouteNode, params: Params) => Promise<void>
+export type GuardFn = (node: RouteNode) => Promise<void>
 
-export const GuardTypes = {
-  canActivate: 'canActivate',
-  onEnter: 'onEnter',
-  onLeave: 'onLeave',
-  canDeactivate: 'canDeactivate',
-  onError: 'onError'
-}
+export type LifecycleFn = (node: RouteNode) => void
 
-export type { MatchFn }
-
-export type GuardType = $Keys<typeof GuardTypes>
-
-export type Hooks = { [GuardType]: GuardFn[] }
+export type ErrorHandler = (node: RouteNode) => Promise<void>
 
 export type LoadChildrenRouteNode = () => Promise<RouteNode[]>
 
@@ -55,7 +51,11 @@ export type RouteValue = {
   data: Object,
   matcher: MatchFn,
   loadChildren?: null | LoadChildrenRouteNode,
-  hooks: Hooks
+  canActivate: GuardFn,
+  canDeactivate: GuardFn,
+  onError: null | ErrorHandler,
+  onEnter: LifecycleFn,
+  onLeave: LifecycleFn
 }
 
 export type RouteNode = TreeNode<RouteValue>

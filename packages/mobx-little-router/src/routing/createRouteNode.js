@@ -13,6 +13,8 @@ function alwaysContinue(__: *, ___: *) {
   return Promise.resolve()
 }
 
+function nop() {}
+
 export default function createRouteNode(config: Config): RouteNode {
   const matcher = config.match ? m[config.match] : m.partial
   return new TreeNode(
@@ -23,13 +25,15 @@ export default function createRouteNode(config: Config): RouteNode {
       data: config.data || {},
       params: null,
       loadChildren: toLoadRouteNodeChildren(config.loadChildren),
-      hooks: {
-        canActivate: config.canActivate || [alwaysContinue],
-        onEnter: config.onEnter || [alwaysContinue],
-        onError: config.onError || [],
-        onLeave: config.onLeave || [alwaysContinue],
-        canDeactivate: config.canDeactivate || [alwaysContinue]
-      }
+
+      // Guards
+      canActivate: config.canActivate || alwaysContinue,
+      canDeactivate: config.canDeactivate || alwaysContinue,
+
+      // Lifecycle callback
+      onEnter: config.onEnter || nop,
+      onError: config.onError || null,
+      onLeave: config.onLeave || nop
     },
     config.children ? config.children.map(createRouteNode) : []
   )

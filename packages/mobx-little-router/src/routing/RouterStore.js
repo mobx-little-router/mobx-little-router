@@ -22,7 +22,7 @@ class RouterStore {
   prevNodes: IObservableArray<RouteNode>
 
   constructor(children: void | RouteNode[]) {
-    const root = createRouteNode({ path: '', onError: [this.handleRootError] }) // Initial root.
+    const root = createRouteNode({ path: '', onError: this.handleRootError }) // Initial root.
     this.state = new RouterStateTree(root)
 
     extendObservable(this, {

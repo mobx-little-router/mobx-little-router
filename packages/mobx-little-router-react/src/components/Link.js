@@ -23,7 +23,7 @@ class Link extends Component {
   onClick = (evt: Event) => {
     const { to, reload } = this.props
 
-    if (reload) {
+    if (reload === true) {
       return
     }
 
@@ -34,11 +34,11 @@ class Link extends Component {
   render() {
     const { to, className, activeClassName, style, children, exact } = this.props
     const matchPrefix = '^'
-    const matchSuffix = '/?' + (exact ? '$' : '')
+    const matchSuffix = '/?' + (exact === true ? '$' : '')
     const matcher = new RegExp(`${matchPrefix}${to}${matchSuffix}`)
     const isActive = matcher.test(this.context.router.store.location.pathname)
 
-    return <a href={to} className={cx(className, activeClassName && { [activeClassName]: isActive })} style={style} onClick={this.onClick}>{children}</a>
+    return <a href={to} className={cx(className, typeof activeClassName ==='string' && { [activeClassName]: isActive })} style={style} onClick={this.onClick}>{children}</a>
   }
 }
 

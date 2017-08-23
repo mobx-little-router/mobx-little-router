@@ -1,4 +1,4 @@
-// @import
+// @flow
 import UrlPattern from 'url-pattern'
 
 export type MatchFn = (url: string) => { matched: boolean, params: null | Object, remaining: string }

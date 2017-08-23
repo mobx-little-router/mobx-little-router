@@ -1,6 +1,5 @@
 // @flow
 import findPathFromRoot from './findPathFromRoot'
-import { partialMatch } from './matchers'
 import createRouteNode from './createRouteNode'
 
 describe('findPathFromRoot', () => {

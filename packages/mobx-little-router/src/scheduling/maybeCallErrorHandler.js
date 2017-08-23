@@ -11,13 +11,11 @@ export default function maybeCallErrorHandler(path: MatchResult[]) {
   let handler = Promise.reject()
   while (idx >= 0) {
     const result = path[idx]
-    const { node: { value: { hooks } } } = result
-    // Reduce from handler until it resolves.
-    handler = hooks.onError ? hooks.onError.reduce((acc, handler) => {
-      return acc.catch(() => {
-        return handler(result.node, result.params)
-      })
-    }, handler) : handler
+    const { node: { value } } = result
+    // Try to run onError handler, if it resolves then the entire path can recover.
+    handler = typeof value.onError === 'function'
+      ? handler.catch(() => value.onError(result.node))
+      : handler
     idx--
   }
 

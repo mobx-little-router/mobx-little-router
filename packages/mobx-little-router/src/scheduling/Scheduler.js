@@ -2,7 +2,7 @@
 import type { Action } from 'history'
 import { autorun, extendObservable, runInAction } from 'mobx'
 import assertUrlFullyMatched from './assertUrlFullyMatched'
-import type { MatchResult, GuardType, Location, RouteNode } from '../routing/types'
+import type { MatchResult, Location, RouteNode } from '../routing/types'
 import type RouterStore from '../routing/RouterStore'
 import areNodesEqual from '../routing/areNodesEqual'
 import shallowEqual from '../util/shallowEqual'
@@ -108,7 +108,7 @@ export default class Scheduler {
       // We've found a match or unmatched error has been handled.
       await this.runPathActivation(path)
 
-      // If all hooks resolved, then we're good to update store state.
+      // If all value resolved, then we're good to update store state.
       this.store.commit(location)
     } catch (error) {
       this.store.setError(error)
@@ -162,7 +162,7 @@ export default class Scheduler {
 
       this.store.updateNodes(toRouteNodes(activating))
 
-      // Run and wait on both leave and enter hooks.
+      // Run and wait on both leave and enter hook.
       // TODO: Consider whether ordering here matters. Do we need to guarantee that leave is called before all enter?
       await Promise.all([
         this.guardOnHook('onLeave', [], deactivating),
@@ -175,7 +175,7 @@ export default class Scheduler {
   }
 
   guardOnHook = async (
-    type: GuardType,
+    type: *,
     processed: MatchResult[],
     remaining: MatchResult[]
   ) => {
@@ -187,18 +187,12 @@ export default class Scheduler {
     }
 
     const { params, node } = curr
-    const { value: { hooks } } = node
+    const { value } = node
 
-    const guard =
-      hooks[type] &&
-      hooks[type].reduce((acc, f) => {
-        return acc.then(() =>
-          f(node, params).catch(error => {
-            throw new GuardFailure(error, node, params)
-          })
-        )
-      }, Promise.resolve())
-
+    const promise = typeof value[type] === 'function' ? value[type](node) : Promise.resolve()
+    const guard = promise !== undefined && promise.catch(error => {
+      throw new GuardFailure(error, node, params)
+    })
     try {
       await guard
       // Run the next guards.
