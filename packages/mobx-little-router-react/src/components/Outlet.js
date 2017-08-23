@@ -51,7 +51,7 @@ class Outlet extends Component {
     const idx = this.getCurrentIndex()
 
     if (name) {
-      return nodes.find(node => node.value.data.outlet === name)
+      return nodes.slice().reverse().find(node => node.value.data.outlet === name)
     } else {
       return nodes.filter(node => !node.value.data.outlet)[idx]
     }
