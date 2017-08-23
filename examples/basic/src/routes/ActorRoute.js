@@ -5,7 +5,7 @@ import styled from 'styled-components'
 import { Link } from 'mobx-little-router-react'
 import cx from 'classnames'
 
-class ShowRoute extends Component {
+class ActorRoute extends Component {
   constructor(props) {
     super(props)
 
@@ -25,8 +25,10 @@ class ShowRoute extends Component {
   fetchModel = async (props) => {
     const { params } = props
 
-    const res = await fetch(`https://api.tvmaze.com/shows/${params.id}?embed=cast`)
+    const res = await fetch(`https://api.tvmaze.com/people/${params.id}`)
     const data = await res.json()
+
+    //const res = await fetch(`https://api.tvmaze.com/people/${params.id}/castcredits?embed=show`)
 
     this.model = data
   }
@@ -44,21 +46,17 @@ class ShowRoute extends Component {
               <Content>
                 {this.model.image && <CoverImage style={{ backgroundImage: `url(${this.model.image.original})` }} />}
                 <Abstract>
-                  <Network>{this.model.network && this.model.network.name}</Network>
                   <Title>{this.model.name}</Title>
-                  <OfficialSite href={this.model.officialSite} target="_blank">Official site</OfficialSite>
-                  <Summary dangerouslySetInnerHTML={{ __html: this.model.summary }} />
-                  <Tags>{this.model.genres.map((genre, idx) => <Link key={idx} to={`/tags/${genre}`}>{genre}</Link>)}</Tags>
-                
-                  <Cast>
-                    <h2>Cast</h2>
-                    {this.model._embedded.cast.map((member, idx) => 
+
+                  <Credits>
+                    <h2>Credits</h2>
+                    {/* {this.model._embedded.cast.map((member, idx) => 
                       <CastMember key={idx}>
                         <Character>{member.character.name}</Character>
-                        <Actor to={`/actors/${member.person.id}`}>{member.person.name}</Actor>
+                        <Actor to={`/shows/${this.model.id}/actors/${member.person.id}`}>{member.person.name}</Actor>
                       </CastMember>
-                    )}
-                  </Cast>
+                    )} */}
+                  </Credits>
                 </Abstract>
               </Content>
             }
@@ -232,6 +230,10 @@ const Summary = styled.p`
   font-size: 13px;
 `
 
+const ShowType = styled.div`
+
+`
+
 const Network = styled.div`
   text-transform: uppercase;
   color: #aaa;
@@ -265,16 +267,15 @@ const Tags = styled.div`
   }
 `
 
-const Cast = styled.div`
+const Credits = styled.div`
   font-size: 13px;
   line-height: 18px;
-  margin: 36px 0;
+  margin: 18px 0 36px;
 `
 
 const CastMember = styled.div`
   display: flex;
   flex-direction: row;
-  padding: 9px 0;
 `
 
 const Character = styled.div`
@@ -291,4 +292,4 @@ const Actor = styled(Link)`
   }
 `
 
-export default observer(ShowRoute)
+export default observer(ActorRoute)

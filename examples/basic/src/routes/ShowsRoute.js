@@ -35,7 +35,7 @@ class IndexRoute extends Component {
             <Show key={show.id}>
               <CoverImage to={`/shows/${show.id}`} style={{backgroundImage: `url(${show.image && show.image.medium})` }}/>
               <Abstract>
-                <ShowType>{show.type}</ShowType>
+                <Network>{show.network && show.network.name}</Network>
                 <ShowName to={`/shows/${show.id}`}>{show.name}</ShowName>
               </Abstract>
             </Show>
@@ -76,7 +76,7 @@ const Abstract = styled.div`
   bottom: 0;
 `
 
-const ShowType = styled.div`
+const Network = styled.div`
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.8);
   font-size: 12px;

@@ -5,8 +5,16 @@ import { createHashHistory } from 'history'
 import { install } from 'mobx-little-router'
 import { RouterProvider } from 'mobx-little-router-react'
 
-import { IndexRoute, ShowsRoute, AboutRoute, ContactRoute, ShowRoute, TagRoute } from './routes'
+import { IndexRoute, ShowsRoute, AboutRoute, ContactRoute, ShowRoute, TagRoute, ActorRoute } from './routes'
 import App from './App'
+
+const delay = (ms) => () => {
+  return new Promise((resolve) =>
+    setTimeout(() => {
+      resolve()
+    }, ms)
+  )
+}
 
 const router = install({
   createHistory: createHashHistory,
@@ -15,38 +23,14 @@ const router = install({
     { 
       path: 'about',
       data: { component: AboutRoute },
-      onEnter: [(node) => {
-        return new Promise((resolve, reject) => {
-          setTimeout(() => {
-            resolve()
-          }, 500)
-        })
-      }],
-      onLeave: [(node) => {
-        return new Promise((resolve, reject) => {
-          setTimeout(() => {
-            resolve()
-          }, 500)
-        })
-      }]
+      onEnter: [delay(400)],
+      onLeave: [delay(400)]
     },
     {
       path: 'contact',
       data: { component: ContactRoute },
-      onEnter: [(node) => {
-        return new Promise((resolve, reject) => {
-          setTimeout(() => {
-            resolve()
-          }, 500)
-        })
-      }],
-      onLeave: [(node) => {
-        return new Promise((resolve, reject) => {
-          setTimeout(() => {
-            resolve()
-          }, 500)
-        })
-      }]
+      onEnter: [delay(400)],
+      onLeave: [delay(400)]
     },
     {
       path: 'shows',
@@ -57,21 +41,18 @@ const router = install({
           component: ShowRoute,
           outlet: 'modal'
         },
-        onEnter: [(node) => {
-          return new Promise((resolve, reject) => {
-            setTimeout(() => {
-              resolve()
-            }, 400)
-          })
-        }],
-        onLeave: [(node) => {
-          return new Promise((resolve, reject) => {
-            setTimeout(() => {
-              resolve()
-            }, 400)
-          })
-        }]
+        onEnter: [delay(400)],
+        onLeave: [delay(400)]
       }]
+    },
+    {
+      path: 'actors/:id',
+      data: {
+        component: ActorRoute,
+        outlet: 'modal'
+      },
+      onEnter: [delay(400)],
+      onLeave: [delay(400)]
     },
     {
       path: 'tags/:tag',
