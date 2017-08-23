@@ -3,6 +3,16 @@ import React, { createElement, Component } from 'react'
 import { extendObservable, action } from 'mobx'
 import { observer } from 'mobx-react'
 
+const transitioningClassName = 'transitioning'
+
+const classNames = {
+  transitioning: 'transitioning',
+  entering: 'entering',
+  leaving: 'leaving',
+  enter: 'enter',
+  leave: 'leave'
+}
+
 class TransitionGroup extends Component {
   props: {
     from: ?Object,
@@ -26,41 +36,32 @@ class TransitionGroup extends Component {
     this.transitionState = 'stopped'
   })
 
-  componentWillUpdate(props) {
-    const { isTransitioning, idx } = props
-    if (idx === 1) {
-      console.log("- Component will update", isTransitioning, this.transitionState)
-    }
+  componentDidUpdate() {
+    const { isTransitioning } = this.props
 
     if (isTransitioning && this.transitionState === 'stopped') {
-      setTimeout(() => {
-        console.log("-- starting transition")
-        this.start()
-      }, 100)
+      setTimeout(() => { this.start() })
     } else if (!isTransitioning && this.transitionState === 'started') {
-      console.log("-- reseting transition")
       this.stop()
     }
   }
 
   render() {
-    const { from, to, isTransitioning, idx } = this.props
+    const { from, to, isTransitioning } = this.props
     const nodes = []
 
     let fromClassName, toClassName
     if (isTransitioning) {
-      fromClassName = toClassName = 'transitioning'
-
       if (from) {
-        fromClassName += ' leaving'
+        fromClassName = `${classNames.transitioning} ${classNames.leaving}`
       }
       if (to) {
-        toClassName += ' entering'
+        toClassName = `${classNames.transitioning} ${classNames.entering}`
       }
 
       if (this.transitionState === 'started') {
-        from && (fromClassName += ' leave')
-        to && (toClassName += ' enter')
+        from && (fromClassName += ` ${classNames.leave}`)
+        to && (toClassName += ` ${classNames.enter}`)
       }
     }
 
@@ -69,10 +70,6 @@ class TransitionGroup extends Component {
     }
     if (to) {
       nodes.push({ node: to, className: toClassName })
-    }
-
-    if (idx === 1) {
-      console.log(`- Rendering`, fromClassName, toClassName)
     }
 
     return (

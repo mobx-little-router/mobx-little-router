@@ -34,27 +34,27 @@ class ShowRoute extends Component {
   render() {
     const { className } = this.props
 
-    if (this.model) {
-      return (
-        <Modal className={cx('modal', className)}>
-          <ModalOverlay to="/shows" />
-          <ModalContainer>
-            <ModalDialog>
-              <CloseButton to="/shows" />
-              <CoverImage style={{ backgroundImage: `url(${this.model.image.original})` }} />
-              <Abstract>
-                <ShowType>{this.model.type}</ShowType>
-                <Title>{this.model.name}</Title>
-                <Summary dangerouslySetInnerHTML={{ __html: this.model.summary }} />
-                <Tags>{this.model.genres.map((genre, idx) => <Link key={idx} to={`/tags/${genre}`}>{genre}</Link>)}</Tags>
-              </Abstract>
-            </ModalDialog>
-          </ModalContainer>
-        </Modal>
-      )
-    } else {
-      return null
-    }
+    return (
+      <Modal className={cx('modal', className)}>
+        <ModalOverlay to="/shows" />
+        <ModalContainer>
+          <ModalDialog>
+            <CloseButton to="/shows" />
+            {this.model &&
+              <Content>
+                <CoverImage style={{ backgroundImage: `url(${this.model.image.original})` }} />
+                <Abstract>
+                  <ShowType>{this.model.type}</ShowType>
+                  <Title>{this.model.name}</Title>
+                  <Summary dangerouslySetInnerHTML={{ __html: this.model.summary }} />
+                  <Tags>{this.model.genres.map((genre, idx) => <Link key={idx} to={`/tags/${genre}`}>{genre}</Link>)}</Tags>
+                </Abstract>
+              </Content>
+            }
+          </ModalDialog>
+        </ModalContainer>
+      </Modal>
+    )
   }
 }
 
@@ -75,8 +75,6 @@ const ModalDialog = styled.div`
   overflow: hidden;
   box-shadow: 0 1px 4px 1px rgba(0,0,0,0.5);
   border-radius: 2px;
-  display: flex;
-  flex-direction: row;
 `
 
 const ModalOverlay = styled(Link)`
@@ -85,7 +83,7 @@ const ModalOverlay = styled(Link)`
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.8);
+  background-color: rgba(255,255,255,0.8);
   cursor: default;
 `
 
@@ -169,8 +167,14 @@ const CloseButton = styled(Link)`
   }
 `
 
+const Content = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+`
+
 const CoverImage = styled.div`
-  flex: 1;
   display: block;
   width: 50%;
   background-position: 50% 50%;
@@ -202,7 +206,6 @@ const CoverImage = styled.div`
 
 const Abstract = styled.div`
   margin: 72px 36px 0;
-  flex: 1;
   width: 50%;
 `
 

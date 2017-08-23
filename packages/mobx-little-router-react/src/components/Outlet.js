@@ -68,10 +68,6 @@ class Outlet extends Component {
     const prevNode = prevNodes[idx]
 
     const isTransitioning = !!(prevNodes.length && node !== prevNode)
-
-    if (idx === 1) {
-      console.log("\n\nRendering outlet", isTransitioning ? "transitioning" : "landed. ---")
-    }
     
     return (
       <div className={`outlet outlet-depth-${idx}`}>
