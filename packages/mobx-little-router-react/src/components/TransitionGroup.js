@@ -17,7 +17,8 @@ class TransitionGroup extends Component {
   props: {
     from: ?Object,
     to: ?Object,
-    isTransitioning: boolean
+    isTransitioning: boolean,
+    idx: number
   }
 
   transitionState: string

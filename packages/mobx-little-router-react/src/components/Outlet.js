@@ -67,9 +67,8 @@ class Outlet extends Component {
     const currentNode = this.findNode(currentNodes)
     const prevNode = this.findNode(prevNodes)
 
-    // If currentNode is going, then it is leaving (e.g. transitioning).
-    const isTransitioning = currentNode ? currentNode.value.isTransitioning : true
-
+    const isTransitioning = !!(prevNodes.length && currentNode !== prevNode)
+    
     const dataProps = {
       'data-depth': idx,
       'data-name': name
