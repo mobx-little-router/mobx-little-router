@@ -1,14 +1,12 @@
 // @flow
-import type { MatchResult, Params, RouteNode } from './routing/types'
+import type { MatchResult, RouteNode } from './routing/types'
 
 export class GuardFailure {
   error: any
   node: RouteNode
-  params: Params
-  constructor(error: any, node: RouteNode, params: Params) {
+  constructor(error: any, node: RouteNode) {
     this.error = error
     this.node = node
-    this.params = params
   }
 }
 
@@ -26,10 +24,8 @@ export class NoMatch {
 
 export class NavigationError {
   node: RouteNode
-  params: Params
-  constructor(node: RouteNode, params: Params) {
+  constructor(node: RouteNode) {
     this.node = node
-    this.params = params
   }
   toString() {
     return 'Unhandled navigation error'

@@ -198,142 +198,129 @@ describe('Scheduler', () => {
   })
 
   describe('Transitions', () => {
-    test('Transition hooks are called in order', async () => {
-      // Setup
-      const leaveSpy = jest.fn(() => Promise.resolve())
-      const enterSpy = jest.fn(() => Promise.resolve())
-      const rootNode = store.state.root
-      const todosRootNode = store.state.root.children[0].children[0]
-      const todosViewNode = store.state.root.children[0].children[0].children[1]
-      const projectsRootNode = store.state.root.children[0].children[1]
-      const projectsListNode = store.state.root.children[0].children[1].children[0]
-      const projectsViewNode = store.state.root.children[0].children[1].children[1]
-      updateNode(todosRootNode, { onLeave: leaveSpy, onEnter: enterSpy })
-      updateNode(todosViewNode, {
-        params: { id: '1' },
-        onLeave: leaveSpy,
-        onEnter: enterSpy
-      })
-      updateNode(projectsRootNode, { onLeave: leaveSpy, onEnter: enterSpy })
-      updateNode(projectsViewNode, { onLeave: leaveSpy, onEnter: enterSpy })
-      updateNode(projectsListNode, { onLeave: leaveSpy, onEnter: enterSpy })
-      updateLocation('/todos/1', [rootNode, todosRootNode, todosViewNode])
+    test(
+      'Nodes are called in order or deactivation and activation path',
+      async () => {
+        // Setup
+        const spy = jest.fn(() => Promise.resolve())
+        const rootNode = store.state.root
+        const todosRootNode = store.state.root.children[0].children[0]
+        const todosViewNode = store.state.root.children[0].children[0].children[1]
+        const projectsRootNode = store.state.root.children[0].children[1]
+        const projectsListNode = store.state.root.children[0].children[1].children[0]
+        const projectsViewNode = store.state.root.children[0].children[1].children[1]
+        updateNode(todosRootNode, { onTransition: spy })
+        updateNode(todosViewNode, { params: { id: '1' }, onTransition: spy })
+        updateNode(projectsRootNode, { onTransition: spy })
+        updateNode(projectsViewNode, { onTransition: spy })
+        updateNode(projectsListNode, { onTransition: spy })
+        updateLocation('/todos/1', [rootNode, todosRootNode, todosViewNode])
 
-      scheduler.scheduleNavigation({ pathname: '/projects/2' }, 'PUSH')
-      await scheduler.processNavigation()
+        scheduler.scheduleNavigation({ pathname: '/projects/2' }, 'PUSH')
+        await scheduler.processNavigation()
 
-      expect(store.location.pathname).toEqual('/projects/2/')
+        expect(store.location.pathname).toEqual('/projects/2/')
 
-      // Leave transition hooks are bottom up.
-      expect(
-        leaveSpy.mock.calls.map(args => ({
-          key: args[0].value.key,
-          path: args[0].value.path
-        }))
-      ).toEqual([
-        {
-          key: todosViewNode.value.key,
-          path: ':id'
-        },
-        {
-          key: todosRootNode.value.key,
-          path: 'todos'
-        }
-      ])
+        // Leave transition hooks are bottom up.
+        expect(
+          spy.mock.calls.map(args => ({
+            key: args[0].value.key,
+            path: args[0].value.path,
+            type: args[1]
+          }))
+        ).toEqual([
+          {
+            key: todosViewNode.value.key,
+            path: ':id',
+            type: 'leaving'
+          },
+          {
+            key: todosRootNode.value.key,
+            path: 'todos',
+            type: 'leaving'
+          },
+          {
+            key: projectsRootNode.value.key,
+            path: 'projects',
+            type: 'entering'
+          },
+          {
+            key: projectsViewNode.value.key,
+            path: ':id',
+            type: 'entering'
+          }
+        ])
 
-      // Enter transition hooks are top down.
-      expect(
-        enterSpy.mock.calls.map(args => ({
-          key: args[0].value.key,
-          path: args[0].value.path
-        }))
-      ).toEqual([
-        {
-          key: projectsRootNode.value.key,
-          path: 'projects'
-        },
-        {
-          key: projectsViewNode.value.key,
-          path: ':id'
-        }
-      ])
+        spy.mockClear()
+        scheduler.scheduleNavigation({ pathname: '/projects' }, 'PUSH')
+        await scheduler.processNavigation()
 
-      leaveSpy.mockClear()
-      enterSpy.mockClear()
-      scheduler.scheduleNavigation({ pathname: '/projects' }, 'PUSH')
-      await scheduler.processNavigation()
+        expect(store.location.pathname).toEqual('/projects/')
 
-      expect(store.location.pathname).toEqual('/projects/')
-
-      // Only the project view node is leaving.
-      expect(
-        leaveSpy.mock.calls.map(args => ({
-          key: args[0].value.key,
-          path: args[0].value.path
-        }))
-      ).toEqual([
-        {
-          key: projectsViewNode.value.key,
-          path: ':id'
-        }
-      ])
-
-      // Only the project list node is entering.
-      expect(
-        enterSpy.mock.calls.map(args => ({
-          key: args[0].value.key,
-          path: args[0].value.path
-        }))
-      ).toEqual([
-        {
-          key: projectsListNode.value.key,
-          path: ''
-        }
-      ])
-    })
+        // Only the project view node is leaving.
+        expect(
+          spy.mock.calls.map(args => ({
+            key: args[0].value.key,
+            path: args[0].value.path,
+            type: args[1]
+          }))
+        ).toEqual([
+          {
+            key: projectsViewNode.value.key,
+            path: ':id',
+            type: 'leaving'
+          },
+          {
+            key: projectsListNode.value.key,
+            path: '',
+            type: 'entering'
+          }
+        ])
+      }
+    )
 
     test('In progress transition will set location, nodes and prevNodes in store', async () => {
       // Setup
-      let nodesDuringLeave = []
-      let nodesDuringEnter = []
-      let prevNodesDuringLeave = []
-      let prevNodesDuringEnter = []
+      let nodesDuringListTransition = []
+      let nodesDuringViewTransition = []
+      let prevNodesDuringListTransition = []
+      let prevNodesDuringViewTransition = []
       const rootNode = store.state.root
       const appRootNode = store.state.root.children[0]
       const todosRootNode = store.state.root.children[0].children[0]
       const todosListNode = store.state.root.children[0].children[0].children[0]
       const todosViewNode = store.state.root.children[0].children[0].children[1]
       // Prepare spies and futures to assert in the middle of activation.
-      const listLeaveSpy = jest.fn(
+      const listTransitionSpy = jest.fn(
         () =>
           new Promise(res => {
-            prevNodesDuringLeave = store.prevNodes.slice()
-            nodesDuringLeave = store.nodes.slice()
+            prevNodesDuringListTransition = store.prevNodes.slice()
+            nodesDuringListTransition = store.nodes.slice()
             res()
           })
       )
-      const viewEnterSpy = jest.fn(
+      const viewTransitionSpy = jest.fn(
         () =>
           new Promise(res => {
-            prevNodesDuringEnter = store.prevNodes.slice()
-            nodesDuringEnter = store.nodes.slice()
+            prevNodesDuringViewTransition = store.prevNodes.slice()
+            nodesDuringViewTransition = store.nodes.slice()
             res()
           })
       )
-      updateNode(todosListNode, { onLeave: listLeaveSpy })
-      updateNode(todosViewNode, { onEnter: viewEnterSpy })
+      updateNode(todosListNode, { onTransition: listTransitionSpy })
+      updateNode(todosViewNode, { onTransition: viewTransitionSpy })
       updateLocation('/todos', [rootNode, appRootNode, todosRootNode, todosListNode])
 
       scheduler.scheduleNavigation({ pathname: '/todos/1' }, 'PUSH')
       await scheduler.processNavigation()
 
-      expect(nodesDuringLeave.length).toBe(4)
-      expect(nodesDuringEnter.length).toBe(4)
-      expect(prevNodesDuringLeave.length).toBe(4)
-      expect(prevNodesDuringEnter.length).toBe(4)
-      expect(prevNodesDuringEnter.map(x => x.value.path)).toEqual(['', '', 'todos', ''])
-      expect(nodesDuringEnter.map(x => x.value.path)).toEqual(['', '', 'todos', ':id'])
-      expect(nodesDuringEnter[3].value.params.id).toEqual('1')
+      expect(nodesDuringListTransition.length).toBe(4)
+      expect(nodesDuringViewTransition.length).toBe(4)
+      expect(prevNodesDuringListTransition.length).toBe(4)
+      expect(prevNodesDuringViewTransition.length).toBe(4)
+      expect(prevNodesDuringViewTransition.map(x => x.value.path)).toEqual(['', '', 'todos', ''])
+      expect(nodesDuringViewTransition.map(x => x.value.path)).toEqual(['', '', 'todos', ':id'])
+      expect(nodesDuringViewTransition[3].value.params.id).toEqual('1')
       expect(store.prevNodes.length).toBe(0) // Previous nodes are cleared after navigation ends.
     })
   })

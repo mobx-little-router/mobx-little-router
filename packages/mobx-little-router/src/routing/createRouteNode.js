@@ -9,30 +9,29 @@ import { TreeNode } from '../util/tree'
 import createKey from '../util/createKey'
 import * as m from './matchers'
 
-function alwaysContinue(__: *, ___: *) {
-  return Promise.resolve()
-}
-
-function nop() {}
+async function nop() {}
 
 export default function createRouteNode(config: Config): RouteNode {
   const matcher = config.match ? m[config.match] : m.partial
   return new TreeNode(
     {
-      key: config.key || createKey(6),
+      key: typeof config.key === 'string' ? config.key : createKey(6),
       path: config.path,
       matcher: matcher(config.path),
       data: config.data || {},
       params: config.data || {},
+      isTransitioning: config.isTransitioning || false,
+
       loadChildren: toLoadRouteNodeChildren(config.loadChildren),
 
       // Guards
-      canActivate: config.canActivate || alwaysContinue,
-      canDeactivate: config.canDeactivate || alwaysContinue,
+      canActivate: config.canActivate || nop,
+      canDeactivate: config.canDeactivate || nop,
 
       // Lifecycle callback
-      onEnter: config.onEnter || nop,
       onError: config.onError || null,
+      onTransition: config.onTransition || nop,
+      onEnter: config.onEnter || nop,
       onLeave: config.onLeave || nop
     },
     config.children ? config.children.map(createRouteNode) : []

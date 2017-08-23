@@ -1,11 +1,10 @@
 // @flow
 import type { Action } from 'history'
-import { toJS, autorun, extendObservable, runInAction } from 'mobx'
+import { autorun, extendObservable, runInAction } from 'mobx'
 import assertUrlFullyMatched from './assertUrlFullyMatched'
 import type { MatchResult, Location, RouteNode } from '../routing/types'
 import type RouterStore from '../routing/RouterStore'
 import areNodesEqual from '../routing/areNodesEqual'
-import shallowClone from '../routing/shallowClone'
 import shallowEqual from '../util/shallowEqual'
 import { differenceWith } from '../util/functional'
 import { GuardFailure } from '../errors'
@@ -15,13 +14,6 @@ import type { Event } from '../events'
 type NavigationParams = {
   location: Location,
   action: ?Action
-}
-
-function toRouteNodes(path: MatchResult[]): RouteNode[] {
-  return path.map(x => {
-    x.node.value.params = x.params
-    return x.node
-  })
 }
 
 export default class Scheduler {
@@ -98,15 +90,16 @@ export default class Scheduler {
       this.emit({ type: EventTypes.NAVIGATION_START, location })
 
       // This match call may have side-effects of loading dynamic children.
-      const path: MatchResult[] = await this.store.state.pathFromRoot(
+      const nextPath = await this.store.state.pathFromRoot(
         location.pathname,
         this.handleChildNodesExhausted
       )
+      const nextNodes = nextPath.map(x => x.node)
 
-      await assertUrlFullyMatched(location.pathname, path)
+      await assertUrlFullyMatched(location.pathname, nextPath)
 
       // We've found a match or unmatched error has been handled.
-      await this.runPathActivation(path)
+      await this.activate(nextNodes)
 
       // If all value resolved, then we're good to update store state.
       this.store.commit(location)
@@ -135,38 +128,31 @@ export default class Scheduler {
     }
   }
 
-  runPathActivation = async (activating: MatchResult[]) => {
+  activate = async (activating: RouteNode[]) => {
     try {
       const deactivating = differenceWith(
         areNodesEqual,
         this.store.nodes.slice(),
-        activating.map(x => x.node)
-      )
-        .map(node => ({
-          node,
-          remaining: '',
-          params: node.value.params || {}
-        }))
-        .reverse()
+        activating.slice()
+      ).reverse()
 
       // We don't need to activate nodes that are already active
       const newlyActivating = activating.filter(x => {
         return !this.store.nodes.some(y => {
-          return areNodesEqual(x.node, y)
+          return areNodesEqual(x, y)
         })
       })
 
       // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
-      await this.guardOnHook('canDeactivate', [], deactivating)
-      await this.guardOnHook('canActivate', [], newlyActivating)
+      await this.runGuard('canDeactivate', deactivating)
+      await this.runGuard('canActivate', newlyActivating)
 
-      this.store.updateNodes(toRouteNodes(activating))
+      this.store.updateNodes(activating)
 
-      // Run and wait on both leave and enter hook.
-      // TODO: Consider whether ordering here matters. Do we need to guarantee that leave is called before all enter?
+      // Run and wait on transition of deactivating and newly activating nodes.
       await Promise.all([
-        this.guardOnHook('onLeave', [], deactivating),
-        this.guardOnHook('onEnter', [], newlyActivating)
+        this.transitionNodes('leaving', deactivating),
+        this.transitionNodes('entering', newlyActivating)
       ])
     } catch (err) {
       // Make sure we chain errors back up!
@@ -174,36 +160,40 @@ export default class Scheduler {
     }
   }
 
-  guardOnHook = async (
-    type: *,
-    processed: MatchResult[],
-    remaining: MatchResult[]
-  ) => {
-    const [curr, ...rest] = remaining
-
-    // Done!
-    if (!curr) {
-      return
-    }
-
-    const { params, node } = curr
-    const { value } = node
-
-    // Pass in a newly cloned node with the new params set.
-    const updatedNode = shallowClone(node)
-    updatedNode.value.params = params
-
-    const promise = typeof value[type] === 'function' ? value[type](updatedNode) : Promise.resolve()
-    const guard = promise !== undefined && promise.catch(error => {
-      throw new GuardFailure(error, node, params)
-    })
-    try {
+  // Runs guards (if they exist) on each node until they all pass.
+  // If one guard fails, then the entire function rejects.
+  runGuard = async (type: 'canDeactivate' | 'canActivate', nodes: RouteNode[]) => {
+    for (const node of nodes) {
+      const { value } = node
+      const promise = typeof value[type] === 'function'
+        ? value[type](node)
+        : Promise.resolve()
+      const guard =
+        promise !== undefined &&
+        promise.catch(error => {
+          throw new GuardFailure(error, node)
+        })
       await guard
-      // Run the next guards.
-      await this.guardOnHook(type, [curr], rest)
-    } catch (err) {
-      // When we encounter a failed guard, just stop navigation.
-      throw err
+    }
+  }
+
+  // Runs all transition callback for each node in order.
+  // While a node is in the middle of a transition, its `isTransitioning` property will be `true`.
+  transitionNodes = async (type: 'entering' | 'leaving', nodes: RouteNode[]) => {
+    for (const node of nodes) {
+      const { value } = node
+      if (typeof value.onTransition === 'function') {
+        runInAction(() => {
+          node.value.isTransitioning = true
+        })
+        try {
+          await value.onTransition(node, type)
+        } finally {
+          runInAction(() => {
+            node.value.isTransitioning = true
+          })
+        }
+      }
     }
   }
 }

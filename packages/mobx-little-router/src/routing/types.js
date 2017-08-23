@@ -22,11 +22,13 @@ export type Config = {
   data?: Object,
   key?: string,
   children?: Config[],
+  isTransitioning?: boolean,
   loadChildren?: LoadChildrenConfigFn,
   match?: 'full' | 'partial',
   canActivate?: GuardFn,
   canDeactivate?: GuardFn,
   onError?: ErrorHandler,
+  onTransition?: TransitionFn,
   onEnter?: LifecycleFn,
   onLeave?: LifecycleFn
 }
@@ -35,7 +37,8 @@ export type LoadChildrenConfigFn = () => Promise<Config[]>
 
 export type GuardFn = (node: RouteNode) => Promise<void>
 
-export type LifecycleFn = (node: RouteNode) => void
+export type LifecycleFn = (node: RouteNode) => Promise<void>
+export type TransitionFn  = (node: RouteNode, type: 'entering' | 'leaving') => Promise<void>
 
 export type ErrorHandler = (node: RouteNode) => Promise<void>
 
@@ -50,11 +53,13 @@ export type RouteValue = {
   // Extra data that can be used to provide view specific functionality.
   // e.g. Route component, loading component, etc.
   data: Object,
+  isTransitioning: boolean,
   matcher: MatchFn,
   loadChildren?: null | LoadChildrenRouteNode,
   canActivate: GuardFn,
   canDeactivate: GuardFn,
   onError: null | ErrorHandler,
+  onTransition: TransitionFn,
   onEnter: LifecycleFn,
   onLeave: LifecycleFn
 }

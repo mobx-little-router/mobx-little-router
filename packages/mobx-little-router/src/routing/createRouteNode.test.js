@@ -8,8 +8,8 @@ describe('createRouteNode', () => {
       children: [
         {
           path: 'a/b/c',
-          onEnter: () => {},
-          onLeave: () => {},
+          onEnter: async () => {},
+          onLeave: async () => {},
           canActivate: async () => {},
           canDeactivate: async () => {},
           data: { msg: 'hello' },
