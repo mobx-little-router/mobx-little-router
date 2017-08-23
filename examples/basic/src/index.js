@@ -53,49 +53,22 @@ const router = install({
       data: { component: ShowsRoute },
       children: [{
         path: ':id',
-        data: { component: ShowRoute },
-        // canDeactivate: [(node) => {
-        //   return new Promise((resolve, reject) => {
-        //     if (window.confirm("Are you sure")) {
-        //       resolve()
-        //     } else {
-        //       reject()
-        //     }
-        //   })
-        // }],
+        data: {
+          component: ShowRoute,
+          outlet: 'modal'
+        },
         onEnter: [(node) => {
-          //node.value.data.transitionState = "entering"
-          // return new Promise((resolve, reject) => {
-          //   if (window.confirm("Enter: Are you sure")) {
-          //     resolve()
-          //   } else {
-          //     reject()
-          //   }
-          // })
-          // setTimeout(() => {
-          //   //node.value.data.transitionState = "enter"
-          // }, 20000)
-          // return Promise.resolve()
-
           return new Promise((resolve, reject) => {
             setTimeout(() => {
               resolve()
-            }, 500)
+            }, 400)
           })
         }],
         onLeave: [(node) => {
-          //node.value.data.transitionState = "leaving"
-          // return new Promise((resolve, reject) => {
-          //   if (window.confirm("Leave: Are you sure")) {
-          //     resolve()
-          //   } else {
-          //     reject()
-          //   }
-          // })
           return new Promise((resolve, reject) => {
             setTimeout(() => {
               resolve()
-            }, 500)
+            }, 400)
           })
         }]
       }]

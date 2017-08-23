@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { observer } from 'mobx-react'
 import { extendObservable } from 'mobx'
-import { Link, Outlet } from 'mobx-little-router-react'
+import { Link } from 'mobx-little-router-react'
 import styled from 'styled-components'
 
 class IndexRoute extends Component {
@@ -26,25 +26,22 @@ class IndexRoute extends Component {
 
   render() {
     return (
-      <div>
-        <Container>
-          <SearchHeader>
-            <SearchInput onChange={ev => this.onSearch(ev.target.value)} defaultValue="gundam" />
-          </SearchHeader>
-          <SearchResults>
-            {this.collection.map(show =>
-              <Show key={show.id}>
-                <CoverImage to={`/shows/${show.id}`} style={{backgroundImage: `url(${show.image && show.image.medium})` }}/>
-                <Abstract>
-                  <ShowType>{show.type}</ShowType>
-                  <ShowName to={`/shows/${show.id}`}>{show.name}</ShowName>
-                </Abstract>
-              </Show>
-            )}
-          </SearchResults>
-        </Container>
-        <Outlet/>
-      </div>
+      <Container>
+        <SearchHeader>
+          <SearchInput onChange={ev => this.onSearch(ev.target.value)} defaultValue="gundam" />
+        </SearchHeader>
+        <SearchResults>
+          {this.collection.map(show =>
+            <Show key={show.id}>
+              <CoverImage to={`/shows/${show.id}`} style={{backgroundImage: `url(${show.image && show.image.medium})` }}/>
+              <Abstract>
+                <ShowType>{show.type}</ShowType>
+                <ShowName to={`/shows/${show.id}`}>{show.name}</ShowName>
+              </Abstract>
+            </Show>
+          )}
+        </SearchResults>
+      </Container>
     )
   }
 }

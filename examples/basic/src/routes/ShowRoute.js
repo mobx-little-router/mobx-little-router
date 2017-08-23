@@ -73,7 +73,7 @@ const ModalDialog = styled.div`
   height: 100%;
   background-color: white;
   overflow: hidden;
-  box-shadow: 0 1px 4px 1px rgba(0,0,0,0.5);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2), 0 1px 16px 1px rgba(0,0,0,0.2);
   border-radius: 2px;
 `
 
