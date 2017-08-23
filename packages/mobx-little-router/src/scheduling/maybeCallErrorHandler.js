@@ -12,9 +12,11 @@ export default function maybeCallErrorHandler(path: MatchResult[]) {
   while (idx >= 0) {
     const result = path[idx]
     const { node: { value } } = result
+
+    const { onError } = value
     // Try to run onError handler, if it resolves then the entire path can recover.
-    handler = typeof value.onError === 'function'
-      ? handler.catch(() => value.onError(result.node))
+    handler = typeof onError === 'function'
+      ? handler.catch(() => onError(result.node))
       : handler
     idx--
   }

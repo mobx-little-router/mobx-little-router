@@ -20,6 +20,7 @@ export type Href = Location | string
 export type Config = {
   path: string,
   data?: Object,
+  key?: string,
   children?: Config[],
   loadChildren?: LoadChildrenConfigFn,
   match?: 'full' | 'partial',
@@ -45,7 +46,7 @@ export type RouteValue = {
   // Original path provided to this route node.
   path: string,
   // Matched path parameters.
-  params: null | Params,
+  params: Params,
   // Extra data that can be used to provide view specific functionality.
   // e.g. Route component, loading component, etc.
   data: Object,

@@ -16,10 +16,6 @@ export class TreeNode<T> {
       children: observable.array(children)
     })
   }
-
-  toString() {
-    return JSON.stringify(this.value, null, 2)
-  }
 }
 
 export type Matcher<T> = (n: TreeNode<T>) => Promise<boolean>

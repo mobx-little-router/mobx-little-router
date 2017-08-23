@@ -1,16 +1,16 @@
 // @flow
 import type { Action } from 'history'
-import { autorun, extendObservable, runInAction } from 'mobx'
+import { toJS, autorun, extendObservable, runInAction } from 'mobx'
 import assertUrlFullyMatched from './assertUrlFullyMatched'
 import type { MatchResult, Location, RouteNode } from '../routing/types'
 import type RouterStore from '../routing/RouterStore'
 import areNodesEqual from '../routing/areNodesEqual'
+import shallowClone from '../routing/shallowClone'
 import shallowEqual from '../util/shallowEqual'
 import { differenceWith } from '../util/functional'
 import { GuardFailure } from '../errors'
 import { EventTypes } from '../events'
 import type { Event } from '../events'
-import maybeCallErrorHandler from './maybeCallErrorHandler'
 
 type NavigationParams = {
   location: Location,
@@ -189,7 +189,11 @@ export default class Scheduler {
     const { params, node } = curr
     const { value } = node
 
-    const promise = typeof value[type] === 'function' ? value[type](node) : Promise.resolve()
+    // Pass in a newly cloned node with the new params set.
+    const updatedNode = shallowClone(node)
+    updatedNode.value.params = params
+
+    const promise = typeof value[type] === 'function' ? value[type](updatedNode) : Promise.resolve()
     const guard = promise !== undefined && promise.catch(error => {
       throw new GuardFailure(error, node, params)
     })

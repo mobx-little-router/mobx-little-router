@@ -68,9 +68,9 @@
     "transform": {
       "^.+\\.jsx?$": "babel-jest"
     },
-    "setupFiles": [
+    "setupTestFrameworkScriptFile":
       "<rootDir>/config/jest.js"
-    ],
+    ,
     "testMatch": [
       "<rootDir>/src/**/__tests__/**/*.js",
       "<rootDir>/src/**/?(*.)test.js"

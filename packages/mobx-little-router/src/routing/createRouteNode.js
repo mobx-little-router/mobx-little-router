@@ -19,11 +19,11 @@ export default function createRouteNode(config: Config): RouteNode {
   const matcher = config.match ? m[config.match] : m.partial
   return new TreeNode(
     {
-      key: createKey(6),
+      key: config.key || createKey(6),
       path: config.path,
       matcher: matcher(config.path),
       data: config.data || {},
-      params: null,
+      params: config.data || {},
       loadChildren: toLoadRouteNodeChildren(config.loadChildren),
 
       // Guards

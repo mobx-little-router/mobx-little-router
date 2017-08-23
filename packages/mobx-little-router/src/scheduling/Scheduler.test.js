@@ -54,12 +54,12 @@ describe('Scheduler', () => {
       expect(spy).toHaveBeenCalledTimes(3)
 
       // Activation is called in bottom-up order.
-      expect(spy.mock.calls[0][0]).toEqual(rootNode)
-      expect(spy.mock.calls[1][0]).toEqual(todosRootNode)
-      expect(spy.mock.calls[2][0]).toEqual(todosViewNode)
+      expect(spy.mock.calls[0][0].value.key).toEqual(rootNode.value.key)
+      expect(spy.mock.calls[1][0].value.key).toEqual(todosRootNode.value.key)
+      expect(spy.mock.calls[2][0].value.key).toEqual(todosViewNode.value.key)
 
       // Matched params are passed to hook.
-      expect(spy.mock.calls[2][1]).toEqual({ id: '123' })
+      expect(spy.mock.calls[2][0].value.params).toEqual({ id: '123' })
 
       // Nodes are marked as active
       expect(store.nodes.length).toEqual(4)
@@ -95,7 +95,7 @@ describe('Scheduler', () => {
       // Deactivation rejection blocks remaining nodes up the path.
       expect(rootSpy).not.toHaveBeenCalled()
       expect(viewSpy).toHaveBeenCalledTimes(1)
-      expect(viewSpy.mock.calls[0][0]).toEqual(todosViewNode)
+      expect(viewSpy.mock.calls[0][0].value.key).toEqual(todosViewNode.value.key)
     })
 
     test('Deactivation successful', async () => {
@@ -121,8 +121,8 @@ describe('Scheduler', () => {
       expect(spy).toHaveBeenCalledTimes(2)
 
       // Deactivation is called in bottom-up order.
-      expect(spy.mock.calls[0][0]).toEqual(todosViewNode)
-      expect(spy.mock.calls[1][0]).toEqual(todosRootNode)
+      expect(spy.mock.calls[0][0].value.key).toEqual(todosViewNode.value.key)
+      expect(spy.mock.calls[1][0].value.key).toEqual(todosRootNode.value.key)
 
       // Nodes are marked as active
       expect(store.nodes.length).toEqual(2)
@@ -162,7 +162,7 @@ describe('Scheduler', () => {
   })
 
   describe('Events', () => {
-    test.only('Navigation start, error, end', async () => {
+    test('Navigation start, error, end', async () => {
       const spy = jest.fn()
       autorun(() => spy(scheduler.event))
 
@@ -338,17 +338,8 @@ describe('Scheduler', () => {
     })
   })
 
-  function updateNode(node: *, opts: Object) {
-    const { canActivate, canDeactivate, onLeave, onEnter, ...rest } = opts
-    store.updateNode(node, {
-      ...rest,
-      hooks: {
-        canActivate: canActivate ? [canActivate] : [],
-        canDeactivate: canDeactivate ? [canDeactivate] : [],
-        onLeave: onLeave ? [onLeave] : [],
-        onEnter: onEnter ? [onEnter] : []
-      }
-    })
+  function updateNode(node: *, props: Object) {
+    store.updateNode(node, props)
   }
 
   function updateLocation(location: *, nodes: *) {

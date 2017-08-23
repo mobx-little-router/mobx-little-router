@@ -1,3 +1,4 @@
-// Jest setup
-const mobx = require('mobx')
-mobx.useStrict(true)
+// @flow
+import { useStrict } from 'mobx'
+
+useStrict(true)
