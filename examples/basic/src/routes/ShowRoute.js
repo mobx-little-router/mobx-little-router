@@ -25,7 +25,7 @@ class ShowRoute extends Component {
   fetchModel = async (props) => {
     const { params } = props
 
-    const res = await fetch(`https://api.tvmaze.com/shows/${params.id}`)
+    const res = await fetch(`https://api.tvmaze.com/shows/${params.id}?embed=cast`)
     const data = await res.json()
 
     this.model = data
@@ -44,10 +44,21 @@ class ShowRoute extends Component {
               <Content>
                 <CoverImage style={{ backgroundImage: `url(${this.model.image.original})` }} />
                 <Abstract>
-                  <ShowType>{this.model.type}</ShowType>
+                  <Network>{this.model.network.name}</Network>
                   <Title>{this.model.name}</Title>
+                  <OfficialSite href={this.model.officialSite} target="_blank">Official site</OfficialSite>
                   <Summary dangerouslySetInnerHTML={{ __html: this.model.summary }} />
                   <Tags>{this.model.genres.map((genre, idx) => <Link key={idx} to={`/tags/${genre}`}>{genre}</Link>)}</Tags>
+                
+                  <Cast>
+                    <h2>Cast</h2>
+                    {this.model._embedded.cast.map((member, idx) => 
+                      <CastMember key={idx}>
+                        <Character>{member.character.name}</Character>
+                        <Actor to={`/shows/${this.model.id}/actors/${member.person.id}`}>{member.person.name}</Actor>
+                      </CastMember>
+                    )}
+                  </Cast>
                 </Abstract>
               </Content>
             }
@@ -205,8 +216,9 @@ const CoverImage = styled.div`
 `
 
 const Abstract = styled.div`
-  margin: 72px 36px 0;
+  padding: 72px 36px 0;
   width: 50%;
+  overflow-y: auto;
 `
 
 const Title = styled.h1`
@@ -221,13 +233,27 @@ const Summary = styled.p`
 `
 
 const ShowType = styled.div`
+
+`
+
+const Network = styled.div`
   text-transform: uppercase;
   color: #aaa;
   font-size: 12px;
 `
 
+const OfficialSite = styled.a`
+  font-size: 13px;
+  line-height: 18px;
+  color: #777;
+
+  &:hover {
+    color: #333;
+  }
+`
+
 const Tags = styled.div`
-  margin: 9px 0;
+  margin: 18px 0;
 
   > a {
     font-size: 12px;
@@ -240,6 +266,31 @@ const Tags = styled.div`
     padding: 0 9px;
     line-height: 18px;
     color: #999;
+  }
+`
+
+const Cast = styled.div`
+  font-size: 13px;
+  line-height: 18px;
+  margin: 18px 0 36px;
+`
+
+const CastMember = styled.div`
+  display: flex;
+  flex-direction: row;
+`
+
+const Character = styled.div`
+  width: 50%;
+`
+
+const Actor = styled(Link)`
+  width: 50%;
+
+  color: #777;
+
+  &:hover {
+    color: #333;
   }
 `
 
