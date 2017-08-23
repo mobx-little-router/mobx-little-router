@@ -23,14 +23,12 @@ const router = install({
     { 
       path: 'about',
       data: { component: AboutRoute },
-      onEnter: [delay(400)],
-      onLeave: [delay(400)]
+      onTransition: delay(400)
     },
     {
       path: 'contact',
       data: { component: ContactRoute },
-      onEnter: [delay(400)],
-      onLeave: [delay(400)]
+      onTransition: delay(400)
     },
     {
       path: 'shows',
@@ -41,8 +39,7 @@ const router = install({
           component: ShowRoute,
           outlet: 'modal'
         },
-        onEnter: [delay(400)],
-        onLeave: [delay(400)]
+        onTransition: delay(400)
       }]
     },
     {
@@ -51,8 +48,7 @@ const router = install({
         component: ActorRoute,
         outlet: 'modal'
       },
-      onEnter: [delay(400)],
-      onLeave: [delay(400)]
+      onTransition: delay(400)
     },
     {
       path: 'tags/:tag',
