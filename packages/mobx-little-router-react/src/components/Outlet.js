@@ -61,14 +61,14 @@ class Outlet extends Component {
     const { router, name } = this.props
     const idx = this.getCurrentIndex()
 
-    const currentNodes = filterNodes(router.store.nodes)
+    const currNodes = filterNodes(router.store.nodes)
     const prevNodes = filterNodes(router.store.prevNodes)
 
-    const currentNode = this.findNode(currentNodes)
-    const prevNode = this.findNode(prevNodes)
+    const to = this.findNode(currNodes)
+    const from = this.findNode(prevNodes)
 
-    const isTransitioning = !!(prevNodes.length && ((currentNode && currentNode.value.key) !== (prevNode && prevNode.value.key)))
-    
+    const isTransitioning = !!(prevNodes.length && ((to && to.value.key) !== (from && from.value.key)))
+
     const dataProps = {
       'data-depth': idx,
       'data-name': name
@@ -76,7 +76,7 @@ class Outlet extends Component {
 
     return (
       <div className={`outlet`} {...dataProps}>
-        <TransitionGroup from={prevNode} to={currentNode} isTransitioning={isTransitioning} />
+        <TransitionGroup to={to} from={from} isTransitioning={isTransitioning} />
       </div>
     )
   }
