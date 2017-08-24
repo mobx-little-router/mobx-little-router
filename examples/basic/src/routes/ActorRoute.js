@@ -48,7 +48,7 @@ class ActorRoute extends Component {
                 {this.model.image && <CoverImage style={{ backgroundImage: `url(${this.model.image.original})` }} />}
                 <Abstract>
                   <Title>{this.model.name}</Title>
-
+                  <Summary/>
                   <Credits>
                     <h2>Credits</h2>
                     {this.model.credits.map((credit, idx) => 
@@ -228,43 +228,6 @@ const Summary = styled.p`
   color: #666;
   line-height: 18px;
   font-size: 13px;
-`
-
-const ShowType = styled.div`
-
-`
-
-const Network = styled.div`
-  text-transform: uppercase;
-  color: #aaa;
-  font-size: 12px;
-`
-
-const OfficialSite = styled.a`
-  font-size: 13px;
-  line-height: 18px;
-  color: #777;
-
-  &:hover {
-    color: #333;
-  }
-`
-
-const Tags = styled.div`
-  margin: 18px 0;
-
-  > a {
-    font-size: 12px;
-    color: #079;
-    margin-right: 9px;
-    display: inline-block;
-    text-decoration: none;
-    border-radius: 9px;
-    background-color: #eee;
-    padding: 0 9px;
-    line-height: 18px;
-    color: #999;
-  }
 `
 
 const Credits = styled.div`
