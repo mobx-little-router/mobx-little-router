@@ -13,6 +13,9 @@ async function nop() {}
 
 export default function createRouteNode(config: Config): RouteNode {
   const matcher = config.match ? m[config.match] : m.partial
+  if (typeof config.path !== 'string') {
+    throw new TypeError('Invalid route node configuration')
+  }
   return createTreeNode(
     {
       key: typeof config.key === 'string' ? config.key : createKey(6),

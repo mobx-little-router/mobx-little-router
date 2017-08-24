@@ -35,15 +35,16 @@ describe('createRouteNode', () => {
   test('Sets correct dynamic children loader', async () => {
     const config = {
       path: '',
-      loadChildren: () => Promise.resolve([
-        { path: 'a' },
-        { path: 'b' },
-        { path: 'c' }
-      ])
+      loadChildren: () => Promise.resolve([{ path: 'a' }, { path: 'b' }, { path: 'c' }])
     }
 
     const root = createRouteNode(config)
     const nodes = root.value.loadChildren ? await root.value.loadChildren() : []
     expect(nodes.map(n => n.value.path)).toEqual(['a', 'b', 'c'])
+  })
+
+  test('Validation', () => {
+    const x: any = {}
+    expect(() => createRouteNode(x)).toThrow()
   })
 })
