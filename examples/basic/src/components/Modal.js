@@ -112,6 +112,7 @@ const CloseButton = styled(Link) `
   font-size: 23px;
   color: #333;
   margin: 9px;
+  z-index: 2;
 
   &:hover {
     opacity: 0.7;
