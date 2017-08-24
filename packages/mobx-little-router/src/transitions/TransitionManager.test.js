@@ -9,34 +9,6 @@ describe('TransitionManager', () => {
     mgr = new TransitionManager()
   })
 
-  test('Each transition flags current node as `isTransitioning`', async () => {
-    const nodes = [createNode('a'), createNode('b'), createNode('c')]
-    const transition = mgr.run('entering', nodes)
-
-    expect(nodes[0].value.isTransitioning).toBe(true)
-    expect(nodes[1].value.isTransitioning).toBe(false)
-    expect(nodes[2].value.isTransitioning).toBe(false)
-
-    await tick()
-
-    expect(nodes[0].value.isTransitioning).toBe(false)
-    expect(nodes[1].value.isTransitioning).toBe(true)
-    expect(nodes[2].value.isTransitioning).toBe(false)
-
-    await tick()
-
-    expect(nodes[0].value.isTransitioning).toBe(false)
-    expect(nodes[1].value.isTransitioning).toBe(false)
-    expect(nodes[2].value.isTransitioning).toBe(true)
-
-    await tick()
-    await transition
-
-    expect(nodes[0].value.isTransitioning).toBe(false)
-    expect(nodes[1].value.isTransitioning).toBe(false)
-    expect(nodes[2].value.isTransitioning).toBe(false)
-  })
-
   test('Transition is cancellable from event', async () => {
     const spyA = jest.fn((evt: *) => evt.cancel())
     const spyB = jest.fn(() => Promise.resolve())
@@ -56,7 +28,6 @@ function createNode(id: string, callback: *) {
   return createTreeNode(
     {
       id,
-      isTransitioning: false,
       onTransition: callback || jest.fn(() => onTick())
     },
     []

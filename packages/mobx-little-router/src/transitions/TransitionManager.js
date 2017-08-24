@@ -33,20 +33,11 @@ export default class TransitionManager {
 
       const { value: { onTransition } } = item
       if (typeof onTransition === 'function') {
-        runInAction(() => {
-          item.value.isTransitioning = true
+        await onTransition({
+          type,
+          node: item,
+          cancel: () => canceller()
         })
-        try {
-          await onTransition({
-            type,
-            node: item,
-            cancel: () => canceller()
-          })
-        } finally {
-          runInAction(() => {
-            item.value.isTransitioning = false
-          })
-        }
       }
     }
   }

@@ -2,15 +2,16 @@
 import type { Action } from 'history'
 import { autorun, extendObservable, runInAction } from 'mobx'
 import assertUrlFullyMatched from './assertUrlFullyMatched'
-import type { Location, RouteNode } from '../routing/types'
+import type { Location, MatchResult, RouteNode } from '../routing/types'
 import type RouterStore from '../routing/RouterStore'
 import TransitionManager from '../transitions/TransitionManager'
 import areNodesEqual from '../routing/areNodesEqual'
 import shallowEqual from '../util/shallowEqual'
+import shallowClone from '../routing/shallowClone'
 import { differenceWith } from '../util/functional'
 import { GuardFailure } from '../errors'
-import { EventTypes } from '../events'
 import type { Event } from '../events'
+import { EventTypes } from '../events'
 
 type NavigationParams = {
   location: Location,
@@ -35,7 +36,7 @@ export default class Scheduler {
   }
 
   start() {
-    this.disposer = autorun(this.processNavigation)
+    this.disposer = autorun(this.processNextNavigation)
   }
 
   stop() {
@@ -77,14 +78,8 @@ export default class Scheduler {
     })
   }
 
-  clearNavigation() {
-    runInAction(() => {
-      this.navigation = null
-    })
-  }
-
-  processNavigation = async () => {
-    const { navigation } = this
+  processNextNavigation = async () => {
+    const { navigation, store } = this
     if (!navigation) return
 
     const { location } = navigation
@@ -93,24 +88,41 @@ export default class Scheduler {
       this.emit({ type: EventTypes.NAVIGATION_START, location })
 
       // This match call may have side-effects of loading dynamic children.
-      const nextPath = await this.store.state.pathFromRoot(
+      const nextPath = await store.state.pathFromRoot(
         location.pathname,
-        this.handleChildNodesExhausted
+        this.handleLeafNodeReached
       )
-      const nextNodes = nextPath.map(x => x.node)
+      const nextNodes = toRouteNodes(nextPath)
 
       await assertUrlFullyMatched(location.pathname, nextPath)
 
       // We've found a match or unmatched error has been handled.
-      await this.activate(nextNodes)
+      const { activating, deactivating } = await this.getActiveNodesDifference(
+        store.nodes.slice(),
+        nextNodes
+      )
+
+      // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
+      await this.runGuard('canDeactivate', deactivating)
+      await this.runGuard('canActivate', activating)
+
+      store.updateNodes(nextNodes)
+
+      // Run and wait on transition of deactivating and newly activating nodes.
+      await Promise.all([
+        this.transitionMgr.run('leaving', deactivating),
+        this.transitionMgr.run('entering', activating)
+      ])
 
       // If all value resolved, then we're good to update store state.
-      this.store.commit(location)
+      store.commit(location)
     } catch (error) {
-      this.store.setError(error)
+      store.setError(error)
       this.emit({ type: EventTypes.NAVIGATION_ERROR, error, location })
     } finally {
-      this.clearNavigation()
+      runInAction(() => {
+        this.navigation = null
+      })
       this.emit({ type: EventTypes.NAVIGATION_END, location })
     }
   }
@@ -118,7 +130,7 @@ export default class Scheduler {
   // This method tries to resolve dynamic children on the currently matching node.
   // If there are children available, load them and then continue by resolving `true`.
   // Otherwise, abort by resolving `false`. Rejection means an unexpected error.
-  handleChildNodesExhausted = async (lastMatchedNode: RouteNode) => {
+  handleLeafNodeReached = async (lastMatchedNode: RouteNode) => {
     // If there are dynamic children, try to load and continue.
     if (typeof lastMatchedNode.value.loadChildren === 'function') {
       const children = await lastMatchedNode.value.loadChildren()
@@ -131,32 +143,17 @@ export default class Scheduler {
     }
   }
 
-  activate = async (activating: RouteNode[]) => {
+  getActiveNodesDifference = async (currNodes: RouteNode[], nextNodes: RouteNode[]) => {
     try {
-      const deactivating = differenceWith(
-        areNodesEqual,
-        this.store.nodes.slice(),
-        activating.slice()
-      ).reverse()
+      const deactivating = differenceWith(areNodesEqual, currNodes, nextNodes).reverse()
 
-      // We don't need to activate nodes that are already active
-      const newlyActivating = activating.filter(x => {
-        return !this.store.nodes.some(y => {
+      const activating = nextNodes.filter(x => {
+        return !currNodes.some(y => {
           return areNodesEqual(x, y)
         })
       })
 
-      // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
-      await this.runGuard('canDeactivate', deactivating)
-      await this.runGuard('canActivate', newlyActivating)
-
-      this.store.updateNodes(activating)
-
-      // Run and wait on transition of deactivating and newly activating nodes.
-      await Promise.all([
-        this.transitionMgr.run('leaving', deactivating),
-        this.transitionMgr.run('entering', newlyActivating)
-      ])
+      return { deactivating, activating }
     } catch (err) {
       // Make sure we chain errors back up!
       throw err
@@ -187,4 +184,12 @@ function normalizePath(x: string) {
   } else {
     return `${x}/`
   }
+}
+
+function toRouteNodes(nextPath) {
+  return nextPath.map(({ node, params }) => {
+    const _node = shallowClone(node)
+    _node.value.params = params
+    return _node
+  })
 }

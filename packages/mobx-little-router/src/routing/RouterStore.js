@@ -72,8 +72,19 @@ class RouterStore {
 
   updateNodes(nodes: RouteNode[]) {
     runInAction(() => {
+      // Ensures we keep the same node instances in cache with updated params.
+      const existing = nodes.map(x => {
+        const n = this.cache.get(x.value.key)
+        if (n) {
+          this.updateNode(x, x.value)
+          return n
+        } else {
+          this.cache.set(x.value.key, x)
+          return x
+        }
+      })
       this.prevNodes.replace(this.nodes.slice())
-      this.nodes.replace(nodes)
+      this.nodes.replace(existing)
     })
   }
   

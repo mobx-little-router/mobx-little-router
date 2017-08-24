@@ -20,7 +20,7 @@ describe('Scheduler', () => {
       updateNode(todosRootNode, { canActivate: spy })
       scheduler.scheduleNavigation({ pathname: '/todos' }, 'PUSH')
 
-      await scheduler.processNavigation()
+      await scheduler.processNextNavigation()
 
       // Navigation should be blocked.
       expect(store.location.pathname).toBe(undefined)
@@ -35,14 +35,15 @@ describe('Scheduler', () => {
     test('Activation successful', async () => {
       const spy = jest.fn(() => Promise.resolve())
       const rootNode = store.state.root
-      const todosRootNode = store.state.root.children[0].children[0]
-      const todosViewNode = store.state.root.children[0].children[0].children[1]
+      const appRootNode = store.state.root.children[0]
+      const todosRootNode = appRootNode.children[0]
+      const todosViewNode = appRootNode.children[0].children[1]
       updateNode(rootNode, { canActivate: spy })
       updateNode(todosRootNode, { canActivate: spy })
       updateNode(todosViewNode, { canActivate: spy })
       scheduler.scheduleNavigation({ pathname: '/todos/123' }, 'PUSH')
 
-      await scheduler.processNavigation()
+      await scheduler.processNextNavigation()
 
       // Navigation should be processed.
       expect(toJS(store.location)).toEqual({ pathname: '/todos/123/' })
@@ -63,6 +64,17 @@ describe('Scheduler', () => {
 
       // Nodes are marked as active
       expect(store.nodes.length).toEqual(4)
+
+      // Instance references should be kept
+      expect(store.state.root).toBe(rootNode)
+      expect(store.state.root.children[0]).toBe(appRootNode)
+      expect(store.state.root.children[0].children[0]).toBe(todosRootNode)
+      expect(store.state.root.children[0].children[0].children[1]).toBe(todosViewNode)
+      expect(store.nodes[0]).toBe(rootNode)
+      expect(store.nodes[1]).toBe(appRootNode)
+      expect(store.nodes[2]).toBe(todosRootNode)
+      expect(store.nodes[3]).toBe(todosViewNode)
+
       expect(store.nodes.map(node => node.value.path)).toEqual(['', '', 'todos', ':id'])
       expect(store.nodes.map(node => node.value.params)).toEqual([
         {},
@@ -76,15 +88,15 @@ describe('Scheduler', () => {
       const rootSpy = jest.fn(() => Promise.resolve())
       const viewSpy = jest.fn(() => Promise.reject())
       const rootNode = store.state.root
-      const todosRootNode = store.state.root.children[0].children[1]
-      const todosViewNode = store.state.root.children[0].children[1].children[1]
+      const todosRootNode = rootNode.children[0].children[1]
+      const todosViewNode = rootNode.children[0].children[1].children[1]
       updateNode(todosRootNode, { canDeactivate: rootSpy })
       updateNode(todosViewNode, { canDeactivate: viewSpy })
       store.updateNodes([rootNode, todosRootNode, todosViewNode])
       store.location.pathname = '/todos/123'
       scheduler.scheduleNavigation({ pathname: '/' }, 'PUSH')
 
-      await scheduler.processNavigation()
+      await scheduler.processNextNavigation()
 
       // Navigation should be processed.
       expect(toJS(store.location.pathname)).toEqual('/todos/123')
@@ -109,7 +121,7 @@ describe('Scheduler', () => {
       store.updateNodes([rootNode, todosRootNode, todosViewNode])
       scheduler.scheduleNavigation({ pathname: '/' }, 'PUSH')
 
-      await scheduler.processNavigation()
+      await scheduler.processNextNavigation()
 
       // Navigation should be processed.
       expect(toJS(store.location)).toEqual({ pathname: '/' })
@@ -133,7 +145,7 @@ describe('Scheduler', () => {
   describe('Errors', () => {
     test('Handling unmatched segments', async () => {
       scheduler.scheduleNavigation({ pathname: '/nope/nope/nope' }, 'PUSH')
-      await scheduler.processNavigation()
+      await scheduler.processNextNavigation()
       expect(store.location.pathname).toBe(undefined)
       expect(store.error).toBeDefined()
       expect(store.error && store.error.toString()).toMatch(/No match/)
@@ -155,7 +167,7 @@ describe('Scheduler', () => {
 
       scheduler.scheduleNavigation({ pathname: '/todos/123/edit/preview' }, 'PUSH')
 
-      await scheduler.processNavigation()
+      await scheduler.processNextNavigation()
 
       expect(store.location.pathname).toEqual('/todos/123/edit/preview/')
     })
@@ -168,7 +180,7 @@ describe('Scheduler', () => {
       autorun(() => spy(scheduler.event))
 
       scheduler.scheduleNavigation({ pathname: '/' }, 'PUSH')
-      await scheduler.processNavigation()
+      await scheduler.processNextNavigation()
 
       expect(spy).toHaveBeenCalled()
 
@@ -183,7 +195,7 @@ describe('Scheduler', () => {
       spy.mockClear()
 
       scheduler.scheduleNavigation({ pathname: '/nope' }, 'PUSH')
-      await scheduler.processNavigation()
+      await scheduler.processNextNavigation()
 
       expect(spy).toHaveBeenCalled()
 
@@ -218,7 +230,7 @@ describe('Scheduler', () => {
         updateLocation('/todos/1', [rootNode, todosRootNode, todosViewNode])
 
         scheduler.scheduleNavigation({ pathname: '/projects/2' }, 'PUSH')
-        await scheduler.processNavigation()
+        await scheduler.processNextNavigation()
 
         expect(store.location.pathname).toEqual('/projects/2/')
 
@@ -254,7 +266,7 @@ describe('Scheduler', () => {
 
         spy.mockClear()
         scheduler.scheduleNavigation({ pathname: '/projects' }, 'PUSH')
-        await scheduler.processNavigation()
+        await scheduler.processNextNavigation()
 
         expect(store.location.pathname).toEqual('/projects/')
 
@@ -313,7 +325,7 @@ describe('Scheduler', () => {
       updateLocation('/todos', [rootNode, appRootNode, todosRootNode, todosListNode])
 
       scheduler.scheduleNavigation({ pathname: '/todos/1' }, 'PUSH')
-      await scheduler.processNavigation()
+      await scheduler.processNextNavigation()
 
       expect(nodesDuringListTransition.length).toBe(4)
       expect(nodesDuringViewTransition.length).toBe(4)

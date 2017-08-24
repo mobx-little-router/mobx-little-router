@@ -2,7 +2,6 @@
 export type Transitionable = $Shape<{
   value:{
     onTransition: null | TransitionFn,
-    isTransitioning: boolean,
     [string]: any
   },
   [string]: any
