@@ -20,7 +20,7 @@ class App extends Component {
 }
 
 const Viewport = styled.div`
-  padding: 18px;
+  padding: 54px 18px;
 `
 
 injectGlobal`

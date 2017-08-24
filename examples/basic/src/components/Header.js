@@ -19,7 +19,10 @@ export default class Header extends Component {
 }
 
 const Container = styled.div`
+  position: fixed;
+  z-index: 2;
   background-color: #333;
+  width: 100%;
   height: 54px;
   line-height: 54px;
 

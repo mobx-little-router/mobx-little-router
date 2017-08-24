@@ -32,10 +32,6 @@ class ShowRoute extends Component {
     this.model = data
   }
 
-  closeModal = () => {
-
-  }
-
   render() {
     const { className } = this.props
 

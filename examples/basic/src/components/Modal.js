@@ -1,22 +1,38 @@
-import React from 'react'
-import styled from 'styled-components'
+import React, { Component } from 'react'
+import styled, { injectGlobal } from 'styled-components'
 import cx from 'classnames'
 import { Link } from 'mobx-little-router-react'
 
-const Modal = (props) => {
-  const { className, closePath, children } = props
-  return (
-    <Container className={cx('modal', className)}>
-      <ModalOverlay to={closePath}/>
-      <ModalContainer>
-        <ModalDialog>
-          <CloseButton to={closePath} />
+class Modal extends Component {
+  componentWillMount() {
+    if (document && document.body) {
+      const bodyClassNames = document.body.className
+      document.body.className = bodyClassNames + (bodyClassNames ? ' ' : '') + 'modal-open'
+    }
+  }
 
-          {children}
-        </ModalDialog>
-      </ModalContainer>
-    </Container>
-  )
+  componentWillUnmount() {
+    if (document && document.body) {
+      document.body.className = document.body.className.replace(/ ?modal-open/, '')
+    }
+  }
+
+  render() {
+    const { className, closePath, children } = this.props
+    
+    return (
+      <Container className={cx('modal', className)}>
+        <ModalOverlay to={closePath}/>
+        <ModalContainer>
+          <ModalDialog>
+            <CloseButton to={closePath} />
+
+            {children}
+          </ModalDialog>
+        </ModalContainer>
+      </Container>
+    )
+  }
 }
 
 const ModalContainer = styled.div`
@@ -27,6 +43,7 @@ const ModalContainer = styled.div`
   max-width: 900px;
   width: 80%;
   height: 600px;
+  z-index: 4;
 `
 
 const ModalDialog = styled.div`
@@ -46,9 +63,10 @@ const ModalOverlay = styled(Link)`
   height: 100%;
   background-color: rgba(255,255,255,0.8);
   cursor: default;
+  z-index: 3;
 `
 
-const Container = styled.div`
+const Container = styled.div`  
   &.transitioning {
     ${ModalOverlay} {
       transition: opacity 400ms ease-out;
@@ -126,6 +144,12 @@ const CloseButton = styled(Link) `
     height: 36px;
     line-height: 36px;
     text-align: center;
+  }
+`
+
+injectGlobal`
+  body.modal-open {
+    overflow: hidden;
   }
 `
 
