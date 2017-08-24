@@ -2,7 +2,7 @@
 import type { Action } from 'history'
 import { autorun, extendObservable, runInAction } from 'mobx'
 import assertUrlFullyMatched from './assertUrlFullyMatched'
-import type { Location, MatchResult, RouteNode } from '../routing/types'
+import type { Location, RouteNode } from '../routing/types'
 import type RouterStore from '../routing/RouterStore'
 import TransitionManager from '../transitions/TransitionManager'
 import areNodesEqual from '../routing/areNodesEqual'
