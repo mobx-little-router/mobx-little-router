@@ -44,7 +44,10 @@ describe('createRouteNode', () => {
   })
 
   test('Validation', () => {
-    const x: any = {}
-    expect(() => createRouteNode(x)).toThrow()
+    let x: any = {}
+    expect(() => createRouteNode(x)).toThrow(/`path`/)
+
+    x = { path: '', onEnter: 1 }
+    expect(() => createRouteNode(x)).toThrow(/`onEnter`/)
   })
 })

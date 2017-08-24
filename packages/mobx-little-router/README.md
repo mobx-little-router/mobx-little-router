@@ -114,8 +114,5 @@ This package is split into three separate concerns.
   object. The current transition type, node, and a `cancel` function is available from this
   event object.
 
-  A node will have its `node.isTransitioning` property set to true before its `onTransition`
-  callback is invoked, and revert to `false` once it is completed.
-
   The `.cancel()` method on the event object will cancel all of the currently queued transition
   events. This is useful if you want to cancel animations.

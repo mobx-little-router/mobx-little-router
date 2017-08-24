@@ -23,7 +23,6 @@ export type Config = {
   data?: Object,
   key?: string,
   children?: Config[],
-  isTransitioning?: boolean,
   loadChildren?: LoadChildrenConfigFn,
   match?: 'full' | 'partial',
   canActivate?: GuardFn,
@@ -53,7 +52,6 @@ export type RouteValue = {
   // Extra data that can be used to provide view specific functionality.
   // e.g. Route component, loading component, etc.
   data: Object,
-  isTransitioning: boolean,
   matcher: MatchFn,
   loadChildren?: null | LoadChildrenRouteNode,
   canActivate: GuardFn,

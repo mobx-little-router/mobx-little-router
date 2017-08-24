@@ -8,14 +8,26 @@ import type {
 import { createTreeNode } from '../util/tree'
 import createKey from '../util/createKey'
 import * as m from './matchers'
+import { string, optional, func, createValidator } from '../validation'
 
 async function nop() {}
 
+const validate = createValidator({
+  path: string,
+  loadChildren: optional(func),
+  onError: optional(func),
+  canActivate: optional(func),
+  canDeactivate: optional(func),
+  onTransition: optional(func),
+  onEnter: optional(func),
+  onLeave: optional(func)
+})
+
 export default function createRouteNode(config: Config): RouteNode {
   const matcher = config.match ? m[config.match] : m.partial
-  if (typeof config.path !== 'string') {
-    throw new TypeError('Invalid route node configuration')
-  }
+
+  validate(config)
+
   return createTreeNode(
     {
       key: typeof config.key === 'string' ? config.key : createKey(6),
@@ -23,7 +35,6 @@ export default function createRouteNode(config: Config): RouteNode {
       matcher: matcher(config.path),
       data: config.data || {},
       params: config.data || {},
-      isTransitioning: config.isTransitioning || false,
 
       loadChildren: toLoadRouteNodeChildren(config.loadChildren),
 
