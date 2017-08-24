@@ -54,7 +54,7 @@ class ShowRoute extends Component {
               <Title>{this.model.name}</Title>
               <OfficialSite href={this.model.officialSite} target="_blank">Official site</OfficialSite>
               <Summary dangerouslySetInnerHTML={{ __html: this.model.summary }} />
-              <Tags>{this.model.genres.map((genre, idx) => <Link key={idx} to={`/tags/${genre}`}>{genre}</Link>)}</Tags>
+              <Tags>{this.model.genres && this.model.genres.map((genre, idx) => <Link key={idx} to={`/tags/${genre}`}>{genre}</Link>)}</Tags>
             
               <Cast>
                 <h2>Cast</h2>
@@ -65,7 +65,6 @@ class ShowRoute extends Component {
                   </CastMember>
                 )}
               </Cast>
-              Don't like this show? <Link to="/shows/385">Try Mad Men</Link>
             </Abstract>
           </Content>
         }
