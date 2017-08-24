@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import { extendObservable } from 'mobx'
 import styled from 'styled-components'
 import { Link } from 'mobx-little-router-react'
-import cx from 'classnames'
+import Modal from '../components/Modal'
 
 class ActorRoute extends Component {
   constructor(props) {
@@ -38,143 +38,28 @@ class ActorRoute extends Component {
     const { className } = this.props
 
     return (
-      <Modal className={cx('modal', className)}>
-        <ModalOverlay to="/shows" />
-        <ModalContainer>
-          <ModalDialog>
-            <CloseButton to="/shows" />
-            {this.model &&
-              <Content>
-                {this.model.image && <CoverImage style={{ backgroundImage: `url(${this.model.image.original})` }} />}
-                <Abstract>
-                  <Title>{this.model.name}</Title>
-                  <Summary/>
-                  <Credits>
-                    <h2>Credits</h2>
-                    {this.model.credits.map((credit, idx) => 
-                      <Show key={idx} to={`/shows/${credit._embedded.show.id}`}>
-                        {credit._embedded.show.name}
-                      </Show>
-                    )}
-                  </Credits>
-                </Abstract>
-              </Content>
-            }
-          </ModalDialog>
-        </ModalContainer>
+      <Modal className={className} closePath="/shows">
+        {this.model &&
+          <Content>
+            {this.model.image && <CoverImage style={{ backgroundImage: `url(${this.model.image.original})` }} />}
+            <Abstract>
+              <Title>{this.model.name}</Title>
+              <Summary/>
+              <Credits>
+                <h2>Credits</h2>
+                {this.model.credits.map((credit, idx) => 
+                  <Show key={idx} to={`/shows/${credit._embedded.show.id}`}>
+                    {credit._embedded.show.name}
+                  </Show>
+                )}
+              </Credits>
+            </Abstract>
+          </Content>
+        }
       </Modal>
     )
   }
 }
-
-const ModalContainer = styled.div`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-50%);
-  max-width: 900px;
-  width: 80%;
-  height: 600px;
-`
-
-const ModalDialog = styled.div`
-  width: 100%;
-  height: 100%;
-  background-color: white;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.2), 0 1px 16px 1px rgba(0,0,0,0.2);
-  border-radius: 2px;
-`
-
-const ModalOverlay = styled(Link)`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255,255,255,0.8);
-  cursor: default;
-`
-
-const Modal = styled.div`  
-  &.transitioning {
-    ${ModalOverlay} {
-      transition: opacity 400ms ease-out;
-    }
-
-    ${ModalDialog} {
-      transition: all 400ms ease-out;
-    }
-
-    &.leaving {
-      ${ModalOverlay} {
-        opacity: 1;
-      }
-
-      ${ModalDialog} {
-        opacity: 1;
-        transform: translateY(0%);
-      }
-
-      &.leave {
-        ${ModalOverlay} {
-          opacity: 0;
-        }
-
-        ${ModalDialog} {
-          opacity: 0;
-          transform: translateY(-100%);
-        }
-      }
-    }
-
-    &.entering {
-      ${ModalOverlay} {
-        opacity: 0;
-      }
-
-      ${ModalDialog} {
-        opacity: 0;
-        transform: translateY(100%);
-      }
-
-      &.enter {
-        ${ModalOverlay} {
-          opacity: 1;
-        }
-
-        ${ModalDialog} {
-          opacity: 1;
-          transform: translateY(0%);
-        }
-      }
-    }
-  }
-`
-
-const CloseButton = styled(Link)`
-  position: absolute;
-  right: 0;
-  top: 0;
-  text-decoration: none;
-  font-size: 23px;
-  color: #333;
-  margin: 9px;
-
-  &:hover {
-    opacity: 0.7;
-  }
-
-  &::after {
-    cursor: pointer;
-    content: "✕";
-    display: block;
-    width: 36px;
-    height: 36px;
-    line-height: 36px;
-    text-align: center;
-  }
-`
 
 const Content = styled.div`
   display: flex;
