@@ -97,7 +97,7 @@ export default class Scheduler {
       await assertUrlFullyMatched(location.pathname, nextPath)
 
       // We've found a match or unmatched error has been handled.
-      const { activating, deactivating } = await this.getActiveNodesDifference(
+      const { activating, deactivating } = await diffActiveNodes(
         store.nodes.slice(),
         nextNodes
       )
@@ -143,23 +143,6 @@ export default class Scheduler {
     }
   }
 
-  getActiveNodesDifference = async (currNodes: RouteNode[], nextNodes: RouteNode[]) => {
-    try {
-      const deactivating = differenceWith(areNodesEqual, currNodes, nextNodes).reverse()
-
-      const activating = nextNodes.filter(x => {
-        return !currNodes.some(y => {
-          return areNodesEqual(x, y)
-        })
-      })
-
-      return { deactivating, activating }
-    } catch (err) {
-      // Make sure we chain errors back up!
-      throw err
-    }
-  }
-
   // Runs guards (if they exist) on each node until they all pass.
   // If one guard fails, then the entire function rejects.
   runGuard = async (type: 'canDeactivate' | 'canActivate', nodes: RouteNode[]) => {
@@ -192,4 +175,21 @@ function toRouteNodes(nextPath) {
     _node.value.params = params
     return _node
   })
+}
+
+async function diffActiveNodes(currNodes: RouteNode[], nextNodes: RouteNode[]) {
+  try {
+    const deactivating = differenceWith(areNodesEqual, currNodes, nextNodes).reverse()
+
+    const activating = nextNodes.filter(x => {
+      return !currNodes.some(y => {
+        return areNodesEqual(x, y)
+      })
+    })
+
+    return { deactivating, activating }
+  } catch (err) {
+    // Make sure we chain errors back up!
+    throw err
+  }
 }
