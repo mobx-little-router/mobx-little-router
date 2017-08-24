@@ -45,6 +45,11 @@ class ShowRoute extends Component {
           <Content>
             {this.model.image && <CoverImage style={{ backgroundImage: `url(${this.model.image.original})` }} />}
             <Abstract>
+              <Navigation>
+                <NavigationLink to={`/shows/${this.model.id - 1}`}>Prev</NavigationLink>
+                <NavigationLink to={`/shows/${this.model.id + 1}`}>Next</NavigationLink>
+              </Navigation>
+
               <Network>{this.model.network && this.model.network.name}</Network>
               <Title>{this.model.name}</Title>
               <OfficialSite href={this.model.officialSite} target="_blank">Official site</OfficialSite>
@@ -60,6 +65,7 @@ class ShowRoute extends Component {
                   </CastMember>
                 )}
               </Cast>
+              Don't like this show? <Link to="/shows/385">Try Mad Men</Link>
             </Abstract>
           </Content>
         }
@@ -109,6 +115,29 @@ const Abstract = styled.div`
   padding: 72px 36px 0;
   width: 50%;
   overflow-y: auto;
+  position: relative;
+`
+
+const Navigation = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  position: absolute;
+  top: 0;
+  left: 36px;
+  right: 54px;
+  line-height: 36px;
+  margin: 18px 0;
+`
+
+const NavigationLink = styled(Link)`
+  font-size: 13px;
+  line-height: 18px;
+  color: #777;
+
+  &:hover {
+    color: #333;
+  }
 `
 
 const Title = styled.h1`
