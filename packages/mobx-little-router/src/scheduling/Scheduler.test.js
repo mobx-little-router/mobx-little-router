@@ -15,7 +15,7 @@ describe('Scheduler', () => {
 
   describe('Activation and deactivation guards', () => {
     test('Activation fails', async () => {
-      const spy = jest.fn(() => Promise.reject('Nope'))
+      const spy = jest.fn(() => false)
       const todosRootNode = store.state.root.children[0].children[0]
       updateNode(todosRootNode, { canActivate: spy })
       scheduler.scheduleNavigation({ pathname: '/todos' }, 'PUSH')
@@ -33,7 +33,7 @@ describe('Scheduler', () => {
     })
 
     test('Activation successful', async () => {
-      const spy = jest.fn(() => Promise.resolve())
+      const spy = jest.fn(() => true)
       const rootNode = store.state.root
       const appRootNode = store.state.root.children[0]
       const todosRootNode = appRootNode.children[0]
@@ -85,8 +85,8 @@ describe('Scheduler', () => {
     })
 
     test('Deactivation fails', async () => {
-      const rootSpy = jest.fn(() => Promise.resolve())
-      const viewSpy = jest.fn(() => Promise.reject())
+      const rootSpy = jest.fn(() => true)
+      const viewSpy = jest.fn(() => false)
       const rootNode = store.state.root
       const todosRootNode = rootNode.children[0].children[1]
       const todosViewNode = rootNode.children[0].children[1].children[1]
@@ -111,7 +111,7 @@ describe('Scheduler', () => {
     })
 
     test('Deactivation successful', async () => {
-      const spy = jest.fn(() => Promise.resolve())
+      const spy = jest.fn(() => true)
       const rootNode = store.state.root
       const todosRootNode = store.state.root.children[0].children[1]
       const todosViewNode = store.state.root.children[0].children[1].children[1]
@@ -139,6 +139,58 @@ describe('Scheduler', () => {
       // Nodes are marked as active
       expect(store.nodes.length).toEqual(2)
       expect(store.nodes.map(node => node.value.path)).toEqual(['', ''])
+    })
+
+    describe('Async activation and deactivation', () => {
+      test('Activation fails', async () => {
+        const spy = jest.fn(() => Promise.reject())
+        const todosRootNode = store.state.root.children[0].children[0]
+        updateNode(todosRootNode, { canActivate: spy })
+        scheduler.scheduleNavigation({ pathname: '/todos' }, 'PUSH')
+
+        await scheduler.processNextNavigation()
+
+        expect(store.location.pathname).toBe(undefined)
+      })
+
+      test('Activation success', async () => {
+        const spy = jest.fn(() => Promise.resolve())
+        const todosRootNode = store.state.root.children[0].children[0]
+        updateNode(todosRootNode, { canActivate: spy })
+        scheduler.scheduleNavigation({ pathname: '/todos' }, 'PUSH')
+
+        await scheduler.processNextNavigation()
+
+        expect(store.location.pathname).toBe('/todos/')
+      })
+
+      test('Deactivation fails', async () => {
+        const spy = jest.fn(() => Promise.reject())
+        const appRootNode = store.state.root.children[0]
+        const todosRootNode = appRootNode.children[0]
+        updateNode(todosRootNode, { canDeactivate: spy })
+        store.location.pathname = '/todos/'
+        store.updateNodes([store.state.root, appRootNode, todosRootNode])
+        scheduler.scheduleNavigation({ pathname: '/' }, 'PUSH')
+
+        await scheduler.processNextNavigation()
+
+        expect(store.location.pathname).toBe('/todos/')
+      })
+
+      test('Deactivation success', async () => {
+        const spy = jest.fn(() => Promise.resolve())
+        const appRootNode = store.state.root.children[0]
+        const todosRootNode = appRootNode.children[0]
+        updateNode(todosRootNode, { canDeactivate: spy })
+        store.location.pathname = '/todos'
+        store.updateNodes([store.state.root, appRootNode, todosRootNode])
+        scheduler.scheduleNavigation({ pathname: '/' }, 'PUSH')
+
+        await scheduler.processNextNavigation()
+
+        expect(store.location.pathname).toBe('/')
+      })
     })
   })
 
@@ -215,7 +267,7 @@ describe('Scheduler', () => {
       'Nodes are called in order or deactivation and activation path',
       async () => {
         // Setup
-        const spy = jest.fn(() => Promise.resolve())
+        const spy = jest.fn(() => true)
         const rootNode = store.state.root
         const todosRootNode = store.state.root.children[0].children[0]
         const todosViewNode = store.state.root.children[0].children[0].children[1]

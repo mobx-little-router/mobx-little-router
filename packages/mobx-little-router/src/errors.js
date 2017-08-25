@@ -1,33 +1,26 @@
 // @flow
 import type { MatchResult, RouteNode } from './routing/types'
 
-export class GuardFailure {
-  error: any
+export class GuardFailure extends Error {
   node: RouteNode
-  constructor(error: any, node: RouteNode) {
-    this.error = error
+  constructor(type: string, node: RouteNode) {
+    super(`${type} guard failed at node ${node.value.key}`)
     this.node = node
   }
 }
 
-export class NoMatch {
+export class NoMatch extends Error {
   url: string
-  path: any[]
-  constructor(url: string, path: MatchResult[]) {
+  constructor(url: string) {
+    super(`No match for ${url}`)
     this.url = url
-    this.path = path
-  }
-  toString() {
-    return `No match for url "${this.url}"`
   }
 }
 
-export class NavigationError {
+export class NavigationError extends Error {
   node: RouteNode
   constructor(node: RouteNode) {
+    super(`Navigation failed at ${node.value.key}`)
     this.node = node
-  }
-  toString() {
-    return 'Unhandled navigation error'
   }
 }

@@ -103,8 +103,8 @@ export default class Scheduler {
       )
 
       // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
-      await this.runGuard('canDeactivate', deactivating)
-      await this.runGuard('canActivate', activating)
+      await this.checkGuards('canDeactivate', deactivating)
+      await this.checkGuards('canActivate', activating)
 
       store.updateNodes(nextNodes)
 
@@ -145,18 +145,20 @@ export default class Scheduler {
 
   // Runs guards (if they exist) on each node until they all pass.
   // If one guard fails, then the entire function rejects.
-  runGuard = async (type: 'canDeactivate' | 'canActivate', nodes: RouteNode[]) => {
+  checkGuards = async (type: 'canDeactivate' | 'canActivate', nodes: RouteNode[]) => {
     for (const node of nodes) {
       const { value } = node
-      const promise = typeof value[type] === 'function'
-        ? value[type](node)
-        : Promise.resolve()
-      const guard =
-        promise !== undefined &&
-        promise.catch(error => {
-          throw new GuardFailure(error, node)
-        })
-      await guard
+      const result = typeof value[type] === 'function' ? value[type](node) : true
+
+      if (!result) {
+        throw new GuardFailure(type, node)
+      } else if (typeof result.then === 'function') {
+        try {
+          await result
+        } catch (e) {
+          throw new GuardFailure(type, node)
+        }
+      }
     }
   }
 }

@@ -35,7 +35,7 @@ export type Config = {
 
 export type LoadChildrenConfigFn = () => Promise<Config[]>
 
-export type GuardFn = (node: RouteNode) => Promise<void>
+export type GuardFn = (node: RouteNode) => boolean | Promise<void>
 
 export type LifecycleFn = (node: RouteNode) => Promise<void>
 
