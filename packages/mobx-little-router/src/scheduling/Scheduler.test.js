@@ -3,7 +3,7 @@ import { autorun, toJS } from 'mobx'
 import RouterStore from '../routing/RouterStore'
 import Scheduler from './Scheduler'
 import Route from '../routing/Route'
-import { EventTypes } from '../events'
+import { EventTypes } from './events'
 
 describe('Scheduler', () => {
   let scheduler, store

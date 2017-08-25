@@ -1,5 +1,6 @@
 // @flow
-import type { RouteNode, Location } from './routing/types'
+import type { RouteNode, Location } from '../routing/types'
+import { _Transition } from './Transition'
 
 /*
   * Sequence of events that occur from navigation start to end.
@@ -15,6 +16,7 @@ export const EventTypes = {
   ACTIVATION_END: 'ACTIVATION_END',
   TRANSITION_START: 'TRANSITION_START',
   TRANSITION_END: 'TRANSITION_END',
+  NAVIGATION_ABORTED: 'NAVIGATION_ABORTED',
   NAVIGATION_ERROR: 'NAVIGATION_ERROR',
   NAVIGATION_END: 'NAVIGATION_END'
 }
@@ -33,6 +35,7 @@ export type Event =
   | TransitionStart
   | TransitionEnd
   | NavigationError
+  | NavigationAborted
   | NavigationEnd
 
 export type NavigationStart = {
@@ -100,6 +103,12 @@ export type TransitionEnd = {
 export type NavigationEnd = {
   type: 'NAVIGATION_END',
   location: Location
+}
+
+export type NavigationAborted = {
+  type: 'NAVIGATION_ABORTED',
+  location: Location,
+  transition: _Transition
 }
 
 export type NavigationError = {

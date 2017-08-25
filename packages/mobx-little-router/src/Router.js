@@ -4,8 +4,8 @@ import type { History } from 'history'
 import RouterStore from './routing/RouterStore'
 import type { Href, RouteNode } from './routing/types'
 import Scheduler from './scheduling/Scheduler'
-import type { Event } from './events'
-import { EventTypes } from './events'
+import type { Event } from './scheduling/events'
+import { EventTypes } from './scheduling/events'
 import { GuardFailure } from './errors'
 
 export type HistoryCreatorFn = (opts: any) => History
@@ -42,9 +42,16 @@ class Router {
     // Wait until navigation is processed.
     await this.navigated()
 
-    this.dispose = this.history.listen((location, action) =>
-      this.scheduler.scheduleNavigation(location, action)
+    const f = this.history.listen((location) =>
+      this.scheduler.scheduleNavigation(location)
     )
+
+    const g = this.subscribeEvent(this.handleNavigationEvents)
+
+    this.dispose = () => {
+      f()
+      g()
+    }
 
     callback && callback(this)
   }
@@ -61,6 +68,19 @@ class Router {
         f(event)
       }
     })
+  }
+
+  handleNavigationEvents = (evt: Event) => {
+    if (evt.type === EventTypes.NAVIGATION_ABORTED) {
+      const { transition } = evt
+      if (transition.type === 'GO_BACK') {
+        this.goBack()
+      } else if (transition.type === 'PUSH') {
+        this.push(transition.to)
+      } else if (transition.type === 'REPLACE') {
+        this.replace(transition.to)
+      }
+    }
   }
 
   // Waits for next navigation event to be processed and resolves.

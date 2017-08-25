@@ -1,6 +1,6 @@
 // @flow
 import type { ITreeNode } from '../util/tree'
-import type { TransitionFn } from '../transitions/types'
+import type { TransitionFn } from '../transitioning/types'
 import type { MatchFn } from './matchers'
 import type { History, Location as HistoryLocation } from 'history'
 

@@ -4,14 +4,15 @@ import { autorun, extendObservable, runInAction } from 'mobx'
 import assertUrlFullyMatched from './assertUrlFullyMatched'
 import type { Location, RouteNode } from '../routing/types'
 import type RouterStore from '../routing/RouterStore'
-import TransitionManager from '../transitions/TransitionManager'
+import TransitionManager from '../transitioning/TransitionManager'
 import areRoutesEqual from '../routing/areRoutesEqual'
 import shallowEqual from '../util/shallowEqual'
 import shallowClone from '../routing/shallowClone'
 import { differenceWith } from '../util/functional'
 import { GuardFailure } from '../errors'
-import type { Event } from '../events'
-import { EventTypes } from '../events'
+import type { Event } from './events'
+import { EventTypes } from './events'
+import { _Transition } from './Transition'
 
 type NavigationParams = {
   location: Location,
@@ -117,8 +118,12 @@ export default class Scheduler {
       // If all value resolved, then we're good to update store state.
       store.commit(location)
     } catch (error) {
-      store.setError(error)
-      this.emit({ type: EventTypes.NAVIGATION_ERROR, error, location })
+      if (error instanceof _Transition) {
+        this.emit({ type: EventTypes.NAVIGATION_ABORTED, transition: error, location })
+      } else {
+        this.store.setError(error)
+        this.emit({ type: EventTypes.NAVIGATION_ERROR, error, location })
+      }
     } finally {
       runInAction(() => {
         this.navigation = null

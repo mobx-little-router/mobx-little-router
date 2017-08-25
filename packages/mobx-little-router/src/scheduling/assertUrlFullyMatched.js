@@ -19,6 +19,6 @@ export default async function assertUrlFullyMatched(url: string, path: MatchResu
   try {
     await maybeCallErrorHandler(path)
   } catch(err) {
-    throw new NoMatch(url, path)
+    throw new NoMatch(url)
   }
 }

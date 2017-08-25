@@ -14,8 +14,8 @@ export type {
   RouteValue
 } from './routing/types'
 
-export { EventTypes } from './events'
-export type { Event } from './events'
+export { EventTypes } from './scheduling/events'
+export type { Event } from './scheduling/events'
 
-export { TransitionTypes } from './transitions/types'
-export type { TransitionType, TransitionEvent, TransitionFn } from './transitions/types'
+export { TransitionTypes } from './transitioning/types'
+export type { TransitionType, TransitionEvent, TransitionFn } from './transitioning/types'

@@ -1,7 +1,7 @@
 // @flow
 import { autorun } from 'mobx'
 import { createMemoryHistory } from 'history'
-import { EventTypes } from './events'
+import { EventTypes } from './scheduling/events'
 import { install } from './'
 
 describe('Routing', () => {
