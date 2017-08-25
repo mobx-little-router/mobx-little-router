@@ -1,20 +1,12 @@
 import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
-import { extendObservable } from 'mobx'
+import { runInAction } from 'mobx'
 import styled from 'styled-components'
 import { Link } from 'mobx-little-router-react'
 
 import Modal from '../components/Modal'
 
 class ShowRoute extends Component {
-  constructor(props) {
-    super(props)
-
-    extendObservable(this, {
-      model: null
-    })
-  }
-
   componentDidMount() {
     this.fetchModel(this.props)
   }
@@ -24,16 +16,18 @@ class ShowRoute extends Component {
   }
 
   fetchModel = async (props) => {
-    const { params } = props
+    const { params, showsStore } = props
 
     const res = await fetch(`https://api.tvmaze.com/shows/${params.id}?embed=cast`)
     const data = await res.json()
-
-    this.model = data
+    
+    runInAction(() => {
+      showsStore.currentShow = data
+    })
   }
 
   render() {
-    const { params, className, showsStore: { collection } } = this.props
+    const { params, className, showsStore: { collection, currentShow } } = this.props
 
     let prevShow, nextShow
     
@@ -51,24 +45,24 @@ class ShowRoute extends Component {
 
     return (
       <Modal className={className} closePath="/shows">
-        {this.model &&
+        {currentShow &&
           <Content>
-            {this.model.image && <CoverImage style={{ backgroundImage: `url(${this.model.image.original})` }} />}
+            {currentShow.image && <CoverImage style={{ backgroundImage: `url(${currentShow.image.original})` }} />}
             <Abstract>
               <Navigation>
                 {prevShow && <PrevNavigationLink to={`/shows/${prevShow.id}`}>Prev</PrevNavigationLink>}
                 {nextShow && <NextNavigationLink to={`/shows/${nextShow.id}`}>Next</NextNavigationLink>}
               </Navigation>
 
-              <Network>{this.model.network && this.model.network.name}</Network>
-              <Title>{this.model.name}</Title>
-              <OfficialSite href={this.model.officialSite} target="_blank">Official site</OfficialSite>
-              <Summary dangerouslySetInnerHTML={{ __html: this.model.summary }} />
-              <Tags>{this.model.genres && this.model.genres.map((genre, idx) => <Link key={idx} to={`/tags/${genre}`}>{genre}</Link>)}</Tags>
+              <Network>{currentShow.network && currentShow.network.name}</Network>
+              <Title>{currentShow.name}</Title>
+              <OfficialSite href={currentShow.officialSite} target="_blank">Official site</OfficialSite>
+              <Summary dangerouslySetInnerHTML={{ __html: currentShow.summary }} />
+              <Tags>{currentShow.genres && currentShow.genres.map((genre, idx) => <Link key={idx} to={`/tags/${genre}`}>{genre}</Link>)}</Tags>
             
               <Cast>
                 <h2>Cast</h2>
-                {this.model._embedded.cast.map((member, idx) => 
+                {currentShow._embedded.cast.map((member, idx) => 
                   <CastMember key={idx}>
                     <Character>{member.character.name}</Character>
                     <Actor to={`/actors/${member.person.id}`}>{member.person.name}</Actor>

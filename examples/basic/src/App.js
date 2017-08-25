@@ -11,7 +11,8 @@ const sessionStore = observable({
 })
 
 const showsStore = observable({
-  collection: []
+  collection: [],
+  currentShow: null
 })
 
 class App extends Component {
