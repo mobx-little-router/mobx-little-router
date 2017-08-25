@@ -1,20 +1,32 @@
 import React, { Component } from 'react'
-import { observer } from 'mobx-react'
+import { Provider, observer } from 'mobx-react'
 import { withRouter, Outlet } from 'mobx-little-router-react'
 import styled, { injectGlobal } from 'styled-components'
 import Header from './components/Header'
 
+import { observable } from 'mobx'
+
+const sessionStore = observable({
+  isAuthenticated: true
+})
+
+const showsStore = observable({
+  collection: []
+})
+
 class App extends Component {
   render() {
     return (
-      <div>
-        <Header />
-        <Viewport>
-          <p>pathname: <b>{JSON.stringify(this.props.router.store.location.pathname)}</b></p>
-          <Outlet />
-          <Outlet name="modal" />
-        </Viewport>
-      </div>
+      <Provider sessionStore={sessionStore} showsStore={showsStore}>
+        <div>
+          <Header />
+          <Viewport>
+            <p>pathname: <b>{JSON.stringify(this.props.router.store.location.pathname)}</b></p>
+            <Outlet />
+            <Outlet name="modal" />
+          </Viewport>
+        </div>
+      </Provider>
     )
   }
 }

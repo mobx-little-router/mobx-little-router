@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { observer } from 'mobx-react'
+import { inject, observer } from 'mobx-react'
 import { extendObservable } from 'mobx'
 import styled from 'styled-components'
 import { Link } from 'mobx-little-router-react'
@@ -33,7 +33,21 @@ class ShowRoute extends Component {
   }
 
   render() {
-    const { className } = this.props
+    const { params, className, showsStore: { collection } } = this.props
+
+    let prevShow, nextShow
+    
+    if (collection && collection.length > 0) {
+      const currIdx = collection.findIndex((show) => show.id === Number(params.id))
+      
+      if (currIdx > 0) {
+        prevShow = collection[currIdx - 1]
+      }
+
+      if (currIdx < collection.length - 1) {
+        nextShow = collection[currIdx + 1]
+      }
+    }
 
     return (
       <Modal className={className} closePath="/shows">
@@ -42,8 +56,8 @@ class ShowRoute extends Component {
             {this.model.image && <CoverImage style={{ backgroundImage: `url(${this.model.image.original})` }} />}
             <Abstract>
               <Navigation>
-                <NavigationLink to={`/shows/${this.model.id - 1}`}>Prev</NavigationLink>
-                <NavigationLink to={`/shows/${this.model.id + 1}`}>Next</NavigationLink>
+                {prevShow && <PrevNavigationLink to={`/shows/${prevShow.id}`}>Prev</PrevNavigationLink>}
+                {nextShow && <NextNavigationLink to={`/shows/${nextShow.id}`}>Next</NextNavigationLink>}
               </Navigation>
 
               <Network>{this.model.network && this.model.network.name}</Network>
@@ -135,6 +149,14 @@ const NavigationLink = styled(Link)`
   }
 `
 
+const PrevNavigationLink = styled(NavigationLink)`
+  margin-right: auto;
+`
+
+const NextNavigationLink = styled(NavigationLink)`
+  margin-left: auto;
+`
+
 const Title = styled.h1`
   color: #333;
   margin: 0 0 18px;
@@ -205,4 +227,4 @@ const Actor = styled(Link)`
   }
 `
 
-export default observer(ShowRoute)
+export default inject('showsStore')(observer(ShowRoute))

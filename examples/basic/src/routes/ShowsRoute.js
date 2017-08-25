@@ -1,37 +1,34 @@
 import React, { Component } from 'react'
-import { observer } from 'mobx-react'
-import { extendObservable } from 'mobx'
+import { inject, observer } from 'mobx-react'
+import { runInAction } from 'mobx'
 import { Link } from 'mobx-little-router-react'
 import styled from 'styled-components'
 
-class IndexRoute extends Component {
-  constructor(props) {
-    super(props)
-
-    extendObservable(this, {
-      collection: []
-    })
-  }
-
+class ShowsRoute extends Component {
   componentDidMount() {
     this.onSearch('gundam')
   }
 
   onSearch = async (query) => {
+    const { showsStore } = this.props
     const res = await fetch(`https://api.tvmaze.com/search/shows?q=${query}`)
     const data = await res.json()
 
-    this.collection = data.map(({ show }) => show)
+    runInAction(() => {
+      showsStore.collection = data.map(({ show }) => show)
+    })
   }
 
   render() {
+    const { showsStore } = this.props
+
     return (
       <Container>
         <SearchHeader>
           <SearchInput onChange={ev => this.onSearch(ev.target.value)} defaultValue="gundam" />
         </SearchHeader>
         <SearchResults>
-          {this.collection.map(show =>
+          {showsStore.collection.map(show =>
             <Show key={show.id}>
               <CoverImage to={`/shows/${show.id}`} style={{backgroundImage: `url(${show.image && show.image.medium})` }}/>
               <Abstract>
@@ -130,4 +127,4 @@ const SearchInput = styled.input.attrs({
   padding: 0 9px;
 `
 
-export default observer(IndexRoute)
+export default inject('showsStore')(observer(ShowsRoute))
