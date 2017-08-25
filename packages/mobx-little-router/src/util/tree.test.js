@@ -1,17 +1,17 @@
 // @flow
 import type { ITreeNode } from './tree'
-import { createTreeNode, findPath, findNode } from './tree'
+import { TreeNode, findPath, findNode } from './tree'
 
 describe('Tree tests', () => {
   test('findPath with matched and unmatched segments', async () => {
     const onLeafReached = jest.fn(() => Promise.resolve(true))
-    const root = createTreeNode({ x: 'a', y: 5 }, [
-      createTreeNode({ x: 'b', y: 1 }, []),
-      createTreeNode({ x: 'a', y: 6 }, [
-        createTreeNode({ x: 'a', y: 2 }, []),
-        createTreeNode({ x: 'b', y: 3 }, []),
-        createTreeNode({ x: 'c', y: 4 }, []),
-        createTreeNode({ x: 'd', y: 7 }, [])
+    const root = TreeNode({ x: 'a', y: 5 }, [
+      TreeNode({ x: 'b', y: 1 }, []),
+      TreeNode({ x: 'a', y: 6 }, [
+        TreeNode({ x: 'a', y: 2 }, []),
+        TreeNode({ x: 'b', y: 3 }, []),
+        TreeNode({ x: 'c', y: 4 }, []),
+        TreeNode({ x: 'd', y: 7 }, [])
       ])
     ])
     const eq = x => (node: ITreeNode<*>) => Promise.resolve(node.value.x === x)
@@ -29,9 +29,9 @@ describe('Tree tests', () => {
   })
 
   test('findNode', () => {
-    const root = createTreeNode({ x: 1 }, [
-      createTreeNode({ x: 2 }, []),
-      createTreeNode({ x: 3 }, [createTreeNode({ x: 4 }, [])])
+    const root = TreeNode({ x: 1 }, [
+      TreeNode({ x: 2 }, []),
+      TreeNode({ x: 3 }, [TreeNode({ x: 4 }, [])])
     ])
 
     const found = findNode(node => node.value.x === 3, root)

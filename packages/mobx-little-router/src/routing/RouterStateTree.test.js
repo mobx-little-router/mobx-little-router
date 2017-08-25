@@ -1,11 +1,11 @@
 // @flow
-import createRouteNode from './createRouteNode'
+import Route from './Route'
 import RouterStateTree from './RouterStateTree'
 
 describe('Route tree tests', () => {
   test('Finding path with simple matches', async () => {
     const tree = new RouterStateTree(
-      createRouteNode({
+      Route({
         path: 'a',
         data: { uid: 'NODE_A' },
         children: [
@@ -25,7 +25,7 @@ describe('Route tree tests', () => {
 
   test('Finding path with param matching', async () => {
     const tree = new RouterStateTree(
-      createRouteNode({
+      Route({
         path: 'a',
         data: { uid: 'NODE_A' },
         children: [
@@ -45,7 +45,7 @@ describe('Route tree tests', () => {
 
   test('Finding path with empty paths', async () => {
     const tree = new RouterStateTree(
-      createRouteNode({
+      Route({
         path: '',
         data: { uid: 'NODE_ROOT' },
         children: [
@@ -65,7 +65,7 @@ describe('Route tree tests', () => {
 
   test('No match from path', async () => {
     const tree = new RouterStateTree(
-      createRouteNode({
+      Route({
         path: 'a',
         data: { uid: 'NODE_A' },
         children: [
@@ -85,7 +85,7 @@ describe('Route tree tests', () => {
 
   test('Exhausting route nodes on search', async () => {
     const tree = new RouterStateTree(
-      createRouteNode({
+      Route({
         path: 'a',
         data: { uid: 'NODE_A' },
         children: [
@@ -103,7 +103,7 @@ describe('Route tree tests', () => {
 
   test('find', () => {
     const tree = new RouterStateTree(
-      createRouteNode({
+      Route({
         path: 'a',
         data: { uid: 'NODE_A' },
         children: [

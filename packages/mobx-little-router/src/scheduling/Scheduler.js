@@ -5,7 +5,7 @@ import assertUrlFullyMatched from './assertUrlFullyMatched'
 import type { Location, RouteNode } from '../routing/types'
 import type RouterStore from '../routing/RouterStore'
 import TransitionManager from '../transitions/TransitionManager'
-import areNodesEqual from '../routing/areNodesEqual'
+import areRoutesEqual from '../routing/areRoutesEqual'
 import shallowEqual from '../util/shallowEqual'
 import shallowClone from '../routing/shallowClone'
 import { differenceWith } from '../util/functional'
@@ -179,11 +179,11 @@ function toRouteNodes(nextPath) {
 
 async function diffActiveNodes(currNodes: RouteNode[], nextNodes: RouteNode[]) {
   try {
-    const deactivating = differenceWith(areNodesEqual, currNodes, nextNodes).reverse()
+    const deactivating = differenceWith(areRoutesEqual, currNodes, nextNodes).reverse()
 
     const activating = nextNodes.filter(x => {
       return !currNodes.some(y => {
-        return areNodesEqual(x, y)
+        return areRoutesEqual(x, y)
       })
     })
 

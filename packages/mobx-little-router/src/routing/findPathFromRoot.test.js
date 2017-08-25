@@ -1,10 +1,10 @@
 // @flow
 import findPathFromRoot from './findPathFromRoot'
-import createRouteNode from './createRouteNode'
+import Route from './Route'
 
 describe('findPathFromRoot', () => {
   test('Find with partial matching', async () => {
-    const root = createRouteNode({
+    const root = Route({
       path: 'a',
       children: [
         { path: 'b', children: [] },
@@ -23,7 +23,7 @@ describe('findPathFromRoot', () => {
   })
 
   test('Find with mix of partial and full matching', async () => {
-    const root = createRouteNode(
+    const root = Route(
       config('', 'partial', [
         // This match consumes the entire URL.
         // Useful for index routes.

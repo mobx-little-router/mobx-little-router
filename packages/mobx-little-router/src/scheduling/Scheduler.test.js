@@ -2,7 +2,7 @@
 import { autorun, toJS } from 'mobx'
 import RouterStore from '../routing/RouterStore'
 import Scheduler from './Scheduler'
-import createRouteNode from '../routing/createRouteNode'
+import Route from '../routing/Route'
 import { EventTypes } from '../events'
 
 describe('Scheduler', () => {
@@ -158,7 +158,7 @@ describe('Scheduler', () => {
       updateNode(todosViewNode, {
         loadChildren: () =>
           Promise.resolve([
-            createRouteNode({
+            Route({
               path: 'edit',
               loadChildren: () => Promise.resolve([{ path: 'preview' }])
             })
@@ -351,7 +351,7 @@ describe('Scheduler', () => {
 function createStore() {
   const store = new RouterStore()
   store.replaceChildren(store.state.root, [
-    createRouteNode({
+    Route({
       path: '',
       children: [
         {

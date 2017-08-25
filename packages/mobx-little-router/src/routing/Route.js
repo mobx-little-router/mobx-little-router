@@ -5,7 +5,7 @@ import type {
   LoadChildrenConfigFn,
   LoadChildrenRouteNode
 } from './types'
-import { createTreeNode } from '../util/tree'
+import { TreeNode } from '../util/tree'
 import createKey from '../util/createKey'
 import * as m from './matchers'
 import { string, optional, func, createValidator } from '../validation'
@@ -23,12 +23,12 @@ const validate = createValidator({
   onLeave: optional(func)
 })
 
-export default function createRouteNode(config: Config): RouteNode {
+export default function Route(config: Config): RouteNode {
   const matcher = config.match ? m[config.match] : m.partial
 
   validate(config)
 
-  return createTreeNode(
+  return TreeNode(
     {
       key: typeof config.key === 'string' ? config.key : createKey(6),
       path: config.path,
@@ -48,7 +48,7 @@ export default function createRouteNode(config: Config): RouteNode {
       onEnter: config.onEnter || nop,
       onLeave: config.onLeave || nop
     },
-    config.children ? config.children.map(createRouteNode) : []
+    config.children ? config.children.map(Route) : []
   )
 }
 
@@ -57,6 +57,6 @@ function toLoadRouteNodeChildren(f: void | LoadChildrenConfigFn): null | LoadChi
   if (typeof g === 'undefined') {
     return null
   } else {
-    return () => g().then(nodes => nodes.map(createRouteNode))
+    return () => g().then(nodes => nodes.map(Route))
   }
 }

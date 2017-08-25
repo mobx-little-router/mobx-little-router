@@ -11,7 +11,7 @@ export type ITreeNode<T> = {
   children: IObservableArray<ITreeNode<T>>
 }
 
-export function createTreeNode<T>(value: T, children: ITreeNode<T>[]): ITreeNode<T> {
+export function TreeNode<T>(value: T, children: ITreeNode<T>[]): ITreeNode<T> {
   return extendObservable({}, {
     value: value,
     children: observable.array(children)

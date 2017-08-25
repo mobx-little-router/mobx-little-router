@@ -1,5 +1,5 @@
 // @flow
-import { createTreeNode } from '../util/tree'
+import { TreeNode } from '../util/tree'
 import TransitionManager from './TransitionManager'
 
 describe('TransitionManager', () => {
@@ -25,7 +25,7 @@ describe('TransitionManager', () => {
 })
 
 function createNode(id: string, callback: *) {
-  return createTreeNode(
+  return TreeNode(
     {
       id,
       onTransition: callback || jest.fn(() => onTick())

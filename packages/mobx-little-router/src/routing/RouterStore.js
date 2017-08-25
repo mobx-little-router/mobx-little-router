@@ -4,7 +4,7 @@ import { extendObservable, runInAction, observable } from 'mobx'
 import type { ObservableMap } from 'mobx'
 import RouterStateTree from './RouterStateTree'
 import type { Location, RouteNode, RouteValue } from '../routing/types'
-import createRouteNode from './createRouteNode'
+import Route from './Route'
 
 type RouteValueChange = $Shape<RouteValue>
 
@@ -22,7 +22,7 @@ class RouterStore {
   prevNodes: IObservableArray<RouteNode>
 
   constructor(children: void | RouteNode[]) {
-    const root = createRouteNode({ path: '', onError: this.handleRootError }) // Initial root.
+    const root = Route({ path: '', onError: this.handleRootError }) // Initial root.
     this.state = new RouterStateTree(root)
 
     extendObservable(this, {

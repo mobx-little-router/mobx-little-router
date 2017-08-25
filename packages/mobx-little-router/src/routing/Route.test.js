@@ -1,7 +1,7 @@
 // @flow
-import createRouteNode from './createRouteNode'
+import Route from './Route'
 
-describe('createRouteNode', () => {
+describe('Route', () => {
   test('Handles nesting and compound paths', () => {
     const config = {
       path: '',
@@ -20,7 +20,7 @@ describe('createRouteNode', () => {
       ]
     }
 
-    const root = createRouteNode(config)
+    const root = Route(config)
 
     expect(root.value.path).toEqual('')
     expect(root.children.map(x => x.value.path)).toEqual(['a/b/c', 'e', 'f'])
@@ -38,16 +38,16 @@ describe('createRouteNode', () => {
       loadChildren: () => Promise.resolve([{ path: 'a' }, { path: 'b' }, { path: 'c' }])
     }
 
-    const root = createRouteNode(config)
+    const root = Route(config)
     const nodes = root.value.loadChildren ? await root.value.loadChildren() : []
     expect(nodes.map(n => n.value.path)).toEqual(['a', 'b', 'c'])
   })
 
   test('Validation', () => {
     let x: any = {}
-    expect(() => createRouteNode(x)).toThrow(/`path`/)
+    expect(() => Route(x)).toThrow(/`path`/)
 
     x = { path: '', onEnter: 1 }
-    expect(() => createRouteNode(x)).toThrow(/`onEnter`/)
+    expect(() => Route(x)).toThrow(/`onEnter`/)
   })
 })

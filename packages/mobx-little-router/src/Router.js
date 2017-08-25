@@ -76,7 +76,7 @@ class Router {
   handleEvent = (x: Event): void => {
     if (x.type === EventTypes.NAVIGATION_ERROR && x.error instanceof GuardFailure) {
       console.log('Failed guard', x.error)
-      this.history.replace(this.store.location)
+      this.replace(this.store.location)
     }
   }
 

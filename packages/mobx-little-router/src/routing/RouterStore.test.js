@@ -1,7 +1,7 @@
 // @flow
 import { autorun } from 'mobx'
 import RouterStore from './RouterStore'
-import createRouteNode from './createRouteNode'
+import Route from './Route'
 
 describe('RouterStore', () => {
   let store
@@ -16,12 +16,12 @@ describe('RouterStore', () => {
   })
 
   test('Updating children', done => {
-    const a = createRouteNode({
+    const a = Route({
       path: 'a',
       children: []
     })
 
-    const b = createRouteNode({
+    const b = Route({
       path: 'b',
       children: []
     })
@@ -41,18 +41,18 @@ describe('RouterStore', () => {
     expect(store.cache.get(a.value.key)).toBe(a)
     expect(store.cache.get(b.value.key)).toBe(b)
 
-    expect(() => store.replaceChildren(createRouteNode({ path: '' }), [])).toThrow(
+    expect(() => store.replaceChildren(Route({ path: '' }), [])).toThrow(
       /Node not found/
     )
   })
 
   test('Activating nodes', () => {
-    const a = createRouteNode({
+    const a = Route({
       path: 'a',
       children: []
     })
 
-    const b = createRouteNode({
+    const b = Route({
       path: 'b',
       children: []
     })
@@ -75,7 +75,7 @@ describe('RouterStore', () => {
     expect(store.state.root.value.data.x).toEqual('Hello')
 
     expect(() => {
-      store.updateNode(createRouteNode({
+      store.updateNode(Route({
         path: 'doesnotexist',
         children: []
       }), {})
