@@ -42,16 +42,9 @@ class Router {
     // Wait until navigation is processed.
     await this.navigated()
 
-    const f = this.history.listen((location, action) =>
+    this.dispose = this.history.listen((location, action) =>
       this.scheduler.scheduleNavigation(location, action)
     )
-
-    const g = this.subscribeEvent(this.handleEvent)
-
-    this.dispose = () => {
-      f()
-      g()
-    }
 
     callback && callback(this)
   }
@@ -68,16 +61,6 @@ class Router {
         f(event)
       }
     })
-  }
-
-  // TODO: Fix problems.
-  // 1. There will be a flash in address bar if the guard fails (nto a huge deal).
-  // 2. If the user initially lands on the route that fails activate guard, then what?
-  handleEvent = (x: Event): void => {
-    if (x.type === EventTypes.NAVIGATION_ERROR && x.error instanceof GuardFailure) {
-      console.log('Failed guard', x.error)
-      this.replace(this.store.location)
-    }
   }
 
   // Waits for next navigation event to be processed and resolves.
