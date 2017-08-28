@@ -12,6 +12,7 @@ import { string, optional, func, createValidator } from '../validation'
 
 async function nop() {}
 
+// Don't run validators in production bundle
 const validate = createValidator({
   path: string,
   loadChildren: optional(func),

@@ -1,12 +1,12 @@
 // @flow
-import { autorun, when } from 'mobx'
+import { autorun, computed, extendObservable, when } from 'mobx'
 import type { History } from 'history'
-import RouterStore from './routing/RouterStore'
-import type { Href, RouteNode } from './routing/types'
+import RouterStore from './model/RouterStore'
+import type { Href, RouteNode } from './model/types'
 import Scheduler from './scheduling/Scheduler'
-import type { Event } from './events'
-import { EventTypes } from './events'
-import { GuardFailure } from './errors'
+import type { Event } from './scheduling/events'
+import Navigation, { NavigationTypes } from './model/Navigation'
+import { InvalidTransition} from './errors'
 
 export type HistoryCreatorFn = (opts: any) => History
 
@@ -15,6 +15,7 @@ class Router {
   scheduler: Scheduler
   history: History
   dispose: null | Function
+  currentNavigation: *
 
   constructor(
     historyCreator: HistoryCreatorFn | [HistoryCreatorFn, Object],
@@ -28,6 +29,10 @@ class Router {
       : historyCreator[0](historyCreator[1])
     this.store = new RouterStore(routes)
     this.scheduler = new Scheduler(this.store)
+
+    extendObservable(this, {
+      currentNavigation: computed(this.getNextNavigation)
+    })
   }
 
   // We may want the start to take in a callback with the router instance as the parameter.
@@ -36,15 +41,20 @@ class Router {
   async start(callback: ?Function) {
     this.scheduler.start()
 
+    const f = autorun(this.handleNextTransition)
+
     // Schedule initial navigation.
-    await this.scheduler.scheduleNavigation(this.history.location)
+    await this.scheduler.scheduleNavigation(asNavigation(this.history.location))
 
     // Wait until navigation is processed.
     await this.navigated()
 
-    this.dispose = this.history.listen((location, action) =>
-      this.scheduler.scheduleNavigation(location, action)
-    )
+    const g = this.history.listen(location => this.scheduler.scheduleNavigation(asNavigation(location)))
+
+    this.dispose = () => {
+      f()
+      g()
+    }
 
     callback && callback(this)
   }
@@ -52,22 +62,6 @@ class Router {
   stop() {
     this.scheduler.stop()
     this.dispose && this.dispose()
-  }
-
-  subscribeEvent(f: (x: Event) => void): () => void {
-    return autorun(() => {
-      const { event } = this.scheduler
-      if (event !== null) {
-        f(event)
-      }
-    })
-  }
-
-  // Waits for next navigation event to be processed and resolves.
-  navigated() {
-    return new Promise(res => {
-      when(() => this.scheduler.navigation === null, res)
-    })
   }
 
   push(href: Href) {
@@ -84,6 +78,71 @@ class Router {
     this.history.goBack()
     return this.navigated()
   }
+
+  subscribeEvent(f: (x: Event) => void): () => void {
+    return autorun(() => {
+      const { event } = this.scheduler
+      if (event !== null) {
+        f(event)
+      }
+    })
+  }
+
+  /* Private helpers */
+
+  // Waits for next navigation event to be processed and resolves.
+  navigated() {
+    return new Promise(res => {
+      when(() => this.scheduler.nextNavigation === null, res)
+    })
+  }
+
+  getNextNavigation = () => {
+    const { event } = this.scheduler
+
+    if (event !== null) {
+      return event.nextNavigation || null
+    }
+
+    return null
+  }
+
+  handleNextTransition = () => {
+    const { currentNavigation } = this
+
+    if (!currentNavigation) {
+      return
+    }
+
+    switch(currentNavigation.type) {
+      case NavigationTypes.PUSH:
+        return this.push(currentNavigation.to)
+      case NavigationTypes.REPLACE:
+        return this.replace(currentNavigation.to)
+      case NavigationTypes.GO_BACK:
+        return this.goBack()
+      default:
+        throw new InvalidTransition(currentNavigation)
+    }
+  }
 }
 
 export default Router
+
+function asNavigation(location: Object) {
+  return {
+    type: 'PUSH',
+    to: {
+      ...location,
+      pathname: normalizePath(location.pathname)
+    }
+  }
+}
+
+function normalizePath(x: string) {
+  if (x.endsWith('/')) {
+    return x
+  } else {
+    return `${x}/`
+  }
+}

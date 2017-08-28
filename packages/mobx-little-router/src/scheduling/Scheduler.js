@@ -2,27 +2,23 @@
 import type { Action } from 'history'
 import { autorun, extendObservable, runInAction } from 'mobx'
 import assertUrlFullyMatched from './assertUrlFullyMatched'
-import type { Location, RouteNode } from '../routing/types'
-import type RouterStore from '../routing/RouterStore'
-import TransitionManager from '../transitions/TransitionManager'
-import areRoutesEqual from '../routing/areRoutesEqual'
+import type { Location, RouteNode } from '../model/types'
+import type RouterStore from '../model/RouterStore'
+import TransitionManager from '../transition/TransitionManager'
+import areRoutesEqual from '../model/areRoutesEqual'
 import shallowEqual from '../util/shallowEqual'
-import shallowClone from '../routing/shallowClone'
-import { differenceWith } from '../util/functional'
-import { GuardFailure } from '../errors'
-import type { Event } from '../events'
-import { EventTypes } from '../events'
-
-type NavigationParams = {
-  location: Location,
-  action: ?Action
-}
+import shallowClone from '../model/shallowClone'
+import differenceWith from '../util/differenceWith'
+import { GuardFailure } from '../errors/index'
+import type { Event } from './events'
+import { EventTypes } from './events'
+import Navigation, { NavigationTypes } from '../model/Navigation'
 
 export default class Scheduler {
   store: RouterStore
   transitionMgr: TransitionManager
   disposer: null | Function
-  navigation: null | NavigationParams
+  nextNavigation: null | Navigation
   event: null | Event
 
   constructor(store: RouterStore) {
@@ -30,7 +26,7 @@ export default class Scheduler {
     this.transitionMgr = new TransitionManager()
     this.disposer = null
     extendObservable(this, {
-      navigation: null,
+      nextNavigation: null,
       event: null
     })
   }
@@ -51,50 +47,51 @@ export default class Scheduler {
     })
   }
 
-  scheduleNavigation = (nextLocation: Location, action: ?Action) => {
+  scheduleNavigation = (nextNavigation: Object) => {
     const { location } = this.store
+
+    // This could be a navigation that has no `to` prop. Usually a `GO_BACK`.
+    if (!nextNavigation.to) {
+      return
+    }
 
     // If location path and query has not changed, skip it.
     if (
       location &&
-      location.pathname === nextLocation.pathname &&
+      location.pathname === nextNavigation.to.pathname &&
       location.query &&
-      shallowEqual(location.query, nextLocation.query)
+      shallowEqual(location.query, nextNavigation.to.query)
     ) {
       return
     }
 
-    const pathname = normalizePath(nextLocation.pathname)
-
     runInAction(() => {
       this.store.error = null
-      this.navigation = {
-        location: {
-          ...nextLocation,
-          pathname
-        },
-        action
-      }
+      this.nextNavigation = new Navigation({
+        ...nextNavigation,
+        from: location.pathname
+      })
     })
   }
 
   processNextNavigation = async () => {
-    const { navigation, store } = this
-    if (!navigation) return
+    const { nextNavigation, store } = this
+    if (!nextNavigation) return
 
-    const { location } = navigation
+    const { to: nextLocation } = nextNavigation
+    if (!nextLocation) return
 
     try {
-      this.emit({ type: EventTypes.NAVIGATION_START, location })
+      this.emit({ type: EventTypes.NAVIGATION_START, location: nextNavigation.to })
 
       // This match call may have side-effects of loading dynamic children.
       const nextPath = await store.state.pathFromRoot(
-        location.pathname,
+        nextLocation.pathname,
         this.handleLeafNodeReached
       )
       const nextNodes = toRouteNodes(nextPath)
 
-      await assertUrlFullyMatched(location.pathname, nextPath)
+      await assertUrlFullyMatched(nextLocation.pathname, nextPath)
 
       // We've found a match or unmatched error has been handled.
       const { activating, deactivating } = await diffActiveNodes(
@@ -102,9 +99,15 @@ export default class Scheduler {
         nextNodes
       )
 
+      const navigation = new Navigation({
+        type: NavigationTypes.PUSH,
+        from: store.location,
+        to: nextLocation
+      })
+
       // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
-      await this.checkGuards('canDeactivate', deactivating)
-      await this.checkGuards('canActivate', activating)
+      await this.checkGuards('canDeactivate', deactivating, navigation)
+      await this.checkGuards('canActivate', activating, navigation)
 
       store.updateNodes(nextNodes)
 
@@ -115,15 +118,25 @@ export default class Scheduler {
       ])
 
       // If all value resolved, then we're good to update store state.
-      store.commit(location)
+      store.commit(nextLocation)
     } catch (error) {
-      store.setError(error)
-      this.emit({ type: EventTypes.NAVIGATION_ERROR, error, location })
+      if (error instanceof GuardFailure) {
+        // Navigation error may be thrown by a guard or lifecycle hook.
+        this.emit({
+          type: EventTypes.NAVIGATION_ABORTED,
+          nextNavigation: error.navigation,
+          location: nextLocation
+        })
+      } else {
+        // Error instances should be set on the store and an error event is emitted.
+        this.store.setError(error)
+        this.emit({ type: EventTypes.NAVIGATION_ERROR, error, location: nextLocation })
+      }
     } finally {
       runInAction(() => {
-        this.navigation = null
+        this.nextNavigation = null
       })
-      this.emit({ type: EventTypes.NAVIGATION_END, location })
+      this.emit({ type: EventTypes.NAVIGATION_END, location: nextLocation })
     }
   }
 
@@ -145,29 +158,21 @@ export default class Scheduler {
 
   // Runs guards (if they exist) on each node until they all pass.
   // If one guard fails, then the entire function rejects.
-  checkGuards = async (type: 'canDeactivate' | 'canActivate', nodes: RouteNode[]) => {
+  checkGuards = async (type: 'canDeactivate' | 'canActivate', nodes: RouteNode[], navigation: Navigation) => {
     for (const node of nodes) {
       const { value } = node
-      const result = typeof value[type] === 'function' ? value[type](node) : true
+      const result = typeof value[type] === 'function' ? value[type](node, navigation) : true
 
       if (!result) {
-        throw new GuardFailure(type, node)
+        throw new GuardFailure(type, node, null)
       } else if (typeof result.then === 'function') {
         try {
           await result
         } catch (e) {
-          throw new GuardFailure(type, node)
+          throw new GuardFailure(type, node, e instanceof Navigation ? e : null)
         }
       }
     }
-  }
-}
-
-function normalizePath(x: string) {
-  if (x.endsWith('/')) {
-    return x
-  } else {
-    return `${x}/`
   }
 }
 

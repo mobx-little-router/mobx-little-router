@@ -1,7 +1,7 @@
 // @flow
 type Predicate<T> = (a: T, b: T) => boolean
 
-export function differenceWith<T>(f: Predicate<T>, xs: T[], ys: T[]): T[] {
+export default function differenceWith<T>(f: Predicate<T>, xs: T[], ys: T[]): T[] {
   let out: T[] = []
   let idx = 0
   let firstLen = xs.length
