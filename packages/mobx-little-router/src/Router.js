@@ -1,12 +1,12 @@
 // @flow
-import { autorun, when } from 'mobx'
+import { autorun, computed, extendObservable, when } from 'mobx'
 import type { History } from 'history'
-import RouterStore from './routing/RouterStore'
-import type { Href, RouteNode } from './routing/types'
+import RouterStore from './model/RouterStore'
+import type { Href, RouteNode } from './model/types'
 import Scheduler from './scheduling/Scheduler'
 import type { Event } from './scheduling/events'
-import { EventTypes } from './scheduling/events'
-import { GuardFailure } from './errors'
+import { NavigationTypes } from './scheduling/Navigation'
+import { InvalidTransition} from './errors'
 
 export type HistoryCreatorFn = (opts: any) => History
 
@@ -15,6 +15,7 @@ class Router {
   scheduler: Scheduler
   history: History
   dispose: null | Function
+  currentNavigation: *
 
   constructor(
     historyCreator: HistoryCreatorFn | [HistoryCreatorFn, Object],
@@ -28,6 +29,10 @@ class Router {
       : historyCreator[0](historyCreator[1])
     this.store = new RouterStore(routes)
     this.scheduler = new Scheduler(this.store)
+
+    extendObservable(this, {
+      currentNavigation: computed(this.getNextNavigation)
+    })
   }
 
   // We may want the start to take in a callback with the router instance as the parameter.
@@ -42,11 +47,9 @@ class Router {
     // Wait until navigation is processed.
     await this.navigated()
 
-    const f = this.history.listen((location) =>
-      this.scheduler.scheduleNavigation(location)
-    )
+    const f = this.history.listen(location => this.scheduler.scheduleNavigation(location))
 
-    const g = this.subscribeEvent(this.handleNavigationEvents)
+    const g = autorun(this.handleNextTransition)
 
     this.dispose = () => {
       f()
@@ -59,35 +62,6 @@ class Router {
   stop() {
     this.scheduler.stop()
     this.dispose && this.dispose()
-  }
-
-  subscribeEvent(f: (x: Event) => void): () => void {
-    return autorun(() => {
-      const { event } = this.scheduler
-      if (event !== null) {
-        f(event)
-      }
-    })
-  }
-
-  handleNavigationEvents = (evt: Event) => {
-    if (evt.type === EventTypes.NAVIGATION_ABORTED) {
-      const { transition } = evt
-      if (transition.type === 'GO_BACK') {
-        this.goBack()
-      } else if (transition.type === 'PUSH') {
-        this.push(transition.to)
-      } else if (transition.type === 'REPLACE') {
-        this.replace(transition.to)
-      }
-    }
-  }
-
-  // Waits for next navigation event to be processed and resolves.
-  navigated() {
-    return new Promise(res => {
-      when(() => this.scheduler.navigation === null, res)
-    })
   }
 
   push(href: Href) {
@@ -103,6 +77,55 @@ class Router {
   goBack() {
     this.history.goBack()
     return this.navigated()
+  }
+
+  subscribeEvent(f: (x: Event) => void): () => void {
+    return autorun(() => {
+      const { event } = this.scheduler
+      if (event !== null) {
+        f(event)
+      }
+    })
+  }
+
+  /* Private helpers */
+
+  // Waits for next navigation event to be processed and resolves.
+  navigated() {
+    return new Promise(res => {
+      when(() => this.scheduler.nextLocation === null, res)
+    })
+  }
+
+  getNextNavigation = () => {
+    const { event } = this.scheduler
+
+    if (event !== null) {
+      if (event.nextNavigation) {
+        return event.nextNavigation
+      }
+    }
+
+    return null
+  }
+
+  handleNextTransition = () => {
+    const { currentNavigation } = this
+
+    if (!currentNavigation) {
+      return
+    }
+
+    switch(currentNavigation.type) {
+      case NavigationTypes.PUSH:
+        return this.push(currentNavigation.to)
+      case NavigationTypes.REPLACE:
+        return this.replace(currentNavigation.to)
+      case NavigationTypes.GO_BACK:
+        return this.goBack()
+      default:
+        throw new InvalidTransition(currentNavigation)
+    }
   }
 }
 

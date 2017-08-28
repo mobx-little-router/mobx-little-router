@@ -2,28 +2,23 @@
 import type { Action } from 'history'
 import { autorun, extendObservable, runInAction } from 'mobx'
 import assertUrlFullyMatched from './assertUrlFullyMatched'
-import type { Location, RouteNode } from '../routing/types'
-import type RouterStore from '../routing/RouterStore'
-import TransitionManager from '../transitioning/TransitionManager'
-import areRoutesEqual from '../routing/areRoutesEqual'
+import type { Location, RouteNode } from '../model/types'
+import type RouterStore from '../model/RouterStore'
+import TransitionManager from '../transition/TransitionManager'
+import areRoutesEqual from '../model/areRoutesEqual'
 import shallowEqual from '../util/shallowEqual'
-import shallowClone from '../routing/shallowClone'
-import { differenceWith } from '../util/functional'
+import shallowClone from '../model/shallowClone'
+import differenceWith from '../util/differenceWith'
 import { GuardFailure } from '../errors'
 import type { Event } from './events'
 import { EventTypes } from './events'
-import { _Transition } from './Transition'
-
-type NavigationParams = {
-  location: Location,
-  action: ?Action
-}
+import Navigation from './Navigation'
 
 export default class Scheduler {
   store: RouterStore
   transitionMgr: TransitionManager
   disposer: null | Function
-  navigation: null | NavigationParams
+  nextLocation: null | Location
   event: null | Event
 
   constructor(store: RouterStore) {
@@ -31,13 +26,13 @@ export default class Scheduler {
     this.transitionMgr = new TransitionManager()
     this.disposer = null
     extendObservable(this, {
-      navigation: null,
+      nextLocation: null,
       event: null
     })
   }
 
   start() {
-    this.disposer = autorun(this.processNextNavigation)
+    this.disposer = autorun(this.processNextLocation)
   }
 
   stop() {
@@ -52,7 +47,7 @@ export default class Scheduler {
     })
   }
 
-  scheduleNavigation = (nextLocation: Location, action: ?Action) => {
+  scheduleNavigation = (nextLocation: Location) => {
     const { location } = this.store
 
     // If location path and query has not changed, skip it.
@@ -69,33 +64,28 @@ export default class Scheduler {
 
     runInAction(() => {
       this.store.error = null
-      this.navigation = {
-        location: {
-          ...nextLocation,
-          pathname
-        },
-        action
+      this.nextLocation = {
+        ...nextLocation,
+        pathname
       }
     })
   }
 
-  processNextNavigation = async () => {
-    const { navigation, store } = this
-    if (!navigation) return
-
-    const { location } = navigation
+  processNextLocation = async () => {
+    const { nextLocation, store } = this
+    if (!nextLocation) return
 
     try {
-      this.emit({ type: EventTypes.NAVIGATION_START, location })
+      this.emit({ type: EventTypes.NAVIGATION_START, location: nextLocation })
 
       // This match call may have side-effects of loading dynamic children.
       const nextPath = await store.state.pathFromRoot(
-        location.pathname,
+        nextLocation.pathname,
         this.handleLeafNodeReached
       )
       const nextNodes = toRouteNodes(nextPath)
 
-      await assertUrlFullyMatched(location.pathname, nextPath)
+      await assertUrlFullyMatched(nextLocation.pathname, nextPath)
 
       // We've found a match or unmatched error has been handled.
       const { activating, deactivating } = await diffActiveNodes(
@@ -116,19 +106,27 @@ export default class Scheduler {
       ])
 
       // If all value resolved, then we're good to update store state.
-      store.commit(location)
+      store.commit(nextLocation)
     } catch (error) {
-      if (error instanceof _Transition) {
-        this.emit({ type: EventTypes.NAVIGATION_ABORTED, transition: error, location })
-      } else {
+      if (error instanceof Navigation) {
+        // Navigation error may be thrown by a guard or lifecycle hook.
+        this.emit({
+          type: EventTypes.NAVIGATION_ABORTED,
+          nextNavigation: error,
+          location: nextLocation
+        })
+      } else if (error instanceof Error) {
+        // Error instances should be set on the store and an error event is emitted.
         this.store.setError(error)
-        this.emit({ type: EventTypes.NAVIGATION_ERROR, error, location })
+        this.emit({ type: EventTypes.NAVIGATION_ERROR, error, location: nextLocation })
+      } else {
+        throw new Error('Unexpected error thrown')
       }
     } finally {
       runInAction(() => {
-        this.navigation = null
+        this.nextLocation = null
       })
-      this.emit({ type: EventTypes.NAVIGATION_END, location })
+      this.emit({ type: EventTypes.NAVIGATION_END, location: nextLocation })
     }
   }
 

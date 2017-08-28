@@ -2,9 +2,9 @@
 import { autorun } from 'mobx'
 import { createMemoryHistory } from 'history'
 import { EventTypes } from './scheduling/events'
-import { install } from './'
+import { install }  from './'
 
-describe('Routing', () => {
+describe('Public API', () => {
   let router
 
   beforeEach(() => {

@@ -1,5 +1,5 @@
 // @flow
-import type { MatchResult } from '../routing/types'
+import type { MatchResult } from '../model/types'
 import { NoMatch } from '../errors'
 import maybeCallErrorHandler from './maybeCallErrorHandler'
 

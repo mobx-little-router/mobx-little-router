@@ -1,9 +1,9 @@
 // @flow
-import Transition from './Transition'
+import Navigation from './Navigation'
 
-describe('Transition', () => {
+describe('Navigation', () => {
   test('Transformations', () => {
-    const a = Transition({
+    const a = new Navigation({
       type: 'PUSH',
       to: { pathname: '/' }
     })

@@ -1,5 +1,5 @@
 // @flow
-import type { MatchResult, RouteNode } from './routing/types'
+import type { RouteNode } from '../model/types'
 
 export class GuardFailure extends Error {
   node: RouteNode
@@ -17,10 +17,10 @@ export class NoMatch extends Error {
   }
 }
 
-export class NavigationError extends Error {
-  node: RouteNode
-  constructor(node: RouteNode) {
-    super(`Navigation failed at ${node.value.key}`)
-    this.node = node
+export class InvalidTransition extends Error{
+  transition: *
+  constructor(transition: *) {
+    super('Invalid transition')
+    this.transition = transition
   }
 }

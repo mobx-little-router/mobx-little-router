@@ -3,7 +3,7 @@ import type { IObservableArray } from 'mobx'
 import { extendObservable, runInAction, observable } from 'mobx'
 import type { ObservableMap } from 'mobx'
 import RouterStateTree from './RouterStateTree'
-import type { Location, RouteNode, RouteValue } from '../routing/types'
+import type { Location, RouteNode, RouteValue } from './types'
 import Route from './Route'
 
 type RouteValueChange = $Shape<RouteValue>

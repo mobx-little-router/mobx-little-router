@@ -1,6 +1,6 @@
 // @flow
 import assertUrlFullyMatched from './assertUrlFullyMatched'
-import Route from '../routing/Route'
+import Route from '../model/Route'
 
 describe('assertUrlFullyMatched', () => {
   let routes

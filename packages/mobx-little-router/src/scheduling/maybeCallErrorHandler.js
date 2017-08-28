@@ -1,5 +1,5 @@
 // @flow
-import type { MatchResult } from '../routing/types'
+import type { MatchResult } from '../model/types'
 
 /*
  * Tries to bubble error from bottom to top until either one node handles it, or else rejects.
