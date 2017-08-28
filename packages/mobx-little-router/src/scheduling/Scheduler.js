@@ -18,7 +18,7 @@ export default class Scheduler {
   store: RouterStore
   transitionMgr: TransitionManager
   disposer: null | Function
-  nextLocation: null | Location
+  nextNavigation: null | Navigation
   event: null | Event
 
   constructor(store: RouterStore) {
@@ -26,13 +26,13 @@ export default class Scheduler {
     this.transitionMgr = new TransitionManager()
     this.disposer = null
     extendObservable(this, {
-      nextLocation: null,
+      nextNavigation: null,
       event: null
     })
   }
 
   start() {
-    this.disposer = autorun(this.processNextLocation)
+    this.disposer = autorun(this.processNextNavigation)
   }
 
   stop() {
@@ -47,36 +47,42 @@ export default class Scheduler {
     })
   }
 
-  scheduleNavigation = (nextLocation: Location) => {
+  scheduleNavigation = (nextNavigation: Object) => {
     const { location } = this.store
+
+    // This could be a navigation that has no `to` prop. Usually a `GO_BACK`.
+    if (!nextNavigation.to) {
+      return
+    }
 
     // If location path and query has not changed, skip it.
     if (
       location &&
-      location.pathname === nextLocation.pathname &&
+      location.pathname === nextNavigation.to.pathname &&
       location.query &&
-      shallowEqual(location.query, nextLocation.query)
+      shallowEqual(location.query, nextNavigation.to.query)
     ) {
       return
     }
 
-    const pathname = normalizePath(nextLocation.pathname)
-
     runInAction(() => {
       this.store.error = null
-      this.nextLocation = {
-        ...nextLocation,
-        pathname
-      }
+      this.nextNavigation = new Navigation({
+        ...nextNavigation,
+        from: location.pathname
+      })
     })
   }
 
-  processNextLocation = async () => {
-    const { nextLocation, store } = this
+  processNextNavigation = async () => {
+    const { nextNavigation, store } = this
+    if (!nextNavigation) return
+
+    const { to: nextLocation } = nextNavigation
     if (!nextLocation) return
 
     try {
-      this.emit({ type: EventTypes.NAVIGATION_START, location: nextLocation })
+      this.emit({ type: EventTypes.NAVIGATION_START, location: nextNavigation.to })
 
       // This match call may have side-effects of loading dynamic children.
       const nextPath = await store.state.pathFromRoot(
@@ -128,7 +134,7 @@ export default class Scheduler {
       }
     } finally {
       runInAction(() => {
-        this.nextLocation = null
+        this.nextNavigation = null
       })
       this.emit({ type: EventTypes.NAVIGATION_END, location: nextLocation })
     }
@@ -167,14 +173,6 @@ export default class Scheduler {
         }
       }
     }
-  }
-}
-
-function normalizePath(x: string) {
-  if (x.endsWith('/')) {
-    return x
-  } else {
-    return `${x}/`
   }
 }
 

@@ -5,7 +5,7 @@ import RouterStore from './model/RouterStore'
 import type { Href, RouteNode } from './model/types'
 import Scheduler from './scheduling/Scheduler'
 import type { Event } from './scheduling/events'
-import { NavigationTypes } from './model/Navigation'
+import Navigation, { NavigationTypes } from './model/Navigation'
 import { InvalidTransition} from './errors'
 
 export type HistoryCreatorFn = (opts: any) => History
@@ -41,15 +41,15 @@ class Router {
   async start(callback: ?Function) {
     this.scheduler.start()
 
+    const f = autorun(this.handleNextTransition)
+
     // Schedule initial navigation.
-    await this.scheduler.scheduleNavigation(this.history.location)
+    await this.scheduler.scheduleNavigation(asNavigation(this.history.location))
 
     // Wait until navigation is processed.
     await this.navigated()
 
-    const f = this.history.listen(location => this.scheduler.scheduleNavigation(location))
-
-    const g = autorun(this.handleNextTransition)
+    const g = this.history.listen(location => this.scheduler.scheduleNavigation(asNavigation(location)))
 
     this.dispose = () => {
       f()
@@ -93,7 +93,7 @@ class Router {
   // Waits for next navigation event to be processed and resolves.
   navigated() {
     return new Promise(res => {
-      when(() => this.scheduler.nextLocation === null, res)
+      when(() => this.scheduler.nextNavigation === null, res)
     })
   }
 
@@ -101,9 +101,7 @@ class Router {
     const { event } = this.scheduler
 
     if (event !== null) {
-      if (event.nextNavigation) {
-        return event.nextNavigation
-      }
+      return event.nextNavigation || null
     }
 
     return null
@@ -130,3 +128,21 @@ class Router {
 }
 
 export default Router
+
+function asNavigation(location: Object) {
+  return {
+    type: 'PUSH',
+    to: {
+      ...location,
+      pathname: normalizePath(location.pathname)
+    }
+  }
+}
+
+function normalizePath(x: string) {
+  if (x.endsWith('/')) {
+    return x
+  } else {
+    return `${x}/`
+  }
+}
