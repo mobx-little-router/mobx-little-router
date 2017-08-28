@@ -164,7 +164,9 @@ export default class Scheduler {
       const result = typeof value[type] === 'function' ? value[type](node, navigation) : true
 
       if (!result) {
-        throw new GuardFailure(type, node, null)
+        throw new GuardFailure(type, node, new Navigation({
+          type: 'GO_BACK'
+        }))
       } else if (typeof result.then === 'function') {
         try {
           await result
