@@ -1,8 +1,9 @@
 // @flow
+import type { History, Location as HistoryLocation } from 'history'
 import type { ITreeNode } from '../util/tree'
 import type { TransitionFn } from '../transition/types'
 import type { MatchFn } from './matchers'
-import type { History, Location as HistoryLocation } from 'history'
+import Navigation from './Navigation'
 
 export type { MatchFn }
 
@@ -35,7 +36,7 @@ export type Config = {
 
 export type LoadChildrenConfigFn = () => Promise<Config[]>
 
-export type GuardFn = (node: RouteNode) => boolean | Promise<void>
+export type GuardFn = (node: RouteNode, nav: Navigation) => boolean | Promise<void>
 
 export type LifecycleFn = (node: RouteNode) => Promise<void>
 

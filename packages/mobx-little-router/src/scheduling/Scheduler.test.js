@@ -32,15 +32,19 @@ describe('Scheduler', () => {
       // Navigation is cleared.
       expect(toJS(scheduler.nextLocation)).toBe(null)
 
-      // Enter lifecycle method should not be called.
       expect(spy).toHaveBeenCalledTimes(1)
       expect(spy.mock.calls[0][0].value.key).toBe(todosRoot.value.key)
+      expect(spy.mock.calls[0][1].to.pathname).toEqual('/todos/')
     })
 
     test('Activation successful', async () => {
       const spy = jest.fn(() => true)
       const root = store.state.root
-      const [_, appRootNode, todosRoot, todosView] = scanChildren(store.state.root, [0, 0, 1])
+      const [_, appRootNode, todosRoot, todosView] = scanChildren(store.state.root, [
+        0,
+        0,
+        1
+      ])
       updateNode(root, { canActivate: spy })
       updateNode(todosRoot, { canActivate: spy })
       updateNode(todosView, { canActivate: spy })
@@ -188,6 +192,38 @@ describe('Scheduler', () => {
 
         expect(store.location.pathname).toBe('/')
       })
+    })
+
+    test('Emits redirection in abort event from guard', async () => {
+      const spy = jest.fn((a, b) => {
+        return b.redirectTo('/sign-in')
+      })
+      const [_, __, todosRoot] = scanChildren(store.state.root, [0, 0])
+
+      updateNode(todosRoot, { canActivate: spy })
+      scheduler.scheduleNavigation({ pathname: '/todos' })
+      const events = []
+      const dispose = autorun(() => {
+        events.push(scheduler.event)
+      })
+
+      await scheduler.processNextLocation()
+
+      expect(events).toEqual(
+        expect.arrayContaining([
+          {
+            type: 'NAVIGATION_ABORTED',
+            location: expect.anything(),
+            nextNavigation: {
+              type: 'PUSH',
+              to: { pathname: '/sign-in' },
+              from: expect.anything()
+            }
+          }
+        ])
+      )
+
+      dispose()
     })
   })
 
@@ -426,6 +462,10 @@ function createStore() {
             { path: '', match: 'full', children: [] },
             { path: ':id', children: [] }
           ]
+        },
+        {
+          path: 'sign-in',
+          children: []
         }
       ]
     })

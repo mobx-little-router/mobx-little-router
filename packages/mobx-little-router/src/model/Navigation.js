@@ -1,5 +1,5 @@
 // @flow
-import type { Href, Location } from '../model/types'
+import type { Href, Location } from './types'
 
 /*
  * The transition object encodes information about the type of transition
@@ -22,7 +22,7 @@ type Definition = {
   from?: Location
 }
 
-export default class Transition {
+export default class Navigation {
   type: NavigationType
   to: null | Location
   from: null | Location
@@ -34,7 +34,7 @@ export default class Transition {
   }
 
   redirectTo(href: Href) {
-    return Promise.reject(new Transition({
+    return Promise.reject(new Navigation({
       type: NavigationTypes.PUSH,
       from: this.from,
       to: asLocation(href)
@@ -42,7 +42,7 @@ export default class Transition {
   }
 
   goBack() {
-    return Promise.reject(new Transition({
+    return Promise.reject(new Navigation({
       type: NavigationTypes.GO_BACK,
       from: this.to,
       to: null

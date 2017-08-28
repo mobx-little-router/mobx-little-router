@@ -1,6 +1,6 @@
 // @flow
 import type { Location } from '../model/types'
-import Navigation from './Navigation'
+import Navigation from '../model/Navigation'
 
 /*
   * Sequence of events that occur from navigation start to end.

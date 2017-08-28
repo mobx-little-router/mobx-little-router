@@ -5,7 +5,7 @@ import RouterStore from './model/RouterStore'
 import type { Href, RouteNode } from './model/types'
 import Scheduler from './scheduling/Scheduler'
 import type { Event } from './scheduling/events'
-import { NavigationTypes } from './scheduling/Navigation'
+import { NavigationTypes } from './model/Navigation'
 import { InvalidTransition} from './errors'
 
 export type HistoryCreatorFn = (opts: any) => History

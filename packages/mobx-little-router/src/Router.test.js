@@ -2,7 +2,7 @@
 import { createMemoryHistory } from 'history'
 import Route from './model/Route'
 import { EventTypes } from './scheduling/events'
-import Navigation from './scheduling/Navigation'
+import Navigation from './model/Navigation'
 import Router from './Router'
 import delay from './util/delay'
 

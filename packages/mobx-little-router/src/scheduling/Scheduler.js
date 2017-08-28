@@ -9,10 +9,10 @@ import areRoutesEqual from '../model/areRoutesEqual'
 import shallowEqual from '../util/shallowEqual'
 import shallowClone from '../model/shallowClone'
 import differenceWith from '../util/differenceWith'
-import { GuardFailure } from '../errors'
+import { GuardFailure } from '../errors/index'
 import type { Event } from './events'
 import { EventTypes } from './events'
-import Navigation from './Navigation'
+import Navigation, { NavigationTypes } from '../model/Navigation'
 
 export default class Scheduler {
   store: RouterStore
@@ -93,9 +93,15 @@ export default class Scheduler {
         nextNodes
       )
 
+      const navigation = new Navigation({
+        type: NavigationTypes.PUSH,
+        from: store.location,
+        to: nextLocation
+      })
+
       // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
-      await this.checkGuards('canDeactivate', deactivating)
-      await this.checkGuards('canActivate', activating)
+      await this.checkGuards('canDeactivate', deactivating, navigation)
+      await this.checkGuards('canActivate', activating, navigation)
 
       store.updateNodes(nextNodes)
 
@@ -108,19 +114,17 @@ export default class Scheduler {
       // If all value resolved, then we're good to update store state.
       store.commit(nextLocation)
     } catch (error) {
-      if (error instanceof Navigation) {
+      if (error instanceof GuardFailure) {
         // Navigation error may be thrown by a guard or lifecycle hook.
         this.emit({
           type: EventTypes.NAVIGATION_ABORTED,
-          nextNavigation: error,
+          nextNavigation: error.navigation,
           location: nextLocation
         })
-      } else if (error instanceof Error) {
+      } else {
         // Error instances should be set on the store and an error event is emitted.
         this.store.setError(error)
         this.emit({ type: EventTypes.NAVIGATION_ERROR, error, location: nextLocation })
-      } else {
-        throw new Error('Unexpected error thrown')
       }
     } finally {
       runInAction(() => {
@@ -148,18 +152,18 @@ export default class Scheduler {
 
   // Runs guards (if they exist) on each node until they all pass.
   // If one guard fails, then the entire function rejects.
-  checkGuards = async (type: 'canDeactivate' | 'canActivate', nodes: RouteNode[]) => {
+  checkGuards = async (type: 'canDeactivate' | 'canActivate', nodes: RouteNode[], navigation: Navigation) => {
     for (const node of nodes) {
       const { value } = node
-      const result = typeof value[type] === 'function' ? value[type](node) : true
+      const result = typeof value[type] === 'function' ? value[type](node, navigation) : true
 
       if (!result) {
-        throw new GuardFailure(type, node)
+        throw new GuardFailure(type, node, null)
       } else if (typeof result.then === 'function') {
         try {
           await result
         } catch (e) {
-          throw new GuardFailure(type, node)
+          throw new GuardFailure(type, node, e instanceof Navigation ? e : null)
         }
       }
     }

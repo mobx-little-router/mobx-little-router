@@ -1,26 +1,29 @@
 // @flow
 import type { RouteNode } from '../model/types'
+import Navigation from '../model/Navigation'
 
-export class GuardFailure extends Error {
+export class GuardFailure  {
   node: RouteNode
-  constructor(type: string, node: RouteNode) {
-    super(`${type} guard failed at node ${node.value.key}`)
+  navigation: null | Navigation
+  constructor(type: string, node: RouteNode, navigation: ?Navigation) {
     this.node = node
+    this.navigation = navigation || null
   }
 }
 
-export class NoMatch extends Error {
+export class NoMatch  {
   url: string
   constructor(url: string) {
-    super(`No match for ${url}`)
     this.url = url
+  }
+  toString() {
+    return `No match for ${this.url}`
   }
 }
 
-export class InvalidTransition extends Error{
+export class InvalidTransition {
   transition: *
   constructor(transition: *) {
-    super('Invalid transition')
     this.transition = transition
   }
 }
