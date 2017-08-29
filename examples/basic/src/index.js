@@ -61,8 +61,15 @@ const router = install({
     {
       path: 'admin',
       data: { component: AdminRoute },
-      canActivate: (node) => {
-        return true
+      canActivate: (node, navigation, context) => {
+        if (context.stores.SessionStore.isAuthenticated) {
+          return true
+        }
+        if (navigation.sequence > 0) {
+          return navigation.goBack()
+        } else {
+          return navigation.redirectTo('/')
+        }
       }
     }
   ]
