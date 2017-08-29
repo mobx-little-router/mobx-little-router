@@ -213,6 +213,34 @@ describe('Scheduler', () => {
 
       dispose()
     })
+
+    test('Context is passed to guard functions', async () => {
+      const canActivate = jest.fn(() => true)
+      const canDeactivate = jest.fn(() => true)
+      const [_, __, todosRoot] = scanChildren(store.state.root, [0, 0])
+      updateNode(todosRoot, { canActivate, canDeactivate })
+
+      scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/todos' } })
+      await scheduler.processNextNavigation()
+
+
+      expect(canActivate).toHaveBeenCalled()
+      expect(canActivate.mock.calls[0]).toEqual(
+        expect.arrayContaining([
+          { message: 'Hello' }
+        ])
+      )
+
+      scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/' } })
+      await scheduler.processNextNavigation()
+
+      expect(canDeactivate).toHaveBeenCalled()
+      expect(canDeactivate.mock.calls[0]).toEqual(
+        expect.arrayContaining([
+          { message: 'Hello' }
+        ])
+      )
+    })
   })
 
   describe('Errors', () => {
@@ -435,7 +463,7 @@ describe('Scheduler', () => {
 })
 
 function createStore() {
-  const store = new RouterStore(Route({ path: '' }))
+  const store = new RouterStore(Route({ path: '' }, () => ({ message: 'Hello' })))
   store.replaceChildren(store.state.root, [
     Route({
       path: '',

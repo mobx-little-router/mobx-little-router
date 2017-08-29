@@ -36,11 +36,11 @@ export type Config = {
 
 export type LoadChildrenConfigFn = () => Promise<Config[]>
 
-export type GuardFn = (node: RouteNode<*>, nav: Navigation) => boolean | Promise<void>
+export type GuardFn = (node: RouteNode<*>, nav: Navigation, context: Object) => boolean | Promise<void>
 
-export type LifecycleFn = (node: RouteNode<*>) => Promise<void>
+export type LifecycleFn = (node: RouteNode<*>, nav: Navigation, context: Object) => Promise<void>
 
-export type ErrorHandler = (node: RouteNode<*>) => Promise<void>
+export type ErrorHandler = (node: RouteNode<*>, context: Object) => Promise<void>
 
 export type LoadChildrenRouteNode = () => Promise<RouteNode<*>[]>
 

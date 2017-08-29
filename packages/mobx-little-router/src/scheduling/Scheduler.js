@@ -160,7 +160,7 @@ export default class Scheduler {
     for (const node of nodes) {
       const { value } = node
       const result = typeof value[type] === 'function'
-        ? value[type](node, navigation)
+        ? value[type](node, navigation, node.value.getContext())
         : true
 
       try {
