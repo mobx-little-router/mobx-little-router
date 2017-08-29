@@ -11,9 +11,11 @@ export function createRouter(routes: Array<*>, initialEntry: ?string = '/') {
       createMemoryHistory,
       { initialEntries: [initialEntry] }
     ],
+    getContext: () => ({}),
     routes
   }) : install({
     createHistory: createMemoryHistory,
+    getContext: () => ({}),
     routes
   })
 }
@@ -26,5 +28,4 @@ export const callInProvider = (f: Function) => (x: Router | Array<*>) => (
 }
 
 export const renderInProvider = callInProvider(render)
-export const shallowInProvider = callInProvider(shallow)
 export const mountInProvider = callInProvider(mount)
