@@ -3,22 +3,12 @@ import { Provider, observer } from 'mobx-react'
 import { withRouter, Outlet } from 'mobx-little-router-react'
 import styled, { injectGlobal } from 'styled-components'
 import Header from './components/Header'
-
-import { observable } from 'mobx'
-
-const sessionStore = observable({
-  isAuthenticated: false
-})
-
-const showsStore = observable({
-  collection: [],
-  currentShow: null
-})
+import * as stores from './stores'
 
 class App extends Component {
   render() {
     return (
-      <Provider sessionStore={sessionStore} showsStore={showsStore}>
+      <Provider {...stores}>
         <div>
           <Header />
           <Viewport>
