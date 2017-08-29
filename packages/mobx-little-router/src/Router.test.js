@@ -1,6 +1,5 @@
 // @flow
 import { createMemoryHistory } from 'history'
-import Route from './model/Route'
 import { EventTypes } from './scheduling/events'
 import Navigation from './model/Navigation'
 import Router from './Router'
@@ -11,11 +10,11 @@ describe('Router', () => {
 
   beforeEach(() => {
     router = new Router(createMemoryHistory, [
-      Route({ path: '', match: 'full' }),
-      Route({ path: 'a' }),
-      Route({ path: 'b' }),
-      Route({ path: 'c' })
-    ])
+      { path: '', match: 'full' },
+      { path: 'a' },
+      { path: 'b' },
+      { path: 'c' }
+    ], () => ({ message: 'Hello' }))
 
     return router.start()
   })
@@ -26,9 +25,9 @@ describe('Router', () => {
 
   describe('events', () => {
     test('handling transition events', async () => {
-      expect(router.currentNavigation).toBe(null)
-
-      router.scheduler.emit(abortNavigation('PUSH', { pathname: '/' }, { pathname: '/a' }))
+      router.scheduler.emit(
+        abortNavigation('PUSH', { pathname: '/' }, { pathname: '/a' })
+      )
       await delay(0)
 
       expect(router.store.location.pathname).toEqual('/a/')
@@ -38,7 +37,9 @@ describe('Router', () => {
 
       expect(router.store.location.pathname).toEqual('/')
 
-      router.scheduler.emit(abortNavigation('REPLACE', { pathname: '/' }, { pathname: '/b' }))
+      router.scheduler.emit(
+        abortNavigation('REPLACE', { pathname: '/' }, { pathname: '/b' })
+      )
       await delay(0)
 
       expect(router.store.location.pathname).toEqual('/b/')

@@ -2,7 +2,7 @@
 import type { Action } from 'history'
 import { autorun, extendObservable, runInAction } from 'mobx'
 import assertUrlFullyMatched from './assertUrlFullyMatched'
-import type { Location, RouteNode } from '../model/types'
+import type { RouteNode } from '../model/types'
 import type RouterStore from '../model/RouterStore'
 import TransitionManager from '../transition/TransitionManager'
 import areRoutesEqual from '../model/areRoutesEqual'
@@ -12,13 +12,14 @@ import differenceWith from '../util/differenceWith'
 import { GuardFailure } from '../errors/index'
 import type { Event } from './events'
 import { EventTypes } from './events'
-import Navigation, { NavigationTypes } from '../model/Navigation'
+import Navigation from '../model/Navigation'
+import type { Definition } from '../model/Navigation'
 
 export default class Scheduler {
   store: RouterStore
   transitionMgr: TransitionManager
   disposer: null | Function
-  nextNavigation: null | Navigation
+  currentNavigation: null | Navigation
   event: null | Event
 
   constructor(store: RouterStore) {
@@ -26,7 +27,7 @@ export default class Scheduler {
     this.transitionMgr = new TransitionManager()
     this.disposer = null
     extendObservable(this, {
-      nextNavigation: null,
+      currentNavigation: null,
       event: null
     })
   }
@@ -47,42 +48,44 @@ export default class Scheduler {
     })
   }
 
-  scheduleNavigation = (nextNavigation: Object) => {
+  scheduleNavigation = (next: Definition) => {
     const { location } = this.store
 
     // This could be a navigation that has no `to` prop. Usually a `GO_BACK`.
-    if (!nextNavigation.to) {
+    if (!next.to) {
       return
     }
 
     // If location path and query has not changed, skip it.
     if (
       location &&
-      location.pathname === nextNavigation.to.pathname &&
+      location.pathname === next.to.pathname &&
       location.query &&
-      shallowEqual(location.query, nextNavigation.to.query)
+      shallowEqual(location.query, next.to.query)
     ) {
       return
     }
 
     runInAction(() => {
+      const { currentNavigation } = this
       this.store.error = null
-      this.nextNavigation = new Navigation({
-        ...nextNavigation,
-        from: location.pathname
+
+      this.currentNavigation = currentNavigation ? currentNavigation.next(next.to) : new Navigation({
+        ...next,
+        from: location || null
       })
     })
   }
 
   processNextNavigation = async () => {
-    const { nextNavigation, store } = this
-    if (!nextNavigation) return
+    const { currentNavigation, store } = this
+    if (!currentNavigation) return
 
-    const { to: nextLocation } = nextNavigation
+    const { to: nextLocation } = currentNavigation
     if (!nextLocation) return
 
     try {
-      this.emit({ type: EventTypes.NAVIGATION_START, location: nextNavigation.to })
+      this.emit({ type: EventTypes.NAVIGATION_START, location: currentNavigation.to })
 
       // This match call may have side-effects of loading dynamic children.
       const nextPath = await store.state.pathFromRoot(
@@ -99,15 +102,9 @@ export default class Scheduler {
         nextNodes
       )
 
-      const navigation = new Navigation({
-        type: NavigationTypes.PUSH,
-        from: store.location,
-        to: nextLocation
-      })
-
       // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
-      await this.checkGuards('canDeactivate', deactivating, navigation)
-      await this.checkGuards('canActivate', activating, navigation)
+      await this.checkGuards('canDeactivate', deactivating, currentNavigation)
+      await this.checkGuards('canActivate', activating, currentNavigation)
 
       store.updateNodes(nextNodes)
 
@@ -133,9 +130,6 @@ export default class Scheduler {
         this.emit({ type: EventTypes.NAVIGATION_ERROR, error, location: nextLocation })
       }
     } finally {
-      runInAction(() => {
-        this.nextNavigation = null
-      })
       this.emit({ type: EventTypes.NAVIGATION_END, location: nextLocation })
     }
   }
@@ -143,7 +137,7 @@ export default class Scheduler {
   // This method tries to resolve dynamic children on the currently matching node.
   // If there are children available, load them and then continue by resolving `true`.
   // Otherwise, abort by resolving `false`. Rejection means an unexpected error.
-  handleLeafNodeReached = async (lastMatchedNode: RouteNode) => {
+  handleLeafNodeReached = async (lastMatchedNode: RouteNode<*>) => {
     // If there are dynamic children, try to load and continue.
     if (typeof lastMatchedNode.value.loadChildren === 'function') {
       const children = await lastMatchedNode.value.loadChildren()
@@ -158,21 +152,25 @@ export default class Scheduler {
 
   // Runs guards (if they exist) on each node until they all pass.
   // If one guard fails, then the entire function rejects.
-  checkGuards = async (type: 'canDeactivate' | 'canActivate', nodes: RouteNode[], navigation: Navigation) => {
+  checkGuards = async (
+    type: 'canDeactivate' | 'canActivate',
+    nodes: RouteNode<*>[],
+    navigation: Navigation
+  ): Promise<void> => {
     for (const node of nodes) {
       const { value } = node
-      const result = typeof value[type] === 'function' ? value[type](node, navigation) : true
+      const result = typeof value[type] === 'function'
+        ? value[type](node, navigation)
+        : true
 
-      if (!result) {
-        throw new GuardFailure(type, node, new Navigation({
-          type: 'GO_BACK'
-        }))
-      } else if (typeof result.then === 'function') {
-        try {
+      try {
+        if (!result) {
+          await navigation.goBack()
+        } else if (typeof result.then === 'function') {
           await result
-        } catch (e) {
-          throw new GuardFailure(type, node, e instanceof Navigation ? e : null)
         }
+      } catch (e) {
+        throw new GuardFailure(type, node, e instanceof Navigation ? e : null)
       }
     }
   }
@@ -186,7 +184,7 @@ function toRouteNodes(nextPath) {
   })
 }
 
-async function diffActiveNodes(currNodes: RouteNode[], nextNodes: RouteNode[]) {
+async function diffActiveNodes(currNodes: RouteNode<*>[], nextNodes: RouteNode<*>[]) {
   try {
     const deactivating = differenceWith(areRoutesEqual, currNodes, nextNodes).reverse()
 

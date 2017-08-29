@@ -2,7 +2,7 @@
 import { autorun } from 'mobx'
 import { createMemoryHistory } from 'history'
 import { EventTypes } from './scheduling/events'
-import { install }  from './'
+import { install } from './'
 
 describe('Public API', () => {
   let router
@@ -13,8 +13,13 @@ describe('Public API', () => {
         createMemoryHistory,
         { initialEntries: ['/initial'], initialIndex: 0 }
       ],
+      getContext: () => ({ message: 'Hello' }),
       routes: [{ path: ':whatever' }]
     })
+  })
+
+  test('context chain', () => {
+    expect(router.store.state.root.value.getContext()).toEqual({ message: 'Hello' })
   })
 
   test('reaction to push navigation', async () => {
@@ -112,17 +117,11 @@ describe('Public API', () => {
       expect(spy).toHaveBeenCalled()
 
       expect(spy.mock.calls.map(x => x[0].type)).toEqual(
-        expect.arrayContaining([
-          EventTypes.NAVIGATION_START,
-          EventTypes.NAVIGATION_END
-        ])
+        expect.arrayContaining([EventTypes.NAVIGATION_START, EventTypes.NAVIGATION_END])
       )
 
       expect(spy.mock.calls.map(x => x[0].location.pathname)).toEqual(
-        expect.arrayContaining([
-          '/initial/',
-          '/bar/'
-        ])
+        expect.arrayContaining(['/initial/', '/bar/'])
       )
 
       dispose()

@@ -60,7 +60,11 @@ describe('Route tree tests', () => {
 
     const result = await tree.pathFromRoot('/c', () => Promise.resolve(true))
 
-    expect(result.map(r => r.node.value.data.uid)).toEqual(['NODE_ROOT', 'NODE_EMPTY', 'NODE_C'])
+    expect(result.map(r => r.node.value.data.uid)).toEqual([
+      'NODE_ROOT',
+      'NODE_EMPTY',
+      'NODE_C'
+    ])
   })
 
   test('No match from path', async () => {
@@ -88,9 +92,7 @@ describe('Route tree tests', () => {
       Route({
         path: 'a',
         data: { uid: 'NODE_A' },
-        children: [
-          { path: 'b', data: { uid: 'NODE_B' } }
-        ]
+        children: [{ path: 'b', data: { uid: 'NODE_B' } }]
       })
     )
 

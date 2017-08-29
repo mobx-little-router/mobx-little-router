@@ -1,12 +1,14 @@
 // @flow
 import { autorun, computed, extendObservable, when } from 'mobx'
 import type { History } from 'history'
+import Route from './model/Route'
 import RouterStore from './model/RouterStore'
-import type { Href, RouteNode } from './model/types'
+import type { Href, Config } from './model/types'
 import Scheduler from './scheduling/Scheduler'
 import type { Event } from './scheduling/events'
-import Navigation, { NavigationTypes } from './model/Navigation'
-import { InvalidTransition} from './errors'
+import { EventTypes } from './scheduling/events'
+import { NavigationTypes } from './model/Navigation'
+import { InvalidTransition } from './errors'
 
 export type HistoryCreatorFn = (opts: any) => History
 
@@ -15,11 +17,12 @@ class Router {
   scheduler: Scheduler
   history: History
   dispose: null | Function
-  currentNavigation: *
+  currentNavigation: * // This is computed from Scheduler event observable.
 
   constructor(
     historyCreator: HistoryCreatorFn | [HistoryCreatorFn, Object],
-    routes: RouteNode[]
+    config: Config[],
+    getContext: void | (() => any)
   ) {
     this.dispose = null
 
@@ -27,11 +30,16 @@ class Router {
     this.history = typeof historyCreator === 'function'
       ? historyCreator()
       : historyCreator[0](historyCreator[1])
-    this.store = new RouterStore(routes)
+    const root = Route({ path: '' }, getContext) // Initial root.
+    const routes = config.map(x => Route(x, getContext))
+    this.store = new RouterStore(root, routes)
     this.scheduler = new Scheduler(this.store)
 
     extendObservable(this, {
-      currentNavigation: computed(this.getNextNavigation)
+      currentNavigation: computed(() => {
+        const { event } = this.scheduler
+        return event !== null ? event.nextNavigation || null : null
+      })
     })
   }
 
@@ -41,7 +49,8 @@ class Router {
   async start(callback: ?Function) {
     this.scheduler.start()
 
-    const f = autorun(this.handleNextTransition)
+    // Start watching for navigation events from scheduler.
+    const f = autorun(this.handleNavigationEvents)
 
     // Schedule initial navigation.
     await this.scheduler.scheduleNavigation(asNavigation(this.history.location))
@@ -49,7 +58,7 @@ class Router {
     // Wait until navigation is processed.
     await this.navigated()
 
-    const g = this.history.listen(location => this.scheduler.scheduleNavigation(asNavigation(location)))
+    const g = this.history.listen(this.handleLocationChange)
 
     this.dispose = () => {
       f()
@@ -62,6 +71,15 @@ class Router {
   stop() {
     this.scheduler.stop()
     this.dispose && this.dispose()
+  }
+
+  subscribeEvent(f: (x: Event) => void): () => void {
+    return autorun(() => {
+      const { event } = this.scheduler
+      if (event !== null) {
+        f(event)
+      }
+    })
   }
 
   push(href: Href) {
@@ -79,42 +97,26 @@ class Router {
     return this.navigated()
   }
 
-  subscribeEvent(f: (x: Event) => void): () => void {
-    return autorun(() => {
-      const { event } = this.scheduler
-      if (event !== null) {
-        f(event)
-      }
-    })
-  }
-
   /* Private helpers */
 
   // Waits for next navigation event to be processed and resolves.
   navigated() {
     return new Promise(res => {
-      when(() => this.scheduler.nextNavigation === null, res)
+      when(() => {
+        const { event } = this.scheduler
+        return event !== null && event.type === EventTypes.NAVIGATION_END
+      }, res)
     })
   }
 
-  getNextNavigation = () => {
-    const { event } = this.scheduler
-
-    if (event !== null) {
-      return event.nextNavigation || null
-    }
-
-    return null
-  }
-
-  handleNextTransition = () => {
+  handleNavigationEvents = () => {
     const { currentNavigation } = this
 
     if (!currentNavigation) {
       return
     }
 
-    switch(currentNavigation.type) {
+    switch (currentNavigation.type) {
       case NavigationTypes.PUSH:
         return this.push(currentNavigation.to)
       case NavigationTypes.REPLACE:
@@ -124,6 +126,10 @@ class Router {
       default:
         throw new InvalidTransition(currentNavigation)
     }
+  }
+
+  handleLocationChange = (location: Object) => {
+    this.scheduler.scheduleNavigation(asNavigation(location))
   }
 }
 

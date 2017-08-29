@@ -4,10 +4,14 @@ import RouterStore from './RouterStore'
 import Route from './Route'
 
 describe('RouterStore', () => {
-  let store
+  let store, root, getContext
 
   beforeEach(() => {
-    store = new RouterStore()
+    getContext = jest.fn(() => ({
+      message: 'Hello'
+    }))
+    root = Route({ path: '' }, getContext)
+    store = new RouterStore(root)
   })
 
   test('Initial parent', () => {
@@ -38,12 +42,28 @@ describe('RouterStore', () => {
     expect(store.state.root.children.length).toBe(2)
 
     // Stores new nodes in lookup table.
-    expect(store.cache.get(a.value.key)).toBe(a)
-    expect(store.cache.get(b.value.key)).toBe(b)
+    expect(store.cache.get(a.value.key)).toEqual(expect.objectContaining({
+      value: expect.objectContaining({
+        key: a.value.key
+      })
+    }))
+    expect(store.cache.get(b.value.key)).toEqual(expect.objectContaining({
+      value: expect.objectContaining({
+        key: b.value.key
+      })
+    }))
 
-    expect(() => store.replaceChildren(Route({ path: '' }), [])).toThrow(
-      /Node not found/
-    )
+    // Context is chained.
+    expect(store.cache.get(a.value.key).value.getContext()).toEqual({
+      message: 'Hello'
+    })
+    expect(store.cache.get(b.value.key).value.getContext()).toEqual({
+      message: 'Hello'
+    })
+
+    expect(() =>
+      store.replaceChildren(Route({ path: '' }), [])
+    ).toThrow(/Node not found/)
   })
 
   test('Activating nodes', () => {
@@ -75,10 +95,13 @@ describe('RouterStore', () => {
     expect(store.state.root.value.data.x).toEqual('Hello')
 
     expect(() => {
-      store.updateNode(Route({
-        path: 'doesnotexist',
-        children: []
-      }), {})
+      store.updateNode(
+        Route({
+          path: 'doesnotexist',
+          children: []
+        }),
+        {}
+      )
     }).toThrow(/Node not found/)
   })
 })

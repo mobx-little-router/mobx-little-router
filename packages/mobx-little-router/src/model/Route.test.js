@@ -13,10 +13,18 @@ describe('Route', () => {
           canActivate: async () => {},
           canDeactivate: async () => {},
           data: { msg: 'hello' },
-          children: [{ path: 'd' }]
+          children: [
+            {
+              path: 'd'
+            }
+          ]
         },
-        { path: 'e' },
-        { path: 'f' }
+        {
+          path: 'e'
+        },
+        {
+          path: 'f'
+        }
       ]
     }
 
@@ -35,7 +43,18 @@ describe('Route', () => {
   test('Sets correct dynamic children loader', async () => {
     const config = {
       path: '',
-      loadChildren: () => Promise.resolve([{ path: 'a' }, { path: 'b' }, { path: 'c' }])
+      loadChildren: () =>
+        Promise.resolve([
+          {
+            path: 'a'
+          },
+          {
+            path: 'b'
+          },
+          {
+            path: 'c'
+          }
+        ])
     }
 
     const root = Route(config)
@@ -49,5 +68,30 @@ describe('Route', () => {
 
     x = { path: '', onEnter: 1 }
     expect(() => Route(x)).toThrow(/`onEnter`/)
+  })
+
+  test('Context chain', () => {
+    const config = {
+      path: '',
+      children: [
+        {
+          path: 'a'
+        },
+        {
+          path: 'b'
+        },
+        {
+          path: 'c'
+        }
+      ]
+    }
+
+    const root = Route(config, () => ({ message: 'Hello' }))
+
+    expect(root.value.getContext()).toEqual({ message: 'Hello' })
+
+    root.children.forEach(c => {
+      expect(c.value.getContext()).toEqual({ message: 'Hello' })
+    })
   })
 })

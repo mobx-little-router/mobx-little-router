@@ -14,10 +14,11 @@ export const NavigationTypes = {
   GO_BACK: 'GO_BACK'
 }
 
-type NavigationType = $Keys<typeof NavigationTypes>
+export type NavigationType = $Keys<typeof NavigationTypes>
 
-type Definition = {
+export type Definition = {
   type: NavigationType,
+  sequence?: number,
   to?: Location,
   from?: Location
 }
@@ -26,27 +27,39 @@ export default class Navigation {
   type: NavigationType
   to: null | Location
   from: null | Location
+  sequence: number
 
   constructor(x: Definition) {
     this.type = x.type
+    this.sequence = x.sequence || 0
     this.to = x.to || null
     this.from = x.from || null
   }
 
-  redirectTo(href: Href) {
-    return Promise.reject(new Navigation({
+  next(href: Href) {
+    return new Navigation({
       type: NavigationTypes.PUSH,
-      from: this.from,
+      sequence: this.sequence + 1,
+      from: this.to,
       to: asLocation(href)
-    }))
+    })
+  }
+
+  prev() {
+    return new Navigation({
+      type: NavigationTypes.GO_BACK,
+      sequence: this.sequence + 1,
+      from: this.to,
+      to: null
+    })
+  }
+
+  redirectTo(href: Href) {
+    return Promise.reject(this.next(href))
   }
 
   goBack() {
-    return Promise.reject(new Navigation({
-      type: NavigationTypes.GO_BACK,
-      from: this.to,
-      to: null
-    }))
+    return Promise.reject(this.prev())
   }
 }
 

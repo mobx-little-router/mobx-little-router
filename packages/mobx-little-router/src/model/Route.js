@@ -24,10 +24,14 @@ const validate = createValidator({
   onLeave: optional(func)
 })
 
-export default function Route(config: Config): RouteNode {
+type GetContext = () => *
+
+export default function Route(config: Config, getContext: ?GetContext): RouteNode<*> {
   const matcher = config.match ? m[config.match] : m.partial
 
   validate(config)
+
+  getContext = typeof getContext === 'function' ? getContext : (() => ({}))
 
   return TreeNode(
     {
@@ -47,9 +51,13 @@ export default function Route(config: Config): RouteNode {
       onError: config.onError || null,
       onTransition: config.onTransition || null,
       onEnter: config.onEnter || nop,
-      onLeave: config.onLeave || nop
+      onLeave: config.onLeave || nop,
+      getContext
     },
-    config.children ? config.children.map(Route) : []
+    config.children ? config.children.map(x => (
+      // Chains the context down to children.
+      Route(x, getContext)
+    )) : []
   )
 }
 
@@ -58,6 +66,6 @@ function toLoadRouteNodeChildren(f: void | LoadChildrenConfigFn): null | LoadChi
   if (typeof g === 'undefined') {
     return null
   } else {
-    return () => g().then(nodes => nodes.map(Route))
+    return () => g().then(nodes => nodes.map(x => Route(x)))
   }
 }
