@@ -26,9 +26,9 @@ describe('Router', () => {
 
   describe('events', () => {
     test('handling transition events', async () => {
-      expect(router.currentNavigation).toBe(null)
-
-      router.scheduler.emit(abortNavigation('PUSH', { pathname: '/' }, { pathname: '/a' }))
+      router.scheduler.emit(
+        abortNavigation('PUSH', { pathname: '/' }, { pathname: '/a' })
+      )
       await delay(0)
 
       expect(router.store.location.pathname).toEqual('/a/')
@@ -38,7 +38,9 @@ describe('Router', () => {
 
       expect(router.store.location.pathname).toEqual('/')
 
-      router.scheduler.emit(abortNavigation('REPLACE', { pathname: '/' }, { pathname: '/b' }))
+      router.scheduler.emit(
+        abortNavigation('REPLACE', { pathname: '/' }, { pathname: '/b' })
+      )
       await delay(0)
 
       expect(router.store.location.pathname).toEqual('/b/')
