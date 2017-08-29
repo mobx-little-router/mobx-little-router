@@ -221,4 +221,4 @@ const Actor = styled(Link)`
   }
 `
 
-export default inject('showsStore')(observer(ShowRoute))
+export default inject('ShowsStore')(observer(ShowRoute))

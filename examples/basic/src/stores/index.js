@@ -1,2 +1,2 @@
-export { default as sessionStore } from './sessionStore'
-export { default as showsStore } from './showsStore'
+export { default as SessionStore } from './SessionStore'
+export { default as ShowsStore } from './ShowsStore'
