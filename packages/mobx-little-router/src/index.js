@@ -1,5 +1,4 @@
 // @flow
-import Route from './model/Route'
 import type { HistoryCreatorFn } from './Router'
 import Router from './Router'
 import type { Config } from './model/types'
@@ -7,11 +6,16 @@ import type { History } from 'history'
 
 type Options = {
   createHistory: HistoryCreatorFn | [HistoryCreatorFn, Object],
-  routes: Config[]
+  routes: Config[],
+  getContext: () => any
 }
 
 export function install(opts: Options): Router {
-  return new Router(opts.createHistory, opts.routes.map(Route))
+  return new Router(
+    opts.createHistory,
+    opts.routes,
+    opts.getContext
+  )
 }
 
 export { default as RouterStore } from './model/RouterStore'

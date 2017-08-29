@@ -36,15 +36,15 @@ export type Config = {
 
 export type LoadChildrenConfigFn = () => Promise<Config[]>
 
-export type GuardFn = (node: RouteNode, nav: Navigation) => boolean | Promise<void>
+export type GuardFn = (node: RouteNode<*>, nav: Navigation) => boolean | Promise<void>
 
-export type LifecycleFn = (node: RouteNode) => Promise<void>
+export type LifecycleFn = (node: RouteNode<*>) => Promise<void>
 
-export type ErrorHandler = (node: RouteNode) => Promise<void>
+export type ErrorHandler = (node: RouteNode<*>) => Promise<void>
 
-export type LoadChildrenRouteNode = () => Promise<RouteNode[]>
+export type LoadChildrenRouteNode = () => Promise<RouteNode<*>[]>
 
-export type RouteValue = {
+export type RouteValue<C> = {
   key: string,
   // Original path provided to this route node.
   path: string,
@@ -60,13 +60,14 @@ export type RouteValue = {
   onError: null | ErrorHandler,
   onTransition: null | TransitionFn,
   onEnter: LifecycleFn,
-  onLeave: LifecycleFn
+  onLeave: LifecycleFn,
+  getContext: () => C
 }
 
-export type RouteNode = ITreeNode<RouteValue>
+export type RouteNode<C> = ITreeNode<RouteValue<C>>
 
 export type MatchResult = {
-  node: RouteNode,
+  node: RouteNode<*>,
   remaining: string,
   params: Params
 }

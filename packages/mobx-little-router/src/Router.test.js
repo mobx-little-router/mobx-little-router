@@ -1,6 +1,5 @@
 // @flow
 import { createMemoryHistory } from 'history'
-import Route from './model/Route'
 import { EventTypes } from './scheduling/events'
 import Navigation from './model/Navigation'
 import Router from './Router'
@@ -11,11 +10,11 @@ describe('Router', () => {
 
   beforeEach(() => {
     router = new Router(createMemoryHistory, [
-      Route({ path: '', match: 'full' }),
-      Route({ path: 'a' }),
-      Route({ path: 'b' }),
-      Route({ path: 'c' })
-    ])
+      { path: '', match: 'full' },
+      { path: 'a' },
+      { path: 'b' },
+      { path: 'c' }
+    ], () => ({ message: 'Hello' }))
 
     return router.start()
   })

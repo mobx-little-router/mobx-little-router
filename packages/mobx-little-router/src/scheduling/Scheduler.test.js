@@ -435,7 +435,7 @@ describe('Scheduler', () => {
 })
 
 function createStore() {
-  const store = new RouterStore()
+  const store = new RouterStore(Route({ path: '' }))
   store.replaceChildren(store.state.root, [
     Route({
       path: '',

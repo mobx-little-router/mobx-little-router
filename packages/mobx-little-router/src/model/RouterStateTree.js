@@ -6,15 +6,15 @@ import findPathFromRoot from './findPathFromRoot'
 import type { OnExhaustedFn } from './findPathFromRoot'
 
 export default class RouterStateTree {
-  root: RouteNode
+  root: RouteNode<*>
 
-  constructor(root: RouteNode) {
+  constructor(root: RouteNode<*>) {
     extendObservable(this, {
       root: root
     })
   }
 
-  find(predicate: (x: RouteNode) => boolean) {
+  find(predicate: (x: RouteNode<*>) => boolean) {
     return findNode(predicate, this.root)
   }
 

@@ -1,13 +1,14 @@
 // @flow
 import { autorun, computed, extendObservable, when } from 'mobx'
 import type { History } from 'history'
+import Route from './model/Route'
 import RouterStore from './model/RouterStore'
-import type { Href, RouteNode } from './model/types'
+import type { Href, Config } from './model/types'
 import Scheduler from './scheduling/Scheduler'
 import type { Event } from './scheduling/events'
 import { EventTypes } from './scheduling/events'
 import { NavigationTypes } from './model/Navigation'
-import { InvalidTransition} from './errors'
+import { InvalidTransition } from './errors'
 
 export type HistoryCreatorFn = (opts: any) => History
 
@@ -20,7 +21,8 @@ class Router {
 
   constructor(
     historyCreator: HistoryCreatorFn | [HistoryCreatorFn, Object],
-    routes: RouteNode[]
+    config: Config[],
+    getContext: void | (() => any)
   ) {
     this.dispose = null
 
@@ -28,7 +30,9 @@ class Router {
     this.history = typeof historyCreator === 'function'
       ? historyCreator()
       : historyCreator[0](historyCreator[1])
-    this.store = new RouterStore(routes)
+    const root = Route({ path: '' }, getContext) // Initial root.
+    const routes = config.map(x => Route(x, getContext))
+    this.store = new RouterStore(root, routes)
     this.scheduler = new Scheduler(this.store)
 
     extendObservable(this, {
@@ -112,7 +116,7 @@ class Router {
       return
     }
 
-    switch(currentNavigation.type) {
+    switch (currentNavigation.type) {
       case NavigationTypes.PUSH:
         return this.push(currentNavigation.to)
       case NavigationTypes.REPLACE:

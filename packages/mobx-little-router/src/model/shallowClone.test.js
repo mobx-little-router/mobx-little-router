@@ -6,7 +6,11 @@ describe('shallowClone', () => {
   test('shallowly copies value properties and children', () => {
     const a = Route({
       path: 'a',
-      children: [{ path: 'b' }]
+      children: [
+        {
+          path: 'b'
+        }
+      ]
     })
     const b = shallowClone(a)
 
