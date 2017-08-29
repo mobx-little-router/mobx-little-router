@@ -3,7 +3,7 @@ import { Provider, observer } from 'mobx-react'
 import { withRouter, Outlet } from 'mobx-little-router-react'
 import styled, { injectGlobal } from 'styled-components'
 import Header from './components/Header'
-import * as stores from './stores'
+import stores from './stores'
 
 class App extends Component {
   render() {

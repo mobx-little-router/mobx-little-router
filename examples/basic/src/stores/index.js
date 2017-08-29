@@ -1,2 +1,7 @@
-export { default as SessionStore } from './SessionStore'
-export { default as ShowsStore } from './ShowsStore'
+import SessionStore from './SessionStore'
+import ShowsStore from './ShowsStore'
+
+export default {
+  SessionStore,
+  ShowsStore
+}

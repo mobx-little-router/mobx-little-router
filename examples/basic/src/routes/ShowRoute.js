@@ -16,18 +16,18 @@ class ShowRoute extends Component {
   }
 
   fetchModel = async (props) => {
-    const { params, showsStore } = props
+    const { params, ShowsStore } = props
 
     const res = await fetch(`https://api.tvmaze.com/shows/${params.id}?embed=cast`)
     const data = await res.json()
     
     runInAction(() => {
-      showsStore.currentShow = data
+      ShowsStore.currentShow = data
     })
   }
 
   render() {
-    const { params, className, showsStore: { collection, currentShow } } = this.props
+    const { params, className, ShowsStore: { collection, currentShow } } = this.props
 
     let prevShow, nextShow
     

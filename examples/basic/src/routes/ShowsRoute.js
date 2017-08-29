@@ -10,17 +10,17 @@ class ShowsRoute extends Component {
   }
 
   onSearch = async (query) => {
-    const { showsStore } = this.props
+    const { ShowsStore } = this.props
     const res = await fetch(`https://api.tvmaze.com/search/shows?q=${query}`)
     const data = await res.json()
 
     runInAction(() => {
-      showsStore.collection = data.map(({ show }) => show)
+      ShowsStore.collection = data.map(({ show }) => show)
     })
   }
 
   render() {
-    const { showsStore } = this.props
+    const { ShowsStore } = this.props
 
     return (
       <Container>
@@ -28,7 +28,7 @@ class ShowsRoute extends Component {
           <SearchInput onChange={ev => this.onSearch(ev.target.value)} defaultValue="gundam" />
         </SearchHeader>
         <SearchResults>
-          {showsStore.collection.map(show =>
+          {ShowsStore.collection.map(show =>
             <Show key={show.id}>
               <CoverImage to={`/shows/${show.id}`} style={{backgroundImage: `url(${show.image && show.image.medium})` }}/>
               <Abstract>
