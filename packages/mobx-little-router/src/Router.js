@@ -17,7 +17,7 @@ class Router {
   scheduler: Scheduler
   history: History
   dispose: null | Function
-  currentNavigation: * // This is computed from Scheduler event observable.
+  navigationEvent: * // This is computed from Scheduler event observable.
 
   constructor(
     historyCreator: HistoryCreatorFn | [HistoryCreatorFn, Object],
@@ -36,7 +36,7 @@ class Router {
     this.scheduler = new Scheduler(this.store)
 
     extendObservable(this, {
-      currentNavigation: computed(() => {
+      navigationEvent: computed(() => {
         const { event } = this.scheduler
         return event !== null ? event.nextNavigation || null : null
       })
@@ -110,21 +110,21 @@ class Router {
   }
 
   handleNavigationEvents = () => {
-    const { currentNavigation } = this
+    const { navigationEvent } = this
 
-    if (!currentNavigation) {
+    if (!navigationEvent) {
       return
     }
 
-    switch (currentNavigation.type) {
+    switch (navigationEvent.type) {
       case NavigationTypes.PUSH:
-        return this.push(currentNavigation.to)
+        return this.push(navigationEvent.to)
       case NavigationTypes.REPLACE:
-        return this.replace(currentNavigation.to)
+        return this.replace(navigationEvent.to)
       case NavigationTypes.GO_BACK:
         return this.goBack()
       default:
-        throw new InvalidTransition(currentNavigation)
+        throw new InvalidTransition(navigationEvent)
     }
   }
 
