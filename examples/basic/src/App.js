@@ -7,7 +7,7 @@ import Header from './components/Header'
 import { observable } from 'mobx'
 
 const sessionStore = observable({
-  isAuthenticated: true
+  isAuthenticated: false
 })
 
 const showsStore = observable({

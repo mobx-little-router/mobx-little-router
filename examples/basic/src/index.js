@@ -5,7 +5,7 @@ import { createHashHistory } from 'history'
 import { install } from 'mobx-little-router'
 import { RouterProvider } from 'mobx-little-router-react'
 
-import { IndexRoute, ShowsRoute, AboutRoute, ContactRoute, ShowRoute, TagRoute, ActorRoute } from './routes'
+import { IndexRoute, ShowsRoute, AboutRoute, ContactRoute, ShowRoute, TagRoute, ActorRoute, AdminRoute } from './routes'
 import App from './App'
 
 const delay = (ms) => () => {
@@ -53,6 +53,13 @@ const router = install({
     {
       path: 'tags/:tag',
       data: { component: TagRoute }
+    },
+    {
+      path: 'admin',
+      data: { component: AdminRoute },
+      canActivate: (node) => {
+        return true
+      }
     }
   ]
 })
