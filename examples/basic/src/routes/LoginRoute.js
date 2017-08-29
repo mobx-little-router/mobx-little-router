@@ -1,15 +1,28 @@
 import React, { Component } from 'react'
-import { observer } from 'mobx-react'
+import { runInAction } from 'mobx'
+import { inject, observer } from 'mobx-react'
+import { withRouter } from 'mobx-little-router-react'
 
 import styled from 'styled-components'
 
 class LoginRoute extends Component {
+  login = () => {
+    const { SessionStore, router } = this.props
+    
+    runInAction(() => {
+      SessionStore.isAuthenticated = true
+      router.push(SessionStore.unauthorizedNavigation.to)
+    })
+  }
+
   render() {
     const { className } = this.props
 
     return (
       <Container className={className}>
-        <h1>Login</h1>
+        <div><input type="text" placeholder="Email"/></div>
+        <div><input type="password" placeholder="Password"/></div>
+        <div><button onClick={this.login}>Login</button></div>
       </Container>
     )
   }
@@ -18,4 +31,4 @@ class LoginRoute extends Component {
 const Container = styled.div`
 `
 
-export default observer(LoginRoute)
+export default withRouter(inject('SessionStore')(observer(LoginRoute)))

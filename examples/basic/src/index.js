@@ -6,7 +6,7 @@ import { install } from 'mobx-little-router'
 import { RouterProvider } from 'mobx-little-router-react'
 import stores from './stores'
 
-import { IndexRoute, ShowsRoute, AboutRoute, ContactRoute, ShowRoute, TagRoute, ActorRoute, AdminRoute } from './routes'
+import { IndexRoute, LoginRoute, ShowsRoute, AboutRoute, ContactRoute, ShowRoute, TagRoute, ActorRoute, AdminRoute } from './routes'
 import App from './App'
 
 const delay = (ms) => () => {
@@ -24,6 +24,7 @@ const router = install({
   }),
   routes: [
     { path: '', match: 'full', data: { component: IndexRoute } },
+    { path: 'login', data: { component: LoginRoute } },
     { 
       path: 'about',
       data: { component: AboutRoute },
@@ -62,13 +63,13 @@ const router = install({
       path: 'admin',
       data: { component: AdminRoute },
       canActivate: (node, navigation, context) => {
-        if (context.stores.SessionStore.isAuthenticated) {
+        const { stores: { SessionStore } } = context
+        
+        if (SessionStore.isAuthenticated) {
           return true
-        }
-        if (navigation.sequence > 0) {
-          return navigation.goBack()
         } else {
-          return navigation.redirectTo('/')
+          SessionStore.unauthorizedNavigation = navigation
+          return navigation.redirectTo('/login')
         }
       }
     }
