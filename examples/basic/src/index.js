@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom'
 import { createHashHistory } from 'history'
 import { install } from 'mobx-little-router'
 import { RouterProvider } from 'mobx-little-router-react'
+import stores from './stores'
 
 import { IndexRoute, ShowsRoute, AboutRoute, ContactRoute, ShowRoute, TagRoute, ActorRoute, AdminRoute } from './routes'
 import App from './App'
@@ -18,6 +19,9 @@ const delay = (ms) => () => {
 
 const router = install({
   createHistory: createHashHistory,
+  getContext: () => ({
+    stores
+  }),
   routes: [
     { path: '', match: 'full', data: { component: IndexRoute } },
     { 
@@ -65,6 +69,7 @@ const router = install({
 })
 
 window.store = router.store
+window.router = router
 window.mobx = mobx
 
 router.start(() => {
