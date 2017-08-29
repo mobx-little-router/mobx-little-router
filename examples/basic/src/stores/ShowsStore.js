@@ -1,8 +1,8 @@
 import { observable } from 'mobx'
 
-const showsStore = observable({
+const ShowsStore = observable({
   collection: [],
   currentShow: null
 })
 
-export default showsStore
+export default ShowsStore

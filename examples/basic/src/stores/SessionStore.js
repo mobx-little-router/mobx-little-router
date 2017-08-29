@@ -1,7 +1,7 @@
 import { observable } from 'mobx'
 
-const sessionStore = observable({
+const SessionStore = observable({
   isAuthenticated: false
 })
 
-export default sessionStore
+export default SessionStore
