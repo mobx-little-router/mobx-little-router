@@ -24,6 +24,7 @@ const router = install({
   }),
   routes: [
     { path: '', match: 'full', data: { component: IndexRoute } },
+    { path: 'redirect', match: 'full', redirectTo: '/shows' },
     { path: 'login', data: { component: LoginRoute } },
     { 
       path: 'about',

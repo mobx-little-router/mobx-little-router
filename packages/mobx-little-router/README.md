@@ -50,9 +50,9 @@ The `install` function takes the following options:
     loadChildren?: () => Promise<Config[]>,
     canActivate?: (node, params) => Promise<void>,
     canDeactivate?: (node, params) => Promise<void>,
+    willActivate?: (node, params) => Promise<void>,
+    willDeactivate?: (node, params) => Promise<void>,
     onTransition?: (evt: TransitionEvent) => Promise<void>,
-    onEnter?: (node, params) => Promise<void>,
-    onLeave?: (node, params) => Promise<void>,
     onError?: (node, params) => Promise<void>
   }
   ```

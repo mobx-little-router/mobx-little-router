@@ -1,6 +1,6 @@
 // @flow
-import type { MatchResult } from '../model/types'
-import { NoMatch } from '../errors'
+import type { MatchResult } from '../../model/types'
+import { NoMatch } from '../../errors/index'
 import maybeCallErrorHandler from './maybeCallErrorHandler'
 
 /*

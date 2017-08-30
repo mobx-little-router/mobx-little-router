@@ -2,10 +2,10 @@
 import type { RouteNode } from '../model/types'
 import Navigation from '../model/Navigation'
 
-export class GuardFailure  {
+export class TransitionFailure  {
   node: RouteNode<*>
   navigation: null | Navigation
-  constructor(type: string, node: RouteNode<*>, navigation: ?Navigation) {
+  constructor(node: RouteNode<*>, navigation: ?Navigation) {
     this.node = node
     this.navigation = navigation || null
   }
@@ -21,7 +21,7 @@ export class NoMatch  {
   }
 }
 
-export class InvalidTransition {
+export class InvalidNavigation {
   transition: *
   constructor(transition: *) {
     this.transition = transition

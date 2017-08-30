@@ -8,7 +8,7 @@ import Scheduler from './scheduling/Scheduler'
 import type { Event } from './scheduling/events'
 import { EventTypes } from './scheduling/events'
 import { NavigationTypes } from './model/Navigation'
-import { InvalidTransition } from './errors'
+import { InvalidNavigation } from './errors'
 
 export type HistoryCreatorFn = (opts: any) => History
 
@@ -124,7 +124,7 @@ class Router {
       case NavigationTypes.GO_BACK:
         return this.goBack()
       default:
-        throw new InvalidTransition(navigationEvent)
+        throw new InvalidNavigation(navigationEvent)
     }
   }
 

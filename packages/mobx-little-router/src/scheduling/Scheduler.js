@@ -1,15 +1,15 @@
 // @flow
 import type { Action } from 'history'
 import { autorun, extendObservable, runInAction } from 'mobx'
-import assertUrlFullyMatched from './assertUrlFullyMatched'
+import assertUrlFullyMatched from './util/assertUrlFullyMatched'
 import type { RouteNode } from '../model/types'
 import type RouterStore from '../model/RouterStore'
 import TransitionManager from '../transition/TransitionManager'
-import areRoutesEqual from '../model/areRoutesEqual'
+import areRoutesEqual from '../model/util/areRoutesEqual'
 import shallowEqual from '../util/shallowEqual'
-import shallowClone from '../model/shallowClone'
+import shallowClone from '../model/util/shallowClone'
 import differenceWith from '../util/differenceWith'
-import { GuardFailure } from '../errors/index'
+import { TransitionFailure } from '../errors/index'
 import type { Event } from './events'
 import { EventTypes } from './events'
 import Navigation from '../model/Navigation'
@@ -17,14 +17,12 @@ import type { Definition } from '../model/Navigation'
 
 export default class Scheduler {
   store: RouterStore
-  transitionMgr: TransitionManager
   disposer: null | Function
   currentNavigation: null | Navigation
   event: null | Event
 
   constructor(store: RouterStore) {
     this.store = store
-    this.transitionMgr = new TransitionManager()
     this.disposer = null
     extendObservable(this, {
       currentNavigation: null,
@@ -85,7 +83,7 @@ export default class Scheduler {
     if (!nextLocation) return
 
     try {
-      this.emit({ type: EventTypes.NAVIGATION_START, location: currentNavigation.to })
+      this.emit({ type: EventTypes.NAVIGATION_START, navigation: currentNavigation })
 
       // This match call may have side-effects of loading dynamic children.
       const nextPath = await store.state.pathFromRoot(
@@ -103,34 +101,39 @@ export default class Scheduler {
       )
 
       // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
-      await this.checkGuards('canDeactivate', deactivating, currentNavigation)
-      await this.checkGuards('canActivate', activating, currentNavigation)
+      await this.assertTransitionOk('canDeactivate', deactivating, currentNavigation)
+      await this.assertTransitionOk('canActivate', activating, currentNavigation)
+
+      // If guards have passed, call the before hooks to give each node a chance to cancel the transition.
+      await this.assertTransitionOk('willDeactivate', deactivating, currentNavigation)
+      await this.assertTransitionOk('willActivate', activating, currentNavigation)
+
+      this.emit({ type: EventTypes.NAVIGATION_ACTIVATING, navigation: currentNavigation })
 
       store.updateNodes(nextNodes)
 
       // Run and wait on transition of deactivating and newly activating nodes.
       await Promise.all([
-        this.transitionMgr.run('leaving', deactivating),
-        this.transitionMgr.run('entering', activating)
+        TransitionManager.run('deactivating', deactivating),
+        TransitionManager.run('activating', activating)
       ])
 
       // If all value resolved, then we're good to update store state.
       store.commit(nextLocation)
     } catch (error) {
-      if (error instanceof GuardFailure) {
+      if (error instanceof TransitionFailure) {
         // Navigation error may be thrown by a guard or lifecycle hook.
         this.emit({
-          type: EventTypes.NAVIGATION_ABORTED,
-          nextNavigation: error.navigation,
-          location: nextLocation
+          type: EventTypes.NAVIGATION_CANCELLED,
+          nextNavigation: error.navigation
         })
       } else {
         // Error instances should be set on the store and an error event is emitted.
         this.store.setError(error)
-        this.emit({ type: EventTypes.NAVIGATION_ERROR, error, location: nextLocation })
+        this.emit({ type: EventTypes.NAVIGATION_ERROR, error, navigation: currentNavigation })
       }
     } finally {
-      this.emit({ type: EventTypes.NAVIGATION_END, location: nextLocation })
+      this.emit({ type: EventTypes.NAVIGATION_END, navigation: currentNavigation })
     }
   }
 
@@ -152,8 +155,8 @@ export default class Scheduler {
 
   // Runs guards (if they exist) on each node until they all pass.
   // If one guard fails, then the entire function rejects.
-  checkGuards = async (
-    type: 'canDeactivate' | 'canActivate',
+  assertTransitionOk = async (
+    type: 'canDeactivate' | 'canActivate' | 'willDeactivate' | 'willActivate',
     nodes: RouteNode<*>[],
     navigation: Navigation
   ): Promise<void> => {
@@ -164,13 +167,13 @@ export default class Scheduler {
         : true
 
       try {
-        if (!result) {
+        if (false === result) {
           await navigation.goBack()
         } else if (typeof result.then === 'function') {
           await result
         }
       } catch (e) {
-        throw new GuardFailure(type, node, e instanceof Navigation ? e : null)
+        throw new TransitionFailure(node, e instanceof Navigation ? e : null)
       }
     }
   }

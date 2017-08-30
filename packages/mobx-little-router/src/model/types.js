@@ -19,7 +19,9 @@ export type Location = $Shape<
 
 export type Href = Location | string
 
-export type Config = {
+export type Config = BasicConfig | RedirectConfig
+
+export type BasicConfig = {
   path: string,
   data?: Object,
   key?: string,
@@ -28,10 +30,18 @@ export type Config = {
   match?: 'full' | 'partial',
   canActivate?: GuardFn,
   canDeactivate?: GuardFn,
+  willActivate?: LifecycleFn,
+  willDeactivate?: LifecycleFn,
   onError?: ErrorHandler,
-  onTransition?: TransitionFn,
-  onEnter?: LifecycleFn,
-  onLeave?: LifecycleFn
+  onTransition?: TransitionFn
+}
+
+export type RedirectConfig = {
+  path: string,
+  redirectTo: Href,
+  key?: string,
+  match?: 'full' | 'partial',
+  children?: empty
 }
 
 export type LoadChildrenConfigFn = () => Promise<Config[]>
@@ -57,10 +67,10 @@ export type RouteValue<C> = {
   loadChildren?: null | LoadChildrenRouteNode,
   canActivate: GuardFn,
   canDeactivate: GuardFn,
+  willActivate: LifecycleFn,
+  willDeactivate: LifecycleFn,
   onError: null | ErrorHandler,
   onTransition: null | TransitionFn,
-  onEnter: LifecycleFn,
-  onLeave: LifecycleFn,
   getContext: () => C
 }
 

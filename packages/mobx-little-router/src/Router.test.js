@@ -49,8 +49,7 @@ describe('Router', () => {
 
 function abortNavigation(navigationType: *, from: *, to: *) {
   return {
-    type: EventTypes.NAVIGATION_ABORTED,
-    location: from,
+    type: EventTypes.NAVIGATION_CANCELLED,
     nextNavigation: new Navigation({
       type: navigationType,
       from,
