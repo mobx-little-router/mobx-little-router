@@ -95,4 +95,4 @@ router.start(() => {
     </RouterProvider>,
     document.getElementById('root')
   )
-}).catch(() => router.stop())
+})
