@@ -31,33 +31,46 @@ export default function Route(config: Config, getContext: ?GetContext): RouteNod
 
   validate(config)
 
-  getContext = typeof getContext === 'function' ? getContext : (() => ({}))
+  getContext = typeof getContext === 'function' ? getContext : () => ({})
+
+  const children = typeof config.children !== 'undefined'
+    ? config.children.map(x =>
+        // Chains the context down to children.
+        Route(x, getContext)
+      )
+    : []
+
+  const willActivate = typeof config.redirectTo === 'string'
+    ? (node: *, navigation: *, context: *) => navigation.redirectTo((config: any).redirectTo)
+    : typeof config.willActivate === 'function' ? config.willActivate : nop
 
   return TreeNode(
     {
       key: typeof config.key === 'string' ? config.key : createKey(6),
       path: config.path,
       matcher: matcher(config.path),
-      data: config.data || {},
-      params: config.data || {},
-
-      loadChildren: toLoadRouteNodeChildren(config.loadChildren),
-
+      data: typeof config.data === 'object' ? config.data || {} : {},
+      params: {},
+      loadChildren: typeof config.loadChildren === 'function'
+        ? toLoadRouteNodeChildren(config.loadChildren)
+        : null,
       // Guards
-      canActivate: config.canActivate || nop,
-      canDeactivate: config.canDeactivate || nop,
-
+      canActivate: typeof config.canActivate === 'function' ? config.canActivate : nop,
+      canDeactivate: typeof config.canDeactivate === 'function'
+        ? config.canDeactivate
+        : nop,
+      willActivate,
+      willDeactivate: typeof config.willDeactivate === 'function'
+        ? config.willDeactivate
+        : nop,
       // Lifecycle callback
-      onError: config.onError || null,
-      onTransition: config.onTransition || null,
-      willActivate: config.willActivate || nop,
-      willDeactivate: config.willDeactivate || nop,
+      onError: typeof config.onError === 'function' ? config.onError : null,
+      onTransition: typeof config.onTransition === 'function'
+        ? config.onTransition
+        : null,
       getContext
     },
-    config.children ? config.children.map(x => (
-      // Chains the context down to children.
-      Route(x, getContext)
-    )) : []
+    children
   )
 }
 

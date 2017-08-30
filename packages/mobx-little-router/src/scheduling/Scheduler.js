@@ -125,7 +125,7 @@ export default class Scheduler {
         // Navigation error may be thrown by a guard or lifecycle hook.
         this.emit({
           type: EventTypes.NAVIGATION_CANCELLED,
-          navigation: error.navigation
+          nextNavigation: error.navigation
         })
       } else {
         // Error instances should be set on the store and an error event is emitted.

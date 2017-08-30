@@ -37,7 +37,7 @@ export type NavigationEnd = {
 
 export type NavigationCancelled = {
   type: 'NAVIGATION_CANCELLED',
-  navigation: Navigation
+  nextNavigation: Navigation
 }
 
 export type NavigationError = {

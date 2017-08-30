@@ -1,5 +1,6 @@
 // @flow
 import Route from './Route'
+import Navigation from './Navigation'
 
 describe('Route', () => {
   test('Handles nesting and compound paths', () => {
@@ -92,6 +93,30 @@ describe('Route', () => {
 
     root.children.forEach(c => {
       expect(c.value.getContext()).toEqual({ message: 'Hello' })
+    })
+  })
+
+  test('Handles redirect config', (done) => {
+    const node = Route(
+      {
+        path: 'a',
+        redirectTo: '/b'
+      },
+      () => ({ message: 'Hello' })
+    )
+
+    expect(node.value.path).toEqual('a')
+
+    const { willActivate } = node.value
+    const navigation = new Navigation({
+      type: 'PUSH',
+      sequence: 0
+    })
+
+    willActivate(node, navigation, {}).catch(err => {
+      expect(err).toBeInstanceOf(Navigation)
+      expect(err.to.pathname).toEqual('/b')
+      done()
     })
   })
 })

@@ -199,14 +199,14 @@ describe('Scheduler', () => {
 
       expect(events).toEqual(
         expect.arrayContaining([
-          {
+          expect.objectContaining({
             type: 'NAVIGATION_CANCELLED',
-            navigation: expect.objectContaining({
+            nextNavigation: expect.objectContaining({
               type: 'PUSH',
               from: expect.anything(),
               to: { pathname: '/sign-in' }
             })
-          }
+          })
         ])
       )
 
@@ -267,14 +267,14 @@ describe('Scheduler', () => {
 
       expect(events).toEqual(
         expect.arrayContaining([
-          {
+          expect.objectContaining({
             type: 'NAVIGATION_CANCELLED',
-            navigation: expect.objectContaining({
+            nextNavigation: expect.objectContaining({
               type: 'PUSH',
               from: expect.anything(),
               to: { pathname: '/sign-in' }
             })
-          }
+          })
         ])
       )
     })
@@ -289,14 +289,14 @@ describe('Scheduler', () => {
 
       expect(events).toEqual(
         expect.arrayContaining([
-          {
+          expect.objectContaining({
             type: 'NAVIGATION_CANCELLED',
-            navigation: expect.objectContaining({
+            nextNavigation: expect.objectContaining({
               type: 'PUSH',
               from: expect.anything(),
               to: { pathname: '/sign-in' }
             })
-          }
+          })
         ])
       )
     })
