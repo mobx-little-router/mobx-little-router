@@ -102,13 +102,6 @@ class RouterStore {
       this.error = err
     })
   }
-
-  handleRootError(err: Object) {
-    runInAction(() => {
-      this.error = err
-    })
-    return Promise.reject(err)
-  }
 }
 
 export default RouterStore
