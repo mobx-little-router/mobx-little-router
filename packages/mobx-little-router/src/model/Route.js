@@ -20,8 +20,8 @@ const validate = createValidator({
   canActivate: optional(func),
   canDeactivate: optional(func),
   onTransition: optional(func),
-  onEnter: optional(func),
-  onLeave: optional(func)
+  willActivate: optional(func),
+  willDeactivate: optional(func)
 })
 
 type GetContext = () => *
@@ -50,8 +50,8 @@ export default function Route(config: Config, getContext: ?GetContext): RouteNod
       // Lifecycle callback
       onError: config.onError || null,
       onTransition: config.onTransition || null,
-      onEnter: config.onEnter || nop,
-      onLeave: config.onLeave || nop,
+      willActivate: config.willActivate || nop,
+      willDeactivate: config.willDeactivate || nop,
       getContext
     },
     config.children ? config.children.map(x => (

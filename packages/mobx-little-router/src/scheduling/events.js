@@ -1,5 +1,4 @@
 // @flow
-import type { Location } from '../model/types'
 import Navigation from '../model/Navigation'
 
 /*
@@ -8,35 +7,41 @@ import Navigation from '../model/Navigation'
 
 export const EventTypes = {
   NAVIGATION_START: 'NAVIGATION_START',
-  NAVIGATION_ABORTED: 'NAVIGATION_ABORTED',
+  NAVIGATION_CANCELLED: 'NAVIGATION_CANCELLED',
+  NAVIGATION_ACTIVATING: 'NAVIGATION_ACTIVATING',
   NAVIGATION_ERROR: 'NAVIGATION_ERROR',
   NAVIGATION_END: 'NAVIGATION_END'
 }
 
 export type Event =
   | NavigationStart
+  | NavigationActivating
   | NavigationError
-  | NavigationAborted
+  | NavigationCancelled
   | NavigationEnd
 
 export type NavigationStart = {
   type: 'NAVIGATION_START',
-  location: Location
+  navigation: Navigation
+}
+
+export type NavigationActivating = {
+  type: 'NAVIGATION_ACTIVATING',
+  navigation: Navigation
 }
 
 export type NavigationEnd = {
   type: 'NAVIGATION_END',
-  location: Location
+  navigation: Navigation
 }
 
-export type NavigationAborted = {
-  type: 'NAVIGATION_ABORTED',
-  location: Location,
-  nextNavigation: Navigation
+export type NavigationCancelled = {
+  type: 'NAVIGATION_CANCELLED',
+  navigation: Navigation
 }
 
 export type NavigationError = {
   type: 'NAVIGATION_ERROR',
-  location: Location,
+  navigation: Navigation,
   error: any
 }

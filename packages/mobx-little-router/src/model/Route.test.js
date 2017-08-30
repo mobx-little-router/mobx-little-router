@@ -8,8 +8,8 @@ describe('Route', () => {
       children: [
         {
           path: 'a/b/c',
-          onEnter: async () => {},
-          onLeave: async () => {},
+          willActivate: async () => {},
+          willDeactivate: async () => {},
           canActivate: async () => {},
           canDeactivate: async () => {},
           data: { msg: 'hello' },
@@ -34,8 +34,8 @@ describe('Route', () => {
     expect(root.children.map(x => x.value.path)).toEqual(['a/b/c', 'e', 'f'])
     expect(root.children[0].children.map(x => x.value.path)).toEqual(['d'])
     expect(root.children[0].value.data.msg).toEqual('hello')
-    expect(root.children[0].value.onEnter).toBeInstanceOf(Function)
-    expect(root.children[0].value.onLeave).toBeInstanceOf(Function)
+    expect(root.children[0].value.willActivate).toBeInstanceOf(Function)
+    expect(root.children[0].value.willDeactivate).toBeInstanceOf(Function)
     expect(root.children[0].value.canActivate).toBeInstanceOf(Function)
     expect(root.children[0].value.canDeactivate).toBeInstanceOf(Function)
   })
@@ -66,8 +66,8 @@ describe('Route', () => {
     let x: any = {}
     expect(() => Route(x)).toThrow(/`path`/)
 
-    x = { path: '', onEnter: 1 }
-    expect(() => Route(x)).toThrow(/`onEnter`/)
+    x = { path: '', willActivate: 1 }
+    expect(() => Route(x)).toThrow(/`willActivate`/)
   })
 
   test('Context chain', () => {

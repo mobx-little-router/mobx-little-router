@@ -1,26 +1,32 @@
 // @flow
 import { TreeNode } from '../util/tree'
 import TransitionManager from './TransitionManager'
+import delay from '../util/delay'
 
 describe('TransitionManager', () => {
-  let mgr
+  test('Transition is called and resolved in order', async () => {
+    const spy = jest.fn((evt: *) => delay(Math.random() * 20))
+    const nodes = [createNode('a', spy), createNode('b', spy), createNode('c', spy)]
 
-  beforeEach(() => {
-    mgr = new TransitionManager()
-  })
+    await TransitionManager.run('activating', nodes)
 
-  test('Transition is cancellable from event', async () => {
-    const spyA = jest.fn((evt: *) => evt.cancel())
-    const spyB = jest.fn(() => Promise.resolve())
-    const spyC = jest.fn(() => Promise.resolve())
+    expect(spy).toHaveBeenCalledTimes(3)
+    expect(spy.mock.calls.map(x => x[0])).toEqual([
+      { type: 'activating', node: nodes[0] },
+      { type: 'activating', node: nodes[1] },
+      { type: 'activating', node: nodes[2] }
+    ])
 
-    const nodes = [createNode('a', spyA), createNode('b', spyB), createNode('c', spyC)]
-    const transition = mgr.run('entering', nodes)
+    spy.mockReset()
 
-    await transition
+    await TransitionManager.run('deactivating', nodes)
 
-    expect(spyB).not.toHaveBeenCalled()
-    expect(spyC).not.toHaveBeenCalled()
+    expect(spy).toHaveBeenCalledTimes(3)
+    expect(spy.mock.calls.map(x => x[0])).toEqual([
+      { type: 'deactivating', node: nodes[0] },
+      { type: 'deactivating', node: nodes[1] },
+      { type: 'deactivating', node: nodes[2] }
+    ])
   })
 })
 

@@ -200,9 +200,8 @@ describe('Scheduler', () => {
       expect(events).toEqual(
         expect.arrayContaining([
           {
-            type: 'NAVIGATION_ABORTED',
-            location: expect.anything(),
-            nextNavigation: expect.objectContaining({
+            type: 'NAVIGATION_CANCELLED',
+            navigation: expect.objectContaining({
               type: 'PUSH',
               from: expect.anything(),
               to: { pathname: '/sign-in' }
@@ -243,6 +242,66 @@ describe('Scheduler', () => {
     })
   })
 
+  describe('Before hooks during activation/deactivation', () => {
+    let spy
+    let events
+    let dispose
+    let todosRoot
+
+    beforeEach(() => {
+      events = []
+      dispose = autorun(() => events.push(scheduler.event))
+      spy = jest.fn((a, b) => {
+        return b.redirectTo('/sign-in')
+      })
+      todosRoot= scanChildren(store.state.root, [0, 0])[2]
+      updateNode(todosRoot, { willDeactivate: spy, willActivate: spy })
+    })
+
+    afterEach(() => dispose())
+
+    test('Can cancel navigation from willActivate', async () => {
+      scheduler.scheduleNavigation({ type: 'PUSH', sequence: 0, to: { pathname: '/todos' } })
+
+      await scheduler.processNextNavigation()
+
+      expect(events).toEqual(
+        expect.arrayContaining([
+          {
+            type: 'NAVIGATION_CANCELLED',
+            navigation: expect.objectContaining({
+              type: 'PUSH',
+              from: expect.anything(),
+              to: { pathname: '/sign-in' }
+            })
+          }
+        ])
+      )
+    })
+
+    test('Can cancel navigation from willDeactivate', async () => {
+      store.location.pathname = '/todos/'
+      store.updateNodes([store.state.root, todosRoot])
+
+      scheduler.scheduleNavigation({ type: 'PUSH', sequence: 0, to: { pathname: '/' } })
+
+      await scheduler.processNextNavigation()
+
+      expect(events).toEqual(
+        expect.arrayContaining([
+          {
+            type: 'NAVIGATION_CANCELLED',
+            navigation: expect.objectContaining({
+              type: 'PUSH',
+              from: expect.anything(),
+              to: { pathname: '/sign-in' }
+            })
+          }
+        ])
+      )
+    })
+  })
+
   describe('Errors', () => {
     test('Handling unmatched segments', async () => {
       scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/nope/nope/nope' } })
@@ -277,7 +336,6 @@ describe('Scheduler', () => {
     })
   })
 
-  // TODO: This should be extracted to the Router.
   describe('Events', () => {
     test('Navigation start, error, end', async () => {
       const spy = jest.fn()
@@ -349,22 +407,22 @@ describe('Scheduler', () => {
         {
           key: todosView.value.key,
           path: ':id',
-          type: 'leaving'
+          type: 'deactivating'
         },
         {
           key: projectsRootNode.value.key,
           path: 'projects',
-          type: 'entering'
+          type: 'activating'
         },
         {
           key: todosRoot.value.key,
           path: 'todos',
-          type: 'leaving'
+          type: 'deactivating'
         },
         {
           key: projectsViewNode.value.key,
           path: ':id',
-          type: 'entering'
+          type: 'activating'
         }
       ])
 
@@ -374,7 +432,7 @@ describe('Scheduler', () => {
 
       expect(store.location.pathname).toEqual('/projects')
 
-      // Only the project view node is leaving.
+      // Only the project view node is deactivating.
       expect(
         spy.mock.calls.map(args => ({
           type: args[0].type,
@@ -385,12 +443,12 @@ describe('Scheduler', () => {
         {
           key: projectsViewNode.value.key,
           path: ':id',
-          type: 'leaving'
+          type: 'deactivating'
         },
         {
           key: projectsListNode.value.key,
           path: '',
-          type: 'entering'
+          type: 'activating'
         }
       ])
     })

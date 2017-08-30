@@ -1,6 +1,6 @@
 // @flow
-import { findPath } from '../util/tree'
-import type { MatchResult, Params, RouteNode } from './types'
+import { findPath } from '../../util/tree'
+import type { MatchResult, Params, RouteNode } from '../types'
 
 type ShouldContinue = boolean
 

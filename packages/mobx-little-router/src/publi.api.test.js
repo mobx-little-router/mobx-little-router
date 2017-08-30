@@ -120,7 +120,7 @@ describe('Public API', () => {
         expect.arrayContaining([EventTypes.NAVIGATION_START, EventTypes.NAVIGATION_END])
       )
 
-      expect(spy.mock.calls.map(x => x[0].location.pathname)).toEqual(
+      expect(spy.mock.calls.map(x => x[0].navigation.to.pathname)).toEqual(
         expect.arrayContaining(['/initial/', '/bar/'])
       )
 

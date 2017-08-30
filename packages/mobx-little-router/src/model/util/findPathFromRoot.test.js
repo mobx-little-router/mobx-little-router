@@ -1,6 +1,6 @@
 // @flow
 import findPathFromRoot from './findPathFromRoot'
-import Route from './Route'
+import Route from '../Route'
 
 describe('findPathFromRoot', () => {
   test('Find with partial matching', async () => {
