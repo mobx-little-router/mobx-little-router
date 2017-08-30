@@ -65,6 +65,7 @@ class Router {
 
       callback && callback(this)
     } catch(err) {
+      console.error(err)
       this.stop()
     }
   }
