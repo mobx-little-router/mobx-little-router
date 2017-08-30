@@ -80,6 +80,10 @@ window.store = router.store
 window.router = router
 window.mobx = mobx
 
+router.subscribeEvent((ev) => {
+  console.log(ev.type, ev.navigation)
+})
+
 router.start(() => {
   ReactDOM.render(
     <RouterProvider router={router}>
