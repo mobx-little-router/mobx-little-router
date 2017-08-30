@@ -16,7 +16,7 @@ class Router {
   store: RouterStore
   scheduler: Scheduler
   history: History
-  dispose: null | Function
+  disposers: Function[]
   navigationEvent: * // This is computed from Scheduler event observable.
 
   constructor(
@@ -24,7 +24,7 @@ class Router {
     config: Config[],
     getContext: void | (() => any)
   ) {
-    this.dispose = null
+    this.disposers = []
 
     // TODO: We should just be passing in the History object instead of the creator.
     this.history = typeof historyCreator === 'function'
@@ -47,30 +47,31 @@ class Router {
   // This means we can do `.start(router => {/* do stuff with router */})`, as opposed
   // to `.start().then(() => {/* do stuff with router in original scope */})`
   async start(callback: ?Function) {
-    this.scheduler.start()
+    try {
+      this.scheduler.start()
 
-    // Start watching for navigation events from scheduler.
-    const f = autorun(this.handleNavigationEvents)
+      if (process.env.NODE_ENV !== 'production') {
+        this.disposers.push(this.subscribeEvent(this.logErrors))
+      }
 
-    const g = this.history.listen(this.handleLocationChange)
+      this.disposers.push(autorun(this.handleNavigationEvents))
+      this.disposers.push(this.history.listen(this.handleLocationChange))
 
-    // Schedule initial navigation.
-    await this.scheduler.scheduleNavigation(asNavigation(this.history.location))
+      // Schedule initial navigation.
+      await this.scheduler.scheduleNavigation(asNavigation(this.history.location))
 
-    // Wait until navigation is processed.
-    await this.navigated()
+      // Wait until navigation is processed.
+      await this.navigated()
 
-    this.dispose = () => {
-      f()
-      g()
+      callback && callback(this)
+    } catch(err) {
+      this.stop()
     }
-
-    callback && callback(this)
   }
 
   stop() {
     this.scheduler.stop()
-    this.dispose && this.dispose()
+    this.disposers.forEach(f => f())
   }
 
   subscribeEvent(f: (x: Event) => void): () => void {
@@ -130,6 +131,12 @@ class Router {
 
   handleLocationChange = (location: Object, action: ?Action) => {
     this.scheduler.scheduleNavigation(asNavigation(location, action))
+  }
+
+  logErrors = (evt: Event) => {
+    if (evt.type === EventTypes.NAVIGATION_ERROR) {
+      console.error(evt.error)
+    }
   }
 }
 
