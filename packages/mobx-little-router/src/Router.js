@@ -38,7 +38,6 @@ class Router {
     extendObservable(this, {
       navigationEvent: computed(() => {
         const { event } = this.scheduler
-        console.log('event', event)
         return event !== null ? event.nextNavigation || null : null
       })
     })
@@ -85,7 +84,6 @@ class Router {
 
   push(href: Href) {
     this.history.push(href)
-    console.log('push', href)
     return this.navigated()
   }
 
@@ -114,8 +112,6 @@ class Router {
   handleNavigationEvents = () => {
     const { navigationEvent } = this
 
-    console.log(navigationEvent)
-
     if (!navigationEvent) {
       return
     }
@@ -133,7 +129,6 @@ class Router {
   }
 
   handleLocationChange = (location: Object) => {
-    console.log('changed', location)
     this.scheduler.scheduleNavigation(asNavigation(location))
   }
 }
