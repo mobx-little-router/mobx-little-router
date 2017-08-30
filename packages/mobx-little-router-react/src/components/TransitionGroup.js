@@ -80,11 +80,18 @@ class TransitionGroup extends Component {
     return (
       <div className="transition-group">
         {nodes.map(({ node, className }) =>
-          createElement(node.value.data.component, { key: node.value.key, params: node.value.params, className })
+          createElement(node.value.data.component, { key: generateKey(node), params: node.value.params, className })
         )}
       </div>
     )
   }
+}
+
+const generateKey = (node) => {
+  return [
+    node.value.key,
+    Object.keys(node.value.params).map(key => `${key}:${node.value.params[key]}`)
+  ].join('-')
 }
 
 export default observer(TransitionGroup)
