@@ -1,6 +1,6 @@
 // @flow
 import type { IObservableArray } from 'mobx'
-import { extendObservable, runInAction, observable } from 'mobx'
+import { toJS, extendObservable, runInAction, observable } from 'mobx'
 import type { ObservableMap } from 'mobx'
 import RouterStateTree from './RouterStateTree'
 import type { Location, RouteNode, RouteValue } from './types'
@@ -75,19 +75,11 @@ class RouterStore {
 
   updateNodes(nodes: RouteNode<*>[]) {
     runInAction(() => {
-      // Ensures we keep the same node instances in cache with updated params.
-      const existing = nodes.map(x => {
-        const n = this.cache.get(x.value.key)
-        if (n) {
-          this.updateNode(x, x.value)
-          return n
-        } else {
-          this.cache.set(x.value.key, x)
-          return x
-        }
-      })
       this.prevNodes.replace(this.nodes.slice())
-      this.nodes.replace(existing)
+      this.nodes.replace(nodes)
+      nodes.forEach(x => {
+        this.cache.set(x.value.key, x)
+      })
     })
   }
   

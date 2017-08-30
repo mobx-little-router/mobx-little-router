@@ -66,16 +66,6 @@ describe('Scheduler', () => {
       // Nodes are marked as active
       expect(store.nodes.length).toEqual(4)
 
-      // Instance references should be kept
-      expect(store.state.root).toBe(root)
-      expect(store.state.root.children[0]).toBe(appRootNode)
-      expect(store.state.root.children[0].children[0]).toBe(todosRoot)
-      expect(store.state.root.children[0].children[0].children[1]).toBe(todosView)
-      expect(store.nodes[0]).toBe(root)
-      expect(store.nodes[1]).toBe(appRootNode)
-      expect(store.nodes[2]).toBe(todosRoot)
-      expect(store.nodes[3]).toBe(todosView)
-
       expect(store.nodes.map(node => node.value.path)).toEqual(['', '', 'todos', ':id'])
       expect(store.nodes.map(node => node.value.params)).toEqual([
         {},

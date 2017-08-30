@@ -50,7 +50,7 @@ export default function Route(config: Config, getContext: ?GetContext): RouteNod
       path: config.path,
       matcher: matcher(config.path),
       data: typeof config.data === 'object' ? config.data || {} : {},
-      params: {},
+      params: config.params || {},
       loadChildren: typeof config.loadChildren === 'function'
         ? toLoadRouteNodeChildren(config.loadChildren)
         : null,

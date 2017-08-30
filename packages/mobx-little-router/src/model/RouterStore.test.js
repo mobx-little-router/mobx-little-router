@@ -2,6 +2,7 @@
 import { autorun } from 'mobx'
 import RouterStore from './RouterStore'
 import Route from './Route'
+import shallowClone from './util/shallowClone'
 
 describe('RouterStore', () => {
   let store, root, getContext
@@ -42,16 +43,20 @@ describe('RouterStore', () => {
     expect(store.state.root.children.length).toBe(2)
 
     // Stores new nodes in lookup table.
-    expect(store.cache.get(a.value.key)).toEqual(expect.objectContaining({
-      value: expect.objectContaining({
-        key: a.value.key
+    expect(store.cache.get(a.value.key)).toEqual(
+      expect.objectContaining({
+        value: expect.objectContaining({
+          key: a.value.key
+        })
       })
-    }))
-    expect(store.cache.get(b.value.key)).toEqual(expect.objectContaining({
-      value: expect.objectContaining({
-        key: b.value.key
+    )
+    expect(store.cache.get(b.value.key)).toEqual(
+      expect.objectContaining({
+        value: expect.objectContaining({
+          key: b.value.key
+        })
       })
-    }))
+    )
 
     // Context is chained.
     expect(store.cache.get(a.value.key).value.getContext()).toEqual({
@@ -61,28 +66,45 @@ describe('RouterStore', () => {
       message: 'Hello'
     })
 
-    expect(() =>
-      store.replaceChildren(Route({ path: '' }), [])
-    ).toThrow(/Node not found/)
+    expect(() => store.replaceChildren(Route({ path: '' }), [])).toThrow(/Node not found/)
   })
 
-  test('Activating nodes', () => {
+  test('Updating current nodes', () => {
     const a = Route({
       path: 'a',
-      children: []
-    })
-
-    const b = Route({
-      path: 'b',
-      children: []
+      children: [],
+      params: {
+        x: '1'
+      }
     })
 
     store.replaceChildren(store.state.root, [a])
     store.updateNodes([store.state.root, a])
 
-    expect(store.nodes.length).toBe(2)
-    expect(store.nodes[0].value.path).toEqual('')
-    expect(store.nodes[1].value.path).toEqual('a')
+    expect(store.nodes[1].value).toEqual(
+      expect.objectContaining({
+        path: 'a',
+        params: { x: '1' }
+      })
+    )
+
+    const a_prime = shallowClone(a)
+    a_prime.value.params = { x: '2' }
+    store.updateNodes([store.state.root, a_prime])
+
+    expect(store.nodes[1].value).toEqual(
+      expect.objectContaining({
+        path: 'a',
+        params: { x: '2' }
+      })
+    )
+
+    expect(store.prevNodes[1].value).toEqual(
+      expect.objectContaining({
+        path: 'a',
+        params: { x: '1' }
+      })
+    )
   })
 
   test('Node update', () => {

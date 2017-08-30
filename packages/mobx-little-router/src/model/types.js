@@ -24,6 +24,7 @@ export type Config = BasicConfig | RedirectConfig
 export type BasicConfig = {
   path: string,
   data?: Object,
+  params?: Object,
   key?: string,
   children?: Config[],
   loadChildren?: LoadChildrenConfigFn,
@@ -40,6 +41,7 @@ export type RedirectConfig = {
   path: string,
   redirectTo: Href,
   key?: string,
+  params?: Object,
   match?: 'full' | 'partial',
   children?: empty
 }
