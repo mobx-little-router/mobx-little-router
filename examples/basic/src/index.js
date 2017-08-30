@@ -85,7 +85,13 @@ window.router = router
 window.mobx = mobx
 
 router.subscribeEvent((ev) => {
-  console.log(ev.type, ev.navigation)
+  if (ev.type === 'NAVIGATION_START') {
+    console.group(`Navigation (${ev.navigation.sequence})`)
+  }
+  console.log(ev.type, ev.navigation || ev.nextNavigation)
+  if (ev.type === 'NAVIGATION_END') {
+    console.groupEnd()
+  }
 })
 
 router.start(() => {
