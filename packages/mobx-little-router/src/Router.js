@@ -1,6 +1,6 @@
 // @flow
 import { autorun, computed, extendObservable, when } from 'mobx'
-import type { History } from 'history'
+import type { History, Action } from 'history'
 import Route from './model/Route'
 import RouterStore from './model/RouterStore'
 import type { Href, Config } from './model/types'
@@ -128,16 +128,16 @@ class Router {
     }
   }
 
-  handleLocationChange = (location: Object) => {
-    this.scheduler.scheduleNavigation(asNavigation(location))
+  handleLocationChange = (location: Object, action: ?Action) => {
+    this.scheduler.scheduleNavigation(asNavigation(location, action))
   }
 }
 
 export default Router
 
-function asNavigation(location: Object) {
+function asNavigation(location: Object, action: ?Action) {
   return {
-    type: 'PUSH',
+    type: action || 'POP',
     to: {
       ...location,
       pathname: normalizePath(location.pathname)

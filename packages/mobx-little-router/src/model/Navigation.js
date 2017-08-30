@@ -10,6 +10,7 @@ import type { Href, Location } from './types'
 
 export const NavigationTypes = {
   PUSH: 'PUSH',
+  POP: 'POP',
   REPLACE: 'REPLACE',
   GO_BACK: 'GO_BACK'
 }
@@ -36,12 +37,12 @@ export default class Navigation {
     this.from = x.from || null
   }
 
-  next(href: Href) {
+  next(next: Definition) {
     return new Navigation({
-      type: NavigationTypes.PUSH,
+      type: next.type,
       sequence: this.sequence + 1,
       from: this.to,
-      to: asLocation(href)
+      to: next.to
     })
   }
 
@@ -55,7 +56,10 @@ export default class Navigation {
   }
 
   redirectTo(href: Href) {
-    return Promise.reject(this.next(href))
+    return Promise.reject(this.next({
+      type: 'PUSH',
+      to: asLocation(href)
+    }))
   }
 
   goBack() {

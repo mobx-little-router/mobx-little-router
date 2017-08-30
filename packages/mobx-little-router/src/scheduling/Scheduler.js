@@ -68,7 +68,7 @@ export default class Scheduler {
       const { currentNavigation } = this
       this.store.error = null
 
-      this.currentNavigation = currentNavigation ? currentNavigation.next(next.to) : new Navigation({
+      this.currentNavigation = currentNavigation ? currentNavigation.next(next) : new Navigation({
         ...next,
         from: location || null
       })

@@ -10,7 +10,7 @@ describe('Navigation', () => {
 
     expect(a.sequence).toEqual(0) // Default sequence number.
 
-    expect(a.next('/login')).toEqual({
+    expect(a.next({ type: 'PUSH', to: { pathname: '/login' } })).toEqual({
       type: 'PUSH',
       sequence: 1,
       from: { pathname: '/' },
@@ -25,9 +25,17 @@ describe('Navigation', () => {
     })
 
     // Sequence increments after each call.
-    expect(a.next('/a').next('/b').next('/c').prev()).toEqual(expect.objectContaining({
-      sequence: 4
-    }))
+    expect(
+      a
+        .next({ type: 'PUSH', to: { pathname: '/a' } })
+        .next({ type: 'PUSH', to: { pathname: '/b' } })
+        .next({ type: 'PUSH', to: { pathname: '/c' } })
+        .prev()
+    ).toEqual(
+      expect.objectContaining({
+        sequence: 4
+      })
+    )
   })
 
   test('Effects', () => {
