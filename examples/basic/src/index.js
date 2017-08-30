@@ -9,7 +9,7 @@ import stores from './stores'
 import { IndexRoute, LoginRoute, ShowsRoute, AboutRoute, ContactRoute, ShowRoute, TagRoute, ActorRoute, AdminRoute } from './routes'
 import App from './App'
 
-const delay = (ms) => () => {
+const delay = (ms) => {
   return new Promise((resolve) =>
     setTimeout(() => {
       resolve()
@@ -28,12 +28,12 @@ const router = install({
     { 
       path: 'about',
       data: { component: AboutRoute },
-      onTransition: delay(400)
+      onTransition: () => delay(400)
     },
     {
       path: 'contact',
       data: { component: ContactRoute },
-      onTransition: delay(400)
+      onTransition: () => delay(400)
     },
     {
       path: 'shows',
@@ -44,7 +44,10 @@ const router = install({
           component: ShowRoute,
           outlet: 'modal'
         },
-        onTransition: delay(400)
+        onTransition: (node, transition) => {
+          console.log(node, transition)
+          return delay(400)
+        }
       }]
     },
     {
@@ -53,7 +56,7 @@ const router = install({
         component: ActorRoute,
         outlet: 'modal'
       },
-      onTransition: delay(400)
+      onTransition: () => delay(400)
     },
     {
       path: 'tags/:tag',
