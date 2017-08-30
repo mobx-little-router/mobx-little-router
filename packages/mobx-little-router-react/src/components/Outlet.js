@@ -2,7 +2,7 @@
 import React, { Component } from 'react'
 import withRouter from '../hoc/withRouter'
 import { observer } from 'mobx-react'
-import { Router } from 'mobx-little-router'
+import { Router, areRoutesEqual } from 'mobx-little-router'
 import { OutletType, RouterType } from '../propTypes'
 
 import TransitionGroup from './TransitionGroup'
@@ -67,7 +67,7 @@ class Outlet extends Component {
     const to = this.findNode(currNodes)
     const from = this.findNode(prevNodes)
 
-    const isTransitioning = !!(prevNodes.length && ((to && to.value.key) !== (from && from.value.key)))
+    const isTransitioning = !!prevNodes.length && !areRoutesEqual(to, from)
 
     const dataProps = {
       'data-depth': idx,

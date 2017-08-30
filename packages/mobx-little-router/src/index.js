@@ -29,3 +29,5 @@ export type { Event } from './scheduling/events'
 
 export { TransitionTypes } from './transition/types'
 export type { TransitionType, TransitionEvent, TransitionFn } from './transition/types'
+
+export { default as areRoutesEqual } from './model/util/areRoutesEqual'
