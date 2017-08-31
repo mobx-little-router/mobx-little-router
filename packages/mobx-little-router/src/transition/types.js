@@ -1,9 +1,6 @@
 // @flow
 export type Transitionable = $Shape<{
-  value:{
-    onTransition: null | TransitionFn,
-    [string]: any
-  },
+  onTransition: null | TransitionFn,
   [string]: any
 }>
 
@@ -18,5 +15,5 @@ export type TransitionType = $Keys<typeof TransitionTypes>
 
 export type TransitionEvent = {
   type: TransitionType,
-  node: Transitionable
+  target: Transitionable
 }

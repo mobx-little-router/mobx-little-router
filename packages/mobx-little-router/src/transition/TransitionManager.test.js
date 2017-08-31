@@ -1,5 +1,4 @@
 // @flow
-import { TreeNode } from '../util/tree'
 import TransitionManager from './TransitionManager'
 import delay from '../util/delay'
 
@@ -12,9 +11,9 @@ describe('TransitionManager', () => {
 
     expect(spy).toHaveBeenCalledTimes(3)
     expect(spy.mock.calls.map(x => x[0])).toEqual([
-      { type: 'activating', node: nodes[0] },
-      { type: 'activating', node: nodes[1] },
-      { type: 'activating', node: nodes[2] }
+      { type: 'activating', target: nodes[0] },
+      { type: 'activating', target: nodes[1] },
+      { type: 'activating', target: nodes[2] }
     ])
 
     spy.mockReset()
@@ -23,21 +22,18 @@ describe('TransitionManager', () => {
 
     expect(spy).toHaveBeenCalledTimes(3)
     expect(spy.mock.calls.map(x => x[0])).toEqual([
-      { type: 'deactivating', node: nodes[0] },
-      { type: 'deactivating', node: nodes[1] },
-      { type: 'deactivating', node: nodes[2] }
+      { type: 'deactivating', target: nodes[0] },
+      { type: 'deactivating', target: nodes[1] },
+      { type: 'deactivating', target: nodes[2] }
     ])
   })
 })
 
 function createNode(id: string, callback: *) {
-  return TreeNode(
-    {
-      id,
+  return {
+    id,
       onTransition: callback || jest.fn(() => onTick())
-    },
-    []
-  )
+    }
 }
 
 const resolves = []

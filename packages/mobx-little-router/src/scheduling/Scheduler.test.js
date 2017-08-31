@@ -396,8 +396,8 @@ describe('Scheduler', () => {
       expect(
         spy.mock.calls.map(args => ({
           type: args[0].type,
-          key: args[0].node.value.key,
-          path: args[0].node.value.path
+          key: args[0].target.node.value.key,
+          path: args[0].target.node.value.path
         }))
       ).toEqual([
         {
@@ -432,8 +432,8 @@ describe('Scheduler', () => {
       expect(
         spy.mock.calls.map(args => ({
           type: args[0].type,
-          key: args[0].node.value.key,
-          path: args[0].node.value.path
+          key: args[0].target.node.value.key,
+          path: args[0].target.node.value.path
         }))
       ).toEqual([
         {

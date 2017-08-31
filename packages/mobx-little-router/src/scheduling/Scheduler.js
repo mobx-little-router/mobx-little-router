@@ -116,8 +116,8 @@ export default class Scheduler {
 
       // Run and wait on transition of deactivating and newly activating nodes.
       await Promise.all([
-        TransitionManager.run('deactivating', deactivating.map(x => x.node)),
-        TransitionManager.run('activating', activating.map(x => x.node))
+        TransitionManager.run('deactivating', deactivating),
+        TransitionManager.run('activating', activating)
       ])
 
       // If all value resolved, then we're good to update store state.

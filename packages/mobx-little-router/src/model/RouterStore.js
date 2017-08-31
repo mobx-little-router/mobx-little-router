@@ -24,8 +24,8 @@ class RouterStore {
   cache: ObservableMap<RouteNode<*, *>>
 
   // Keep a list of activated nodes so we can track differences when transitioning to a new state.
-  nodes: IObservableArray<ActivatedRoute<*,*>>
-  prevNodes: IObservableArray<ActivatedRoute<*,*>>
+  nodes: IObservableArray<ActivatedRoute<*, *>>
+  prevNodes: IObservableArray<ActivatedRoute<*, *>>
 
   _activatedRoutes: IObservableArray<SerializedActivatedRoute>
   _prevActivatedRoutes: IObservableArray<SerializedActivatedRoute>
@@ -39,18 +39,8 @@ class RouterStore {
       cache: observable.map({ [root.value.key]: root }),
       _activatedRoutes: observable.array([]),
       _prevActivatedRoutes: observable.array([]),
-      nodes: computed(() => {
-        return this._activatedRoutes.map(x => ({
-          node: this.cache.get(x.key),
-          ...x
-        }))
-      }),
-      prevNodes : computed(() => {
-        return this._prevActivatedRoutes.map(x => ({
-          node: this.cache.get(x.key),
-          ...x
-        }))
-      })
+      nodes: computed(() => this.toActivatedRoutes(this._activatedRoutes)),
+      prevNodes: computed(() => this.toActivatedRoutes(this._prevActivatedRoutes))
     })
 
     if (children) {
@@ -98,18 +88,20 @@ class RouterStore {
   updateActivatedRoutes(nodes: ActivatedRoute<*, *>[]) {
     runInAction(() => {
       this._prevActivatedRoutes.replace(this._activatedRoutes.slice())
-      this._activatedRoutes.replace(nodes.map(x => ({
-        params: x.params,
-        context: x.context,
-        data: x.data,
-        key: x.key
-      })))
+      this._activatedRoutes.replace(
+        nodes.map(x => ({
+          params: x.params,
+          context: x.context,
+          data: x.data,
+          key: x.key
+        }))
+      )
       // nodes.forEach(x => {
       //   this.cache.set(x.value.key, x)
       // })
     })
   }
-  
+
   commit(nextLocation: Location) {
     runInAction(() => {
       this.location = nextLocation
@@ -129,6 +121,17 @@ class RouterStore {
       this.error = err
     })
   }
+
+  toActivatedRoutes(serialized: IObservableArray<SerializedActivatedRoute>) {
+      return serialized.map(x => {
+        const node = this.cache.get(x.key)
+        return {
+          node,
+          onTransition: node.value.onTransition,
+          ...x
+        }
+      })
+    }
 }
 
 export default RouterStore

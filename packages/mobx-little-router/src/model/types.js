@@ -90,5 +90,6 @@ export type ActivatedRoute<C,D> = {
   node: RouteNode<C, D>,
   data: D,
   context: C,
-  params: Params
+  params: Params,
+  onTransition: null | TransitionFn
 }

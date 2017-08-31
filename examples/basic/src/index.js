@@ -28,8 +28,20 @@ const router = install({
     { path: 'login', getData: () => ({ component: LoginRoute }) },
     { 
       path: 'about',
-      getData: () => ({ component: AboutRoute }),
-      onTransition: () => delay(400)
+      getData: () => {
+        return { component: AboutRoute, isTransitioned: false }
+      },
+      onTransition: ({ target }) => {
+        delay(400).then(() => {
+          mobx.runInAction(() => {
+            target.data.isTransitioned = true
+          })
+        })
+
+        return new Promise(res => {
+          mobx.when(() => target.data.isTransitioned, res)
+        })
+      }
     },
     {
       path: 'contact',
