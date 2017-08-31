@@ -26,7 +26,7 @@ const validate = createValidator({
 
 type GetContext = () => *
 
-export default function Route(config: Config, getContext: ?GetContext): RouteNode<*, *> {
+export default function createRoute(config: Config<*>, getContext: ?GetContext): RouteNode<*, *> {
   const matcher = config.match ? m[config.match] : m.partial
 
   validate(config)
@@ -36,7 +36,7 @@ export default function Route(config: Config, getContext: ?GetContext): RouteNod
   const children = typeof config.children !== 'undefined'
     ? config.children.map(x =>
         // Chains the context down to children.
-        Route(x, getContext)
+        createRoute(x, getContext)
       )
     : []
 
@@ -50,7 +50,7 @@ export default function Route(config: Config, getContext: ?GetContext): RouteNod
       path: config.path,
       matcher: matcher(config.path),
       data: typeof config.data === 'object' ? config.data || {} : {},
-      params: config.params || {},
+      params: config.params !== null ? config.params: {},
       loadChildren: typeof config.loadChildren === 'function'
         ? toLoadRouteNodeChildren(config.loadChildren)
         : null,
@@ -68,17 +68,18 @@ export default function Route(config: Config, getContext: ?GetContext): RouteNod
       onTransition: typeof config.onTransition === 'function'
         ? config.onTransition
         : null,
-      getContext
+      getContext,
+      getData: typeof config.getData === 'function' ? config.getData : () => ({})
     },
     children
   )
 }
 
-function toLoadRouteNodeChildren(f: void | LoadChildrenConfigFn): null | LoadChildrenRouteNode {
+function toLoadRouteNodeChildren(f: void | LoadChildrenConfigFn<*>): null | LoadChildrenRouteNode {
   const g = f // Avoid re-binding type errors on f.
   if (typeof g === 'undefined') {
     return null
   } else {
-    return () => g().then(nodes => nodes.map(x => Route(x)))
+    return () => g().then(nodes => nodes.map(x => createRoute(x)))
   }
 }

@@ -1,4 +1,5 @@
 // @flow
+import type { ActivatedRoute } from 'mobx-little-router'
 import React, { createElement, Component } from 'react'
 import { extendObservable, action } from 'mobx'
 import { observer } from 'mobx-react'
@@ -80,17 +81,17 @@ class TransitionGroup extends Component {
     return (
       <div className="transition-group">
         {nodes.map(({ node, className }) =>
-          createElement(node.value.data.component, { key: generateKey(node), params: node.value.params, className })
+          createElement(node.data.component, { key: generateKey(node), params: node.params, className })
         )}
       </div>
     )
   }
 }
 
-const generateKey = (node) => {
+const generateKey = (node: ActivatedRoute<*, *>) => {
   return [
-    node.value.key,
-    Object.keys(node.value.params).map(key => `${key}:${node.value.params[key]}`)
+    node.key,
+    Object.keys(node.params).map(key => `${key}:${node.params[key]}`)
   ].join('-')
 }
 

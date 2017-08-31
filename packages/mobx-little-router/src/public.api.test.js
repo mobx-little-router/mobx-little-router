@@ -44,7 +44,7 @@ describe('Public API', () => {
 
     expect(changes).toEqual(['/initial/', '/foo/', '/bar/', '/foo/', '/bar/', '/quux/'])
 
-    expect(router.store.nodes.map(node => node.value.path)).toEqual(['', ':whatever'])
+    expect(router.store.nodes.map(route => route.node.value.path)).toEqual(['', ':whatever'])
 
     router.stop()
   })
@@ -80,7 +80,7 @@ describe('Public API', () => {
       '/10/'
     ])
 
-    expect(router.store.nodes.map(node => node.value.path)).toEqual(['', ':whatever'])
+    expect(router.store.nodes.map(route => route.node.value.path)).toEqual(['', ':whatever'])
 
     router.stop()
   })
@@ -95,7 +95,7 @@ describe('Public API', () => {
       _router.push('/1').then(() => {
         expect(changes).toEqual(['/initial/', '/1/'])
 
-        expect(_router.store.nodes.map(node => node.value.path)).toEqual([
+        expect(_router.store.nodes.map(route => route.node.value.path)).toEqual([
           '',
           ':whatever'
         ])

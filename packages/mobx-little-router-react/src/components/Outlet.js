@@ -50,10 +50,10 @@ class Outlet extends Component {
     const { name } = this.props
     const idx = this.getCurrentIndex()
 
-    if (name) {
-      return nodes.slice().reverse().find(node => node.value.data.outlet === name)
+    if (typeof name === 'string') {
+      return nodes.slice().reverse().find(node => node.data.outlet === name)
     } else {
-      return nodes.filter(node => !node.value.data.outlet)[idx]
+      return nodes.filter(node => !node.data.outlet)[idx]
     }
   }
 
@@ -82,6 +82,6 @@ class Outlet extends Component {
   }
 }
 
-const filterNodes = (nodes) => nodes.filter(node => node.value.data.component)
+const filterNodes = (nodes) => nodes.filter(node => node.data.component)
 
 export default withRouter(observer(Outlet))

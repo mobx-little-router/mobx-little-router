@@ -1,7 +1,7 @@
 // @flow
 import { autorun, computed, extendObservable, when } from 'mobx'
 import type { History, Action } from 'history'
-import Route from './model/Route'
+import createRoute from './model/createRoute'
 import RouterStore from './model/RouterStore'
 import type { Href, Config } from './model/types'
 import Scheduler from './scheduling/Scheduler'
@@ -30,8 +30,8 @@ class Router {
     this.history = typeof historyCreator === 'function'
       ? historyCreator()
       : historyCreator[0](historyCreator[1])
-    const root = Route({ path: '' }, getContext) // Initial root.
-    const routes = config.map(x => Route(x, getContext))
+    const root = createRoute({ path: '' }, getContext) // Initial root.
+    const routes = config.map(x => createRoute(x, getContext))
     this.store = new RouterStore(root, routes)
     this.scheduler = new Scheduler(this.store)
 

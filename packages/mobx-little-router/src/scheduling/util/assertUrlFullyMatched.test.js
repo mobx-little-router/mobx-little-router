@@ -1,13 +1,13 @@
 // @flow
 import assertUrlFullyMatched from './assertUrlFullyMatched'
-import Route from '../../model/Route'
+import createRoute from '../../model/createRoute'
 
 describe('assertUrlFullyMatched', () => {
   let routes
 
   beforeEach(() => {
     routes = [
-      Route({
+      createRoute({
         path: 'a',
         children: [
           {

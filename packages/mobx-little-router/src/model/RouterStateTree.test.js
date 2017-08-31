@@ -1,18 +1,16 @@
 // @flow
-import Route from './Route'
+import createRoute from './createRoute'
 import RouterStateTree from './RouterStateTree'
 
-describe('Route tree tests', () => {
+describe('createRoute tree tests', () => {
   test('Finding path with simple matches', async () => {
     const tree = new RouterStateTree(
-      Route({
+      createRoute({
         path: 'a',
-        data: { uid: 'NODE_A' },
         children: [
           {
             path: 'b',
-            data: { uid: 'NODE_B' },
-            children: [{ path: 'c', data: { uid: 'NODE_C' } }]
+            children: [{ path: 'c' }]
           }
         ]
       })
@@ -20,19 +18,17 @@ describe('Route tree tests', () => {
 
     const result = await tree.pathFromRoot('/a/b/c', () => Promise.resolve(true))
 
-    expect(result.map(r => r.node.value.data.uid)).toEqual(['NODE_A', 'NODE_B', 'NODE_C'])
+    expect(result.map(r => r.node.value.path)).toEqual(['a', 'b', 'c'])
   })
 
   test('Finding path with param matching', async () => {
     const tree = new RouterStateTree(
-      Route({
+      createRoute({
         path: 'a',
-        data: { uid: 'NODE_A' },
         children: [
           {
             path: ':what',
-            data: { uid: 'NODE_B' },
-            children: [{ path: 'c', data: { uid: 'NODE_C' } }]
+            children: [{ path: 'c' }]
           }
         ]
       })
@@ -40,19 +36,19 @@ describe('Route tree tests', () => {
 
     const result = await tree.pathFromRoot('/a/b/c', () => Promise.resolve(true))
 
-    expect(result.map(r => r.node.value.data.uid)).toEqual(['NODE_A', 'NODE_B', 'NODE_C'])
+    expect(result.map(r => r.node.value.path)).toEqual(['a', ':what', 'c'])
   })
 
   test('Finding path with empty paths', async () => {
     const tree = new RouterStateTree(
-      Route({
+      createRoute({
         path: '',
-        data: { uid: 'NODE_ROOT' },
+        data: { uid: '' },
         children: [
           {
             path: '',
-            data: { uid: 'NODE_EMPTY' },
-            children: [{ path: 'c', data: { uid: 'NODE_C' } }]
+            data: { uid: '' },
+            children: [{ path: 'c' }]
           }
         ]
       })
@@ -60,23 +56,17 @@ describe('Route tree tests', () => {
 
     const result = await tree.pathFromRoot('/c', () => Promise.resolve(true))
 
-    expect(result.map(r => r.node.value.data.uid)).toEqual([
-      'NODE_ROOT',
-      'NODE_EMPTY',
-      'NODE_C'
-    ])
+    expect(result.map(r => r.node.value.path)).toEqual(['', '', 'c'])
   })
 
   test('No match from path', async () => {
     const tree = new RouterStateTree(
-      Route({
+      createRoute({
         path: 'a',
-        data: { uid: 'NODE_A' },
         children: [
           {
             path: '',
-            data: { uid: 'NODE_EMPTY' },
-            children: [{ path: 'c', data: { uid: 'NODE_C' } }]
+            children: [{ path: 'c' }]
           }
         ]
       })
@@ -84,40 +74,38 @@ describe('Route tree tests', () => {
 
     const result = await tree.pathFromRoot('/a/d', () => Promise.resolve(true))
 
-    expect(result.map(r => r.node.value.data.uid)).toEqual(['NODE_A', 'NODE_EMPTY'])
+    expect(result.map(r => r.node.value.path)).toEqual(['a', ''])
   })
 
   test('Exhausting route nodes on search', async () => {
     const tree = new RouterStateTree(
-      Route({
+      createRoute({
         path: 'a',
-        data: { uid: 'NODE_A' },
-        children: [{ path: 'b', data: { uid: 'NODE_B' } }]
+        children: [{ path: 'b', data: { uid: 'b' } }]
       })
     )
 
     const onExhausted = jest.fn(() => Promise.resolve())
     const result = await tree.pathFromRoot('/a/b/c', onExhausted)
 
-    expect(result.map(r => r.node.value.data.uid)).toEqual(['NODE_A', 'NODE_B'])
+    expect(result.map(r => r.node.value.path)).toEqual(['a', 'b'])
     expect(onExhausted).toHaveBeenCalledTimes(1)
   })
 
   test('find', () => {
     const tree = new RouterStateTree(
-      Route({
+      createRoute({
         path: 'a',
-        data: { uid: 'NODE_A' },
         children: [
           {
             path: '',
-            data: { uid: 'NODE_EMPTY' },
-            children: [{ path: 'c', data: { uid: 'NODE_C' } }]
+            data: { uid: '' },
+            children: [{ path: 'c' }]
           }
         ]
       })
     )
-    expect(tree.find(x => x.value.data.uid === 'NOPE')).toBe(null)
-    expect(tree.find(x => x.value.data.uid === 'NODE_C')).not.toBe(null)
+    expect(tree.find(x => x.value.path === 'NOPE')).toBe(null)
+    expect(tree.find(x => x.value.path === 'c')).not.toBe(null)
   })
 })

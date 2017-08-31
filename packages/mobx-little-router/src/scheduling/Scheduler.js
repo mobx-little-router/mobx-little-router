@@ -1,19 +1,19 @@
 // @flow
 import type { Action } from 'history'
 import { autorun, extendObservable, runInAction } from 'mobx'
-import assertUrlFullyMatched from './util/assertUrlFullyMatched'
-import type { RouteNode } from '../model/types'
+import type { RouteNode, ActivatedRoute } from '../model/types'
 import type RouterStore from '../model/RouterStore'
-import TransitionManager from '../transition/TransitionManager'
+import createActivatedRoute from '../model/createActivatedRoute'
 import areRoutesEqual from '../model/util/areRoutesEqual'
+import Navigation from '../model/Navigation'
+import type { Definition } from '../model/Navigation'
+import TransitionManager from '../transition/TransitionManager'
 import shallowEqual from '../util/shallowEqual'
-import shallowClone from '../model/util/shallowClone'
 import differenceWith from '../util/differenceWith'
 import { TransitionFailure } from '../errors/index'
 import type { Event } from './events'
 import { EventTypes } from './events'
-import Navigation from '../model/Navigation'
-import type { Definition } from '../model/Navigation'
+import assertUrlFullyMatched from './util/assertUrlFullyMatched'
 
 export default class Scheduler {
   store: RouterStore
@@ -68,10 +68,12 @@ export default class Scheduler {
       const { currentNavigation } = this
       this.store.error = null
 
-      this.currentNavigation = currentNavigation ? currentNavigation.next(next) : new Navigation({
-        ...next,
-        from: location || null
-      })
+      this.currentNavigation = currentNavigation
+        ? currentNavigation.next(next)
+        : new Navigation({
+            ...next,
+            from: location || null
+          })
     })
   }
 
@@ -90,14 +92,14 @@ export default class Scheduler {
         nextLocation.pathname,
         this.handleLeafNodeReached
       )
-      const nextNodes = toRouteNodes(nextPath)
+      const nextActivatedRoutes = toActivatedRoutes(nextPath)
 
       await assertUrlFullyMatched(nextLocation.pathname, nextPath)
 
       // We've found a match or unmatched error has been handled.
       const { activating, deactivating } = await diffActiveNodes(
         store.nodes.slice(),
-        nextNodes
+        nextActivatedRoutes
       )
 
       // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
@@ -110,12 +112,12 @@ export default class Scheduler {
 
       this.emit({ type: EventTypes.NAVIGATION_ACTIVATING, navigation: currentNavigation })
 
-      store.updateNodes(nextNodes)
+      store.updateActivatedRoutes(nextActivatedRoutes)
 
       // Run and wait on transition of deactivating and newly activating nodes.
       await Promise.all([
-        TransitionManager.run('deactivating', deactivating),
-        TransitionManager.run('activating', activating)
+        TransitionManager.run('deactivating', deactivating.map(x => x.node)),
+        TransitionManager.run('activating', activating.map(x => x.node))
       ])
 
       // If all value resolved, then we're good to update store state.
@@ -130,7 +132,11 @@ export default class Scheduler {
       } else {
         // Error instances should be set on the store and an error event is emitted.
         this.store.setError(error)
-        this.emit({ type: EventTypes.NAVIGATION_ERROR, error, navigation: currentNavigation })
+        this.emit({
+          type: EventTypes.NAVIGATION_ERROR,
+          error,
+          navigation: currentNavigation
+        })
       }
     } finally {
       this.emit({ type: EventTypes.NAVIGATION_END, navigation: currentNavigation })
@@ -157,13 +163,13 @@ export default class Scheduler {
   // If one guard fails, then the entire function rejects.
   assertTransitionOk = async (
     type: 'canDeactivate' | 'canActivate' | 'willDeactivate' | 'willActivate',
-    nodes: RouteNode<*, *>[],
+    activatedRoutes: ActivatedRoute<*, *>[],
     navigation: Navigation
   ): Promise<void> => {
-    for (const node of nodes) {
-      const { value } = node
+    for (const route of activatedRoutes) {
+      const { value } = route.node
       const result = typeof value[type] === 'function'
-        ? value[type](node, navigation, node.value.getContext())
+        ? value[type](route, navigation)
         : true
 
       try {
@@ -173,21 +179,20 @@ export default class Scheduler {
           await result
         }
       } catch (e) {
-        throw new TransitionFailure(node, e instanceof Navigation ? e : null)
+        throw new TransitionFailure(route, e instanceof Navigation ? e : null)
       }
     }
   }
 }
 
-function toRouteNodes(nextPath) {
-  return nextPath.map(({ node, params }) => {
-    const _node = shallowClone(node)
-    _node.value.params = params
-    return _node
-  })
+function toActivatedRoutes(nextPath) {
+  return nextPath.map(({ node, params }) => createActivatedRoute(node, params))
 }
 
-async function diffActiveNodes(currNodes: RouteNode<*, *>[], nextNodes: RouteNode<*, *>[]) {
+async function diffActiveNodes(
+  currNodes: ActivatedRoute<*, *>[],
+  nextNodes: ActivatedRoute<*, *>[]
+) {
   try {
     const deactivating = differenceWith(areRoutesEqual, currNodes, nextNodes).reverse()
 

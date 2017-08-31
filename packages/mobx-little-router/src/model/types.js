@@ -48,15 +48,13 @@ export type RedirectConfig<D> = {
 export type LoadChildrenConfigFn<D> = () => Promise<Config<D>[]>
 
 export type GuardFn = (
-  node: RouteNode<*, *>,
-  nav: Navigation,
-  context: Object
+  node: ActivatedRoute<*, *>,
+  nav: Navigation
 ) => boolean | Promise<void>
 
 export type LifecycleFn = (
-  node: RouteNode<*, *>,
-  nav: Navigation,
-  context: Object
+  node: ActivatedRoute<*, *>,
+  nav: Navigation
 ) => Promise<void>
 
 export type ErrorHandler = (node: RouteNode<*, *>, context: Object) => Promise<void>
@@ -84,5 +82,13 @@ export type RouteNode<C, D> = ITreeNode<RouteValue<C, D>>
 export type MatchResult<C, D> = {
   node: RouteNode<C, D>,
   remaining: string,
+  params: Params
+}
+
+export type ActivatedRoute<C,D> = {
+  key: string,
+  node: RouteNode<C, D>,
+  data: D,
+  context: C,
   params: Params
 }

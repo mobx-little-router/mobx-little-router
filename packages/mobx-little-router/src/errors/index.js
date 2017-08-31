@@ -1,12 +1,12 @@
 // @flow
-import type { RouteNode } from '../model/types'
+import type { ActivatedRoute, RouteNode } from '../model/types'
 import Navigation from '../model/Navigation'
 
 export class TransitionFailure  {
-  node: RouteNode<*, *>
+  route: ActivatedRoute<*, *>
   navigation: null | Navigation
-  constructor(node: RouteNode<*, *>, navigation: ?Navigation) {
-    this.node = node
+  constructor(route: ActivatedRoute<*, *>, navigation: ?Navigation) {
+    this.route = route
     this.navigation = navigation || null
   }
 }

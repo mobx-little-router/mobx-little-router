@@ -18,7 +18,10 @@ export default class RouterStateTree {
     return findNode(predicate, this.root)
   }
 
-  async pathFromRoot(url: string, onExhausted: OnExhaustedFn): Promise<MatchResult[]> {
+  async pathFromRoot(
+    url: string,
+    onExhausted: OnExhaustedFn
+  ): Promise<MatchResult<*, *>[]> {
     return await findPathFromRoot(this.root, url, onExhausted)
   }
 }
