@@ -52,7 +52,7 @@ class TransitionGroup extends Component {
 
   render() {
     const { from, to, isTransitioning } = this.props
-    const nodes = []
+    const routes = []
 
     let fromClassName = ''
     let toClassName = ''
@@ -72,27 +72,20 @@ class TransitionGroup extends Component {
     }
 
     if (from && isTransitioning) {
-      nodes.push({ node: from, className: fromClassName })
+      routes.push({ route: from, className: fromClassName })
     }
     if (to) {
-      nodes.push({ node: to, className: toClassName })
+      routes.push({ route: to, className: toClassName })
     }
 
     return (
       <div className="transition-group">
-        {nodes.map(({ node, className }) =>
-          createElement(node.data.component, { key: generateKey(node), params: node.params, className })
+        {routes.map(({ route, className }) =>
+          createElement(route.data.component, { key: route.key, params: route.params, className })
         )}
       </div>
     )
   }
-}
-
-const generateKey = (node: Route<*, *>) => {
-  return [
-    node.key,
-    Object.keys(node.params).map(key => `${key}:${node.params[key]}`)
-  ].join('-')
 }
 
 export default observer(TransitionGroup)

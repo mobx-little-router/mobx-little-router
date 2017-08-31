@@ -46,14 +46,14 @@ class Outlet extends Component {
       : 0
   }
 
-  findNode(nodes) {
+  findRoute(routes) {
     const { name } = this.props
     const idx = this.getCurrentIndex()
 
     if (typeof name === 'string') {
-      return nodes.slice().reverse().find(node => node.data.outlet === name)
+      return routes.slice().reverse().find(route => route.data.outlet === name)
     } else {
-      return nodes.filter(node => !node.data.outlet)[idx]
+      return routes.filter(route => !route.data.outlet)[idx]
     }
   }
 
@@ -61,13 +61,13 @@ class Outlet extends Component {
     const { router, name } = this.props
     const idx = this.getCurrentIndex()
 
-    const currNodes = filterNodes(router.store.routes)
-    const prevNodes = filterNodes(router.store.prevRoutes)
+    const currRoutes = filterRoutes(router.store.routes)
+    const prevRoutes = filterRoutes(router.store.prevRoutes)
 
-    const to = this.findNode(currNodes)
-    const from = this.findNode(prevNodes)
+    const to = this.findRoute(currRoutes)
+    const from = this.findRoute(prevRoutes)
 
-    const isTransitioning = !!prevNodes.length && !areRoutesEqual(to, from)
+    const isTransitioning = !!prevRoutes.length && !areRoutesEqual(to, from)
 
     const dataProps = {
       'data-depth': idx,
@@ -82,6 +82,6 @@ class Outlet extends Component {
   }
 }
 
-const filterNodes = (nodes) => nodes.filter(node => node.data.component)
+const filterRoutes = (routes) => routes.filter(route => route.data.component)
 
 export default withRouter(observer(Outlet))
