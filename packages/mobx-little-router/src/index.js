@@ -6,23 +6,27 @@ import type { History } from 'history'
 
 type Options = {
   createHistory: HistoryCreatorFn | [HistoryCreatorFn, Object],
-  routes: Config[],
+  routes: Config<*>[],
   getContext: () => any
 }
 
 export function install(opts: Options): Router {
-  return new Router(
-    opts.createHistory,
-    opts.routes,
-    opts.getContext
-  )
+  return new Router(opts.createHistory, opts.routes, opts.getContext)
 }
 
 export { default as RouterStore } from './model/RouterStore'
 
 export { default as Router } from './Router'
 
-export type { Href, Location, Query, Params, RouteNode, RouteValue } from './model/types'
+export type {
+  ActivatedRoute,
+  Href,
+  Location,
+  Query,
+  Params,
+  RouteNode,
+  RouteValue
+} from './model/types'
 
 export { EventTypes } from './scheduling/events'
 export type { Event } from './scheduling/events'

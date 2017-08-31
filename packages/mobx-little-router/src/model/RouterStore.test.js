@@ -1,7 +1,8 @@
 // @flow
 import { autorun } from 'mobx'
 import RouterStore from './RouterStore'
-import Route from './Route'
+import createRoute from './createRoute'
+import createActivatedRoute from './createActivatedRoute'
 import shallowClone from './util/shallowClone'
 
 describe('RouterStore', () => {
@@ -11,7 +12,7 @@ describe('RouterStore', () => {
     getContext = jest.fn(() => ({
       message: 'Hello'
     }))
-    root = Route({ path: '' }, getContext)
+    root = createRoute({ path: '' }, getContext)
     store = new RouterStore(root)
   })
 
@@ -21,12 +22,12 @@ describe('RouterStore', () => {
   })
 
   test('Updating children', done => {
-    const a = Route({
+    const a = createRoute({
       path: 'a',
       children: []
     })
 
-    const b = Route({
+    const b = createRoute({
       path: 'b',
       children: []
     })
@@ -66,11 +67,13 @@ describe('RouterStore', () => {
       message: 'Hello'
     })
 
-    expect(() => store.replaceChildren(Route({ path: '' }), [])).toThrow(/Node not found/)
+    expect(() => store.replaceChildren(createRoute({ path: '' }), [])).toThrow(
+      /Node not found/
+    )
   })
 
   test('Updating current nodes', () => {
-    const a = Route({
+    const a = createRoute({
       path: 'a',
       children: [],
       params: {
@@ -79,46 +82,57 @@ describe('RouterStore', () => {
     })
 
     store.replaceChildren(store.state.root, [a])
-    store.updateNodes([store.state.root, a])
+    store.updateActivatedRoutes([createActivatedRoute(a, { x: '1' })])
 
-    expect(store.nodes[1].value).toEqual(
+    expect(store.nodes[0]).toEqual(
       expect.objectContaining({
-        path: 'a',
-        params: { x: '1' }
+        params: { x: '1' },
+        node: expect.objectContaining({
+          value: expect.objectContaining({
+            path: 'a'
+          })
+        })
+      })
+    )
+    store.updateActivatedRoutes([
+      createActivatedRoute(a, {
+        x: '2'
+      })
+    ])
+
+    expect(store.nodes[0]).toEqual(
+      expect.objectContaining({
+        params: { x: '2' },
+        node: expect.objectContaining({
+          value: expect.objectContaining({
+            path: 'a'
+          })
+        })
       })
     )
 
-    const a_prime = shallowClone(a)
-    a_prime.value.params = { x: '2' }
-    store.updateNodes([store.state.root, a_prime])
-
-    expect(store.nodes[1].value).toEqual(
+    expect(store.prevNodes[0]).toEqual(
       expect.objectContaining({
-        path: 'a',
-        params: { x: '2' }
-      })
-    )
-
-    expect(store.prevNodes[1].value).toEqual(
-      expect.objectContaining({
-        path: 'a',
-        params: { x: '1' }
+        params: { x: '1' },
+        node: expect.objectContaining({
+          value: expect.objectContaining({
+            path: 'a'
+          })
+        })
       })
     )
   })
 
   test('Node update', () => {
     store.updateNode(store.state.root, {
-      data: {
-        x: 'Hello'
-      }
+      getData: () => ({ x: 'Hello' })
     })
 
-    expect(store.state.root.value.data.x).toEqual('Hello')
+    expect(store.state.root.value.getData().x).toEqual('Hello')
 
     expect(() => {
       store.updateNode(
-        Route({
+        createRoute({
           path: 'doesnotexist',
           children: []
         }),

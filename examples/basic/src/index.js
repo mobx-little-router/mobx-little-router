@@ -23,28 +23,28 @@ const router = install({
     stores
   }),
   routes: [
-    { path: '', match: 'full', data: { component: IndexRoute } },
+    { path: '', match: 'full', getData: () => ({ component: IndexRoute }) },
     { path: 'redirect', match: 'full', redirectTo: '/shows' },
-    { path: 'login', data: { component: LoginRoute } },
+    { path: 'login', getData: () => ({ component: LoginRoute }) },
     { 
       path: 'about',
-      data: { component: AboutRoute },
+      getData: () => ({ component: AboutRoute }),
       onTransition: () => delay(400)
     },
     {
       path: 'contact',
-      data: { component: ContactRoute },
+      getData: () => ({ component: ContactRoute }),
       onTransition: () => delay(400)
     },
     {
       path: 'shows',
-      data: { component: ShowsRoute },
+      getData: () => ({ component: ShowsRoute }),
       children: [{
         path: ':id',
-        data: {
+        getData: () => ({
           component: ShowRoute,
           outlet: 'modal'
-        },
+        }),
         onTransition: (node, transition) => {
           console.log(node, transition)
           return delay(400)
@@ -53,19 +53,19 @@ const router = install({
     },
     {
       path: 'actors/:id',
-      data: {
+      getData: () => ({
         component: ActorRoute,
         outlet: 'modal'
-      },
+      }),
       onTransition: () => delay(400)
     },
     {
       path: 'tags/:tag',
-      data: { component: TagRoute }
+      getData: () => ({ component: TagRoute })
     },
     {
       path: 'admin',
-      data: { component: AdminRoute },
+      getData: () => ({ component: AdminRoute }),
       canActivate: (node, navigation, context) => {
         const { stores: { SessionStore } } = context
         

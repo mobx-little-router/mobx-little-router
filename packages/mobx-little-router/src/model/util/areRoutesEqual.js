@@ -1,7 +1,7 @@
 // @flow
-import type { RouteNode } from '../types'
+import type { ActivatedRoute } from '../types'
 import shallowEqual from '../../util/shallowEqual'
 
-export default function areRoutesEqual(a?: RouteNode<*>, b?: RouteNode<*>) {
-  return !!(a && b) && a.value.key === b.value.key && shallowEqual(a.value.params, b.value.params)
+export default function areRoutesEqual(a?: ActivatedRoute<*, *>, b?: ActivatedRoute<*, *>) {
+  return !!(a && b) && a.key === b.key && shallowEqual(a.params, b.params)
 }

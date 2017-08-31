@@ -2,9 +2,10 @@
 import { autorun, toJS } from 'mobx'
 import RouterStore from '../model/RouterStore'
 import Scheduler from './Scheduler'
-import Route from '../model/Route'
+import createRoute from '../model/createRoute'
+import createActivatedRoute from '../model/createActivatedRoute'
 import { EventTypes } from './events'
-import { scan } from 'ramda'
+import { __, partialRight, scan } from 'ramda'
 
 const scanChildren = scan((curr, idx) => curr.children[idx])
 
@@ -30,7 +31,7 @@ describe('Scheduler', () => {
       expect(store.location.pathname).toBe(undefined)
 
       expect(spy).toHaveBeenCalledTimes(1)
-      expect(spy.mock.calls[0][0].value.key).toBe(todosRoot.value.key)
+      expect(spy.mock.calls[0][0].key).toBe(todosRoot.value.key)
       expect(spy.mock.calls[0][1].to.pathname).toEqual('/todos')
     })
 
@@ -56,18 +57,18 @@ describe('Scheduler', () => {
       expect(spy).toHaveBeenCalledTimes(3)
 
       // Activation is called in bottom-up order.
-      expect(spy.mock.calls[0][0].value.key).toEqual(root.value.key)
-      expect(spy.mock.calls[1][0].value.key).toEqual(todosRoot.value.key)
-      expect(spy.mock.calls[2][0].value.key).toEqual(todosView.value.key)
+      expect(spy.mock.calls[0][0].key).toEqual(root.value.key)
+      expect(spy.mock.calls[1][0].key).toEqual(todosRoot.value.key)
+      expect(spy.mock.calls[2][0].key).toEqual(todosView.value.key)
 
       // Matched params are passed to hook.
-      expect(spy.mock.calls[2][0].value.params).toEqual({ id: '123' })
+      expect(spy.mock.calls[2][0].params).toEqual({ id: '123' })
 
       // Nodes are marked as active
       expect(store.nodes.length).toEqual(4)
 
-      expect(store.nodes.map(node => node.value.path)).toEqual(['', '', 'todos', ':id'])
-      expect(store.nodes.map(node => node.value.params)).toEqual([
+      expect(store.nodes.map(route => route.node.value.path)).toEqual(['', '', 'todos', ':id'])
+      expect(store.nodes.map(route => route.params)).toEqual([
         {},
         {},
         {},
@@ -81,7 +82,7 @@ describe('Scheduler', () => {
       const [root, _, todosRoot, todosView] = scanChildren(store.state.root, [0, 1, 1])
       updateNode(todosRoot, { canDeactivate: rootSpy })
       updateNode(todosView, { canDeactivate: viewSpy })
-      store.updateNodes([root, todosRoot, todosView])
+      store.updateActivatedRoutes([root, todosRoot, todosView].map(partialRight(createActivatedRoute, [{}])))
       store.location.pathname = '/todos/123'
       scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/' } })
 
@@ -93,7 +94,7 @@ describe('Scheduler', () => {
       // Deactivation rejection blocks remaining nodes up the path.
       expect(rootSpy).not.toHaveBeenCalled()
       expect(viewSpy).toHaveBeenCalledTimes(1)
-      expect(viewSpy.mock.calls[0][0].value.key).toEqual(todosView.value.key)
+      expect(viewSpy.mock.calls[0][0].key).toEqual(todosView.value.key)
     })
 
     test('Deactivation successful', async () => {
@@ -102,7 +103,7 @@ describe('Scheduler', () => {
       updateNode(todosRoot, { canDeactivate: spy })
       updateNode(todosView, { canDeactivate: spy })
       store.location.pathname = '/todos/123'
-      store.updateNodes([root, todosRoot, todosView])
+      store.updateActivatedRoutes([root, todosRoot, todosView].map(partialRight(createActivatedRoute, [{}])))
       scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/' } })
 
       await scheduler.processNextNavigation()
@@ -114,12 +115,12 @@ describe('Scheduler', () => {
       expect(spy).toHaveBeenCalledTimes(2)
 
       // Deactivation is called in bottom-up order.
-      expect(spy.mock.calls[0][0].value.key).toEqual(todosView.value.key)
-      expect(spy.mock.calls[1][0].value.key).toEqual(todosRoot.value.key)
+      expect(spy.mock.calls[0][0].key).toEqual(todosView.value.key)
+      expect(spy.mock.calls[1][0].key).toEqual(todosRoot.value.key)
 
       // Nodes are marked as active
       expect(store.nodes.length).toEqual(2)
-      expect(store.nodes.map(node => node.value.path)).toEqual(['', ''])
+      expect(store.nodes.map(route => route.node.value.path)).toEqual(['', ''])
     })
 
     describe('Async activation and deactivation', () => {
@@ -150,7 +151,7 @@ describe('Scheduler', () => {
         const [_, appRootNode, todosRoot] = scanChildren(store.state.root, [0, 0])
         updateNode(todosRoot, { canDeactivate: spy })
         store.location.pathname = '/todos/'
-        store.updateNodes([store.state.root, appRootNode, todosRoot])
+        store.updateActivatedRoutes([store.state.root, appRootNode, todosRoot].map(partialRight(createActivatedRoute, [{}])))
         scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/' } })
 
         await scheduler.processNextNavigation()
@@ -163,7 +164,7 @@ describe('Scheduler', () => {
         const [_, appRootNode, todosRoot] = scanChildren(store.state.root, [0, 0])
         updateNode(todosRoot, { canDeactivate: spy })
         store.location.pathname = '/todos'
-        store.updateNodes([store.state.root, appRootNode, todosRoot])
+        store.updateActivatedRoutes([store.state.root, appRootNode, todosRoot].map(partialRight(createActivatedRoute, [{}])))
         scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/' } })
 
         await scheduler.processNextNavigation()
@@ -214,9 +215,12 @@ describe('Scheduler', () => {
 
 
       expect(canActivate).toHaveBeenCalled()
+
       expect(canActivate.mock.calls[0]).toEqual(
         expect.arrayContaining([
-          { message: 'Hello' }
+          expect.objectContaining({
+            context: { message: 'Hello' }
+          })
         ])
       )
 
@@ -226,7 +230,9 @@ describe('Scheduler', () => {
       expect(canDeactivate).toHaveBeenCalled()
       expect(canDeactivate.mock.calls[0]).toEqual(
         expect.arrayContaining([
-          { message: 'Hello' }
+          expect.objectContaining({
+            context: { message: 'Hello' }
+          })
         ])
       )
     })
@@ -271,7 +277,7 @@ describe('Scheduler', () => {
 
     test('Can cancel navigation from willDeactivate', async () => {
       store.location.pathname = '/todos/'
-      store.updateNodes([store.state.root, todosRoot])
+      store.updateActivatedRoutes([store.state.root, todosRoot].map(partialRight(createActivatedRoute, [{}])))
 
       scheduler.scheduleNavigation({ type: 'PUSH', sequence: 0, to: { pathname: '/' } })
 
@@ -308,7 +314,7 @@ describe('Scheduler', () => {
       updateNode(todosView, {
         loadChildren: () =>
           Promise.resolve([
-            Route({
+            createRoute({
               path: 'edit',
               loadChildren: () => Promise.resolve([{ path: 'preview' }])
             })
@@ -483,19 +489,19 @@ describe('Scheduler', () => {
       expect(nodesDuringViewTransition.length).toBe(4)
       expect(prevNodesDuringListTransition.length).toBe(4)
       expect(prevNodesDuringViewTransition.length).toBe(4)
-      expect(prevNodesDuringViewTransition.map(x => x.value.path)).toEqual([
+      expect(prevNodesDuringViewTransition.map(x => x.node.value.path)).toEqual([
         '',
         '',
         'todos',
         ''
       ])
-      expect(nodesDuringViewTransition.map(x => x.value.path)).toEqual([
+      expect(nodesDuringViewTransition.map(x => x.node.value.path)).toEqual([
         '',
         '',
         'todos',
         ':id'
       ])
-      expect(nodesDuringViewTransition[3].value.params.id).toEqual('1')
+      expect(nodesDuringViewTransition[3].params.id).toEqual('1')
       expect(store.prevNodes.length).toBe(0) // Previous nodes are cleared after location ends.
     })
   })
@@ -506,14 +512,14 @@ describe('Scheduler', () => {
 
   function updateLocation(location: *, nodes: *) {
     store.location.pathname = location
-    store.updateNodes(nodes)
+    store.updateActivatedRoutes(nodes.map(partialRight(createActivatedRoute, [{}])))
   }
 })
 
 function createStore() {
-  const store = new RouterStore(Route({ path: '' }, () => ({ message: 'Hello' })))
+  const store = new RouterStore(createRoute({ path: '' }, () => ({ message: 'Hello' })))
   store.replaceChildren(store.state.root, [
-    Route({
+    createRoute({
       path: '',
       children: [
         {

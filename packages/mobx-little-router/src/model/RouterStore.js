@@ -1,11 +1,18 @@
 // @flow
 import type { IObservableArray } from 'mobx'
-import { extendObservable, runInAction, observable } from 'mobx'
+import { extendObservable, runInAction, computed, observable } from 'mobx'
 import type { ObservableMap } from 'mobx'
 import RouterStateTree from './RouterStateTree'
-import type { Location, RouteNode, RouteValue } from './types'
+import type { Location, ActivatedRoute, RouteNode, RouteValue, Params } from './types'
 
-type RouteValueChange = $Shape<RouteValue<*>>
+type RouteValueChange = $Shape<RouteValue<*, *>>
+
+type SerializedActivatedRoute = {
+  key: string,
+  params: Params,
+  context: any,
+  data: any
+}
 
 class RouterStore {
   location: Location
@@ -14,21 +21,36 @@ class RouterStore {
 
   // Create a map of all nodes in tree so we can perform faster lookup.
   // Instances should be exactly the same as in state tree.
-  cache: ObservableMap<RouteNode<*>>
+  cache: ObservableMap<RouteNode<*, *>>
 
   // Keep a list of activated nodes so we can track differences when transitioning to a new state.
-  nodes: IObservableArray<RouteNode<*>>
-  prevNodes: IObservableArray<RouteNode<*>>
+  nodes: IObservableArray<ActivatedRoute<*,*>>
+  prevNodes: IObservableArray<ActivatedRoute<*,*>>
 
-  constructor(root: RouteNode<*>, children: void | RouteNode<*>[]) {
+  _activatedRoutes: IObservableArray<SerializedActivatedRoute>
+  _prevActivatedRoutes: IObservableArray<SerializedActivatedRoute>
+
+  constructor(root: RouteNode<*, *>, children: void | RouteNode<*, *>[]) {
     this.state = new RouterStateTree(root)
 
     extendObservable(this, {
       location: {},
       error: null,
       cache: observable.map({ [root.value.key]: root }),
-      nodes: observable.array([]),
-      prevNodes: observable.array([])
+      _activatedRoutes: observable.array([]),
+      _prevActivatedRoutes: observable.array([]),
+      nodes: computed(() => {
+        return this._activatedRoutes.map(x => ({
+          node: this.cache.get(x.key),
+          ...x
+        }))
+      }),
+      prevNodes : computed(() => {
+        return this._prevActivatedRoutes.map(x => ({
+          node: this.cache.get(x.key),
+          ...x
+        }))
+      })
     })
 
     if (children) {
@@ -39,7 +61,7 @@ class RouterStore {
   /* Queries */
 
   // Ensures we always get the matched copy from state.
-  getNode(x: RouteNode<*>): RouteNode<*> {
+  getNode(x: RouteNode<*, *>): RouteNode<*, *> {
     const existing = this.cache.get(x.value.key)
     if (existing) {
       return existing
@@ -50,7 +72,7 @@ class RouterStore {
 
   /* Mutations */
 
-  replaceChildren(parent: RouteNode<*>, nodes: RouteNode<*>[]) {
+  replaceChildren(parent: RouteNode<*, *>, nodes: RouteNode<*, *>[]) {
     const existing = this.getNode(parent)
     nodes.forEach(x => {
       runInAction(() => {
@@ -66,34 +88,39 @@ class RouterStore {
     })
   }
 
-  updateNode(node: RouteNode<*>, updates: RouteValueChange) {
+  updateNode(node: RouteNode<*, *>, updates: RouteValueChange) {
     const existing = this.getNode(node)
     runInAction(() => {
       Object.assign(existing.value, updates)
     })
   }
 
-  updateNodes(nodes: RouteNode<*>[]) {
+  updateActivatedRoutes(nodes: ActivatedRoute<*, *>[]) {
     runInAction(() => {
-      this.prevNodes.replace(this.nodes.slice())
-      this.nodes.replace(nodes)
-      nodes.forEach(x => {
-        this.cache.set(x.value.key, x)
-      })
+      this._prevActivatedRoutes.replace(this._activatedRoutes.slice())
+      this._activatedRoutes.replace(nodes.map(x => ({
+        params: x.params,
+        context: x.context,
+        data: x.data,
+        key: x.key
+      })))
+      // nodes.forEach(x => {
+      //   this.cache.set(x.value.key, x)
+      // })
     })
   }
   
   commit(nextLocation: Location) {
     runInAction(() => {
       this.location = nextLocation
-      this.prevNodes.replace([])
+      this._prevActivatedRoutes.replace([])
     })
   }
 
   rollback() {
     runInAction(() => {
-      this.nodes.replace(this.prevNodes.slice())
-      this.prevNodes.replace([])
+      this._prevActivatedRoutes.replace(this._prevActivatedRoutes.slice())
+      this._prevActivatedRoutes.replace([])
     })
   }
 
