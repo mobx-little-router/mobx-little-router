@@ -50,13 +50,19 @@ const router = install({
     },
     {
       path: 'shows',
-      getData: () => ({ component: ShowsRoute }),
+      getData: () => {
+        console.log('getting shows data')
+        return { component: ShowsRoute }
+      },
       children: [{
         path: ':id',
-        getData: () => ({
-          component: ShowRoute,
-          outlet: 'modal'
-        }),
+        getData: () => {
+          console.log('getting show view data')
+          return {
+            component: ShowRoute,
+            outlet: 'modal'
+          }
+        },
         onTransition: (node, transition) => {
           console.log(node, transition)
           return delay(400)

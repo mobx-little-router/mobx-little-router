@@ -92,7 +92,7 @@ export default class Scheduler {
         nextLocation.pathname,
         this.handleLeafNodeReached
       )
-      const nextRoutes = toRoutes(nextPath)
+      const nextRoutes = toRoutes(this.store, nextPath)
 
       await assertUrlFullyMatched(nextLocation.pathname, nextPath)
 
@@ -185,8 +185,14 @@ export default class Scheduler {
   }
 }
 
-function toRoutes(nextPath) {
-  return nextPath.map(({ node, params, segment }) => createRoute(node, params, segment))
+// Get the existing Route from store (if segment remains the same), otherwise build new one.
+function toRoutes(store, nextPath) {
+  return nextPath.map(({ node, params, segment }) => {
+    const existing = store.routes.find(x => {
+      return x.key === node.value.key && x.segment === segment
+    })
+    return existing || createRoute(node, params, segment)
+  })
 }
 
 async function diffActiveNodes(

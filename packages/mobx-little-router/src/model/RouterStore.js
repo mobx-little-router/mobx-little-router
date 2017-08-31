@@ -92,13 +92,11 @@ class RouterStore {
         routes.map(x => ({
           params: x.params,
           context: x.context,
+          segment: x.segment,
           data: x.data,
           key: x.key
         }))
       )
-      // routes.forEach(x => {
-      //   this.cache.set(x.value.key, x)
-      // })
     })
   }
 
