@@ -9,6 +9,7 @@ type RouteValueChange = $Shape<RouteValue<*, *>>
 
 type SerializedRoute = {
   key: string,
+  nodeKey: string,
   params: Params,
   context: any,
   data: any
@@ -91,6 +92,7 @@ class RouterStore {
       this._serializedRoutes.replace(
         routes.map(x => ({
           params: x.params,
+          nodeKey: x.node.value.key,
           context: x.context,
           segment: x.segment,
           data: x.data,
@@ -122,7 +124,7 @@ class RouterStore {
 
   toRoutes(serialized: IObservableArray<SerializedRoute>) {
       return serialized.map(x => {
-        const node = this.cache.get(x.key)
+        const node = this.cache.get(x.nodeKey)
         return {
           node,
           onTransition: node.value.onTransition,

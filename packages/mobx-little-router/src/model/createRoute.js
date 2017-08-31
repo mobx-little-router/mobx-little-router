@@ -4,7 +4,7 @@ import type { Params, Route, RouteStateTreeNode } from './types'
 export default function createRoute<C,D>(node: RouteStateTreeNode<C,D>, params: Params, segment: string): Route<C,D> {
   return {
     node: node,
-    key: node.value.key,
+    key: `${node.value.key}${segment.toString()}`,
     segment,
     params,
     context: node.value.getContext(),

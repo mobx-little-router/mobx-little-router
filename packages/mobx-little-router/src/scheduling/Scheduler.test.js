@@ -5,7 +5,7 @@ import Scheduler from './Scheduler'
 import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
 import createRoute from '../model/createRoute'
 import { EventTypes } from './events'
-import { __, partialRight, scan } from 'ramda'
+import { scan } from 'ramda'
 
 const scanChildren = scan((curr, idx) => curr.children[idx])
 
@@ -31,7 +31,7 @@ describe('Scheduler', () => {
       expect(store.location.pathname).toBe(undefined)
 
       expect(spy).toHaveBeenCalledTimes(1)
-      expect(spy.mock.calls[0][0].key).toBe(todosRoot.value.key)
+      expect(spy.mock.calls[0][0].key).toMatch(new RegExp(todosRoot.value.key))
       expect(spy.mock.calls[0][1].to.pathname).toEqual('/todos')
     })
 
@@ -57,9 +57,9 @@ describe('Scheduler', () => {
       expect(spy).toHaveBeenCalledTimes(3)
 
       // Activation is called in bottom-up order.
-      expect(spy.mock.calls[0][0].key).toEqual(root.value.key)
-      expect(spy.mock.calls[1][0].key).toEqual(todosRoot.value.key)
-      expect(spy.mock.calls[2][0].key).toEqual(todosView.value.key)
+      expect(spy.mock.calls[0][0].key).toMatch(new RegExp(root.value.key))
+      expect(spy.mock.calls[1][0].key).toMatch(new RegExp(todosRoot.value.key))
+      expect(spy.mock.calls[2][0].key).toMatch(new RegExp(todosView.value.key))
 
       // Matched params are passed to hook.
       expect(spy.mock.calls[2][0].params).toEqual({ id: '123' })
@@ -82,7 +82,7 @@ describe('Scheduler', () => {
       const [root, _, todosRoot, todosView] = scanChildren(store.state.root, [0, 1, 1])
       updateNode(todosRoot, { canDeactivate: rootSpy })
       updateNode(todosView, { canDeactivate: viewSpy })
-      store.updateRoutes([root, todosRoot, todosView].map(partialRight(createRoute, [{}])))
+      store.updateRoutes([root, todosRoot, todosView].map(x => createRoute(x, {}, '')))
       store.location.pathname = '/todos/123'
       scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/' } })
 
@@ -103,7 +103,7 @@ describe('Scheduler', () => {
       updateNode(todosRoot, { canDeactivate: spy })
       updateNode(todosView, { canDeactivate: spy })
       store.location.pathname = '/todos/123'
-      store.updateRoutes([root, todosRoot, todosView].map(partialRight(createRoute, [{}])))
+      store.updateRoutes([root, todosRoot, todosView].map(x => createRoute(x, {}, '')))
       scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/' } })
 
       await scheduler.processNextNavigation()
@@ -151,7 +151,7 @@ describe('Scheduler', () => {
         const [_, appRootNode, todosRoot] = scanChildren(store.state.root, [0, 0])
         updateNode(todosRoot, { canDeactivate: spy })
         store.location.pathname = '/todos/'
-        store.updateRoutes([store.state.root, appRootNode, todosRoot].map(partialRight(createRoute, [{}])))
+        store.updateRoutes([store.state.root, appRootNode, todosRoot].map(x => createRoute(x, {}, '')))
         scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/' } })
 
         await scheduler.processNextNavigation()
@@ -164,7 +164,7 @@ describe('Scheduler', () => {
         const [_, appRootNode, todosRoot] = scanChildren(store.state.root, [0, 0])
         updateNode(todosRoot, { canDeactivate: spy })
         store.location.pathname = '/todos'
-        store.updateRoutes([store.state.root, appRootNode, todosRoot].map(partialRight(createRoute, [{}])))
+        store.updateRoutes([store.state.root, appRootNode, todosRoot].map(x => createRoute(x, {}, '')))
         scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/' } })
 
         await scheduler.processNextNavigation()
@@ -277,7 +277,7 @@ describe('Scheduler', () => {
 
     test('Can cancel navigation from willDeactivate', async () => {
       store.location.pathname = '/todos/'
-      store.updateRoutes([store.state.root, todosRoot].map(partialRight(createRoute, [{}])))
+      store.updateRoutes([store.state.root, todosRoot].map(x => createRoute(x, {}, '')))
 
       scheduler.scheduleNavigation({ type: 'PUSH', sequence: 0, to: { pathname: '/' } })
 
@@ -512,7 +512,7 @@ describe('Scheduler', () => {
 
   function updateLocation(location: *, nodes: *) {
     store.location.pathname = location
-    store.updateRoutes(nodes.map(partialRight(createRoute, [{}])))
+    store.updateRoutes(nodes.map(x => createRoute(x, {}, '')))
   }
 })
 
