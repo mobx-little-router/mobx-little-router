@@ -63,8 +63,8 @@ const router = install({
             outlet: 'modal'
           }
         },
-        onTransition: (node, transition) => {
-          console.log(node, transition)
+        onTransition: (route, transition) => {
+          console.log(route, transition)
           return delay(400)
         }
       }]
@@ -84,8 +84,8 @@ const router = install({
     {
       path: 'admin',
       getData: () => ({ component: AdminRoute }),
-      canActivate: (node, navigation, context) => {
-        const { stores: { SessionStore } } = context
+      canActivate: (route, navigation) => {
+        const { stores: { SessionStore } } = route.context
         
         if (SessionStore.isAuthenticated) {
           return true
