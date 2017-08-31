@@ -49,7 +49,6 @@ export default function createRouteStateTreeNode(config: Config<*>, getContext: 
       key: typeof config.key === 'string' ? config.key : createKey(6),
       path: config.path,
       matcher: matcher(config.path),
-      data: typeof config.data === 'object' ? config.data || {} : {},
       params: config.params !== null ? config.params: {},
       loadChildren: typeof config.loadChildren === 'function'
         ? toLoadRouteStateTreeNodeChildren(config.loadChildren)
