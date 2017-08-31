@@ -1,13 +1,13 @@
 // @flow
 import React from 'react'
-import { createRouter, mountInProvider } from '../testUtil'
+import { createRouteStateTreeNoder, mountInProvider } from '../testUtil'
 import Outlet from './Outlet'
 
 describe('Outlet', () => {
   let router
 
   beforeEach(() => {
-    router = createRouter(
+    router = createRouteStateTreeNoder(
       [
         {
           path: '',

@@ -1,9 +1,8 @@
 // @flow
 import { autorun } from 'mobx'
 import RouterStore from './RouterStore'
+import createRouteStateTreeNode from './createRouteStateTreeNode'
 import createRoute from './createRoute'
-import createActivatedRoute from './createActivatedRoute'
-import shallowClone from './util/shallowClone'
 
 describe('RouterStore', () => {
   let store, root, getContext
@@ -12,7 +11,7 @@ describe('RouterStore', () => {
     getContext = jest.fn(() => ({
       message: 'Hello'
     }))
-    root = createRoute({ path: '' }, getContext)
+    root = createRouteStateTreeNode({ path: '' }, getContext)
     store = new RouterStore(root)
   })
 
@@ -22,12 +21,12 @@ describe('RouterStore', () => {
   })
 
   test('Updating children', done => {
-    const a = createRoute({
+    const a = createRouteStateTreeNode({
       path: 'a',
       children: []
     })
 
-    const b = createRoute({
+    const b = createRouteStateTreeNode({
       path: 'b',
       children: []
     })
@@ -67,13 +66,13 @@ describe('RouterStore', () => {
       message: 'Hello'
     })
 
-    expect(() => store.replaceChildren(createRoute({ path: '' }), [])).toThrow(
+    expect(() => store.replaceChildren(createRouteStateTreeNode({ path: '' }), [])).toThrow(
       /Node not found/
     )
   })
 
   test('Updating current nodes', () => {
-    const a = createRoute({
+    const a = createRouteStateTreeNode({
       path: 'a',
       children: [],
       params: {
@@ -82,9 +81,9 @@ describe('RouterStore', () => {
     })
 
     store.replaceChildren(store.state.root, [a])
-    store.updateActivatedRoutes([createActivatedRoute(a, { x: '1' })])
+    store.updateRoutes([createRoute(a, { x: '1' }, '1')])
 
-    expect(store.nodes[0]).toEqual(
+    expect(store.routes[0]).toEqual(
       expect.objectContaining({
         params: { x: '1' },
         node: expect.objectContaining({
@@ -94,13 +93,13 @@ describe('RouterStore', () => {
         })
       })
     )
-    store.updateActivatedRoutes([
-      createActivatedRoute(a, {
+    store.updateRoutes([
+      createRoute(a, {
         x: '2'
-      })
+      }, '2')
     ])
 
-    expect(store.nodes[0]).toEqual(
+    expect(store.routes[0]).toEqual(
       expect.objectContaining({
         params: { x: '2' },
         node: expect.objectContaining({
@@ -111,7 +110,7 @@ describe('RouterStore', () => {
       })
     )
 
-    expect(store.prevNodes[0]).toEqual(
+    expect(store.prevRoutes[0]).toEqual(
       expect.objectContaining({
         params: { x: '1' },
         node: expect.objectContaining({
@@ -132,7 +131,7 @@ describe('RouterStore', () => {
 
     expect(() => {
       store.updateNode(
-        createRoute({
+        createRouteStateTreeNode({
           path: 'doesnotexist',
           children: []
         }),

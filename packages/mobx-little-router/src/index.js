@@ -19,7 +19,7 @@ export { default as RouterStore } from './model/RouterStore'
 export { default as Router } from './Router'
 
 export type {
-  ActivatedRoute,
+  Route,
   Href,
   Location,
   Query,

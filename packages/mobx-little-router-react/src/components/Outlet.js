@@ -61,8 +61,8 @@ class Outlet extends Component {
     const { router, name } = this.props
     const idx = this.getCurrentIndex()
 
-    const currNodes = filterNodes(router.store.nodes)
-    const prevNodes = filterNodes(router.store.prevNodes)
+    const currNodes = filterNodes(router.store.routes)
+    const prevNodes = filterNodes(router.store.prevRoutes)
 
     const to = this.findNode(currNodes)
     const from = this.findNode(prevNodes)

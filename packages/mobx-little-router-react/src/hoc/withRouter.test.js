@@ -1,11 +1,11 @@
 // @flow
 import React from 'react'
-import { createRouter, renderInProvider } from '../testUtil'
+import { createRouteStateTreeNoder, renderInProvider } from '../testUtil'
 import withRouter from './withRouter'
 
 describe('withRouter', () => {
   test('Provides router instance on props', () => {
-    const router = createRouter([])
+    const router = createRouteStateTreeNoder([])
     let _router = null
 
     const MyComponent = ({ router }: any) => {

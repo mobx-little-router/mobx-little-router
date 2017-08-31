@@ -1,13 +1,13 @@
 // @flow
 import assertUrlFullyMatched from './assertUrlFullyMatched'
-import createRoute from '../../model/createRoute'
+import createRouteStateTreeNode from '../../model/createRouteStateTreeNode'
 
 describe('assertUrlFullyMatched', () => {
   let routes
 
   beforeEach(() => {
     routes = [
-      createRoute({
+      createRouteStateTreeNode({
         path: 'a',
         children: [
           {
@@ -28,7 +28,7 @@ describe('assertUrlFullyMatched', () => {
     const results = [
       {
         node: routes[0],
-        remaining: '/nope',
+        segment: '', remaining: '/nope',
         params: {}
       }
     ]
@@ -39,7 +39,7 @@ describe('assertUrlFullyMatched', () => {
 
   test('Handled no match error', async () => {
     routes[0].value.onError = () => Promise.resolve() // Resolves error to allow match.
-    let results = [{ node: routes[0], remaining: '/b/c', params: {} }]
+    let results = [{ node: routes[0], segment: '', remaining: '/b/c', params: {} }]
 
     await expect(assertUrlFullyMatched('/a/b/c', results)).resolves.toBe(undefined)
 
@@ -48,9 +48,9 @@ describe('assertUrlFullyMatched', () => {
     routes[0].children[0].value.onError = jest.fn(() => Promise.resolve())
     routes[0].children[0].children[0].value.onError = jest.fn(() => Promise.resolve())
     results = [
-      { node: routes[0], remaining: '/b/c/nope', params: {} },
-      { node: routes[0].children[0], remaining: '/c/nope', params: {} },
-      { node: routes[0].children[0].children[0], remaining: '/nope', params: {} }
+      { node: routes[0], segment: '', remaining: '/b/c/nope', params: {} },
+      { node: routes[0].children[0], segment: '', remaining: '/c/nope', params: {} },
+      { node: routes[0].children[0].children[0], segment: '', remaining: '/nope', params: {} }
     ]
 
     await expect(assertUrlFullyMatched('/a/b/c/nope', results)).resolves.toBe(undefined)
@@ -65,9 +65,9 @@ describe('assertUrlFullyMatched', () => {
     routes[0].children[0].value.onError = jest.fn(() => Promise.reject())
     routes[0].children[0].children[0].value.onError = jest.fn(() => Promise.reject())
     const results = [
-      { node: routes[0], remaining: '/b/c/nope', params: {} },
-      { node: routes[0].children[0], remaining: '/c/nope', params: {} },
-      { node: routes[0].children[0].children[0], remaining: '/nope', params: {} }
+      { node: routes[0], segment: '', remaining: '/b/c/nope', params: {} },
+      { node: routes[0].children[0], segment: '', remaining: '/c/nope', params: {} },
+      { node: routes[0].children[0].children[0], segment: '', remaining: '/nope', params: {} }
     ]
 
     await expect(
@@ -80,9 +80,9 @@ describe('assertUrlFullyMatched', () => {
 
   test('If last unmatched URL is /, then ignore it', async () => {
     const results = [
-      { node: routes[0], remaining: '/b/c/', params: {} },
-      { node: routes[0].children[0], remaining: '/c/', params: {} },
-      { node: routes[0].children[0].children[0], remaining: '/', params: {} }
+      { node: routes[0], segment: '', remaining: '/b/c/', params: {} },
+      { node: routes[0].children[0], segment: '', remaining: '/c/', params: {} },
+      { node: routes[0].children[0].children[0], segment: '', remaining: '/', params: {} }
     ]
 
     await expect(mapErrorString(assertUrlFullyMatched('/a/b/c/', results))).resolves.toBe(

@@ -13,13 +13,15 @@ export default async function findPathFromRoot(
 ): Promise<MatchResult<*, *>[]> {
   const matchedParams: { [string]: Params | null } = {}
   const matchedRemaining: { [string]: string } = {}
+  const matchedSegment: { [string]: string } = {}
   let _remaining = url
 
   const path = await findPath(
     (node: RouteStateTreeNode<*, *>) => {
-      const { matched, params, remaining } = node.value.matcher(_remaining)
+      const { matched, params, remaining, segment } = node.value.matcher(_remaining)
       matchedParams[node.value.key] = params
       matchedRemaining[node.value.key] = remaining
+      matchedSegment[node.value.key] = segment
       _remaining = remaining
       return Promise.resolve(matched)
     },
@@ -29,6 +31,7 @@ export default async function findPathFromRoot(
 
   return path.map(node => ({
     node,
+    segment: matchedSegment[node.value.key] || '',
     remaining: matchedRemaining[node.value.key] || '',
     params: matchedParams[node.value.key] || {}
   }))

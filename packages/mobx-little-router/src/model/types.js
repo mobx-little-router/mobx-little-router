@@ -48,12 +48,12 @@ export type RedirectConfig<D> = {
 export type LoadChildrenConfigFn<D> = () => Promise<Config<D>[]>
 
 export type GuardFn = (
-  node: ActivatedRoute<*, *>,
+  node: Route<*, *>,
   nav: Navigation
 ) => boolean | Promise<void>
 
 export type LifecycleFn = (
-  node: ActivatedRoute<*, *>,
+  node: Route<*, *>,
   nav: Navigation
 ) => Promise<void>
 
@@ -86,11 +86,12 @@ export type MatchResult<C, D> = {
   params: Params
 }
 
-export type ActivatedRoute<C,D> = {
+export type Route<C,D> = {
   key: string,
   node: RouteStateTreeNode<C, D>,
   data: D,
   context: C,
   params: Params,
+  segment: string, // This is the matched segment from URL. e.g. "/123" for ":id"
   onTransition: null | TransitionFn
 }

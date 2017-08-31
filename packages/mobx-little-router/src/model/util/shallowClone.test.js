@@ -1,10 +1,10 @@
 // @flow
-import createRoute from '../createRoute'
+import createRouteStateTreeNode from '../createRouteStateTreeNode'
 import shallowClone from './shallowClone'
 
 describe('shallowClone', () => {
   test('shallowly copies value properties and children', () => {
-    const a = createRoute({
+    const a = createRouteStateTreeNode({
       path: 'a',
       children: [
         {

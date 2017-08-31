@@ -3,11 +3,11 @@ import type { IObservableArray } from 'mobx'
 import { extendObservable, runInAction, computed, observable } from 'mobx'
 import type { ObservableMap } from 'mobx'
 import RouterStateTree from './RouterStateTree'
-import type { Location, ActivatedRoute, RouteStateTreeNode, RouteValue, Params } from './types'
+import type { Location, Route, RouteStateTreeNode, RouteValue, Params } from './types'
 
 type RouteValueChange = $Shape<RouteValue<*, *>>
 
-type SerializedActivatedRoute = {
+type SerializedRoute = {
   key: string,
   params: Params,
   context: any,
@@ -24,11 +24,11 @@ class RouterStore {
   cache: ObservableMap<RouteStateTreeNode<*, *>>
 
   // Keep a list of activated nodes so we can track differences when transitioning to a new state.
-  nodes: IObservableArray<ActivatedRoute<*, *>>
-  prevNodes: IObservableArray<ActivatedRoute<*, *>>
+  routes: IObservableArray<Route<*, *>>
+  prevRoutes: IObservableArray<Route<*, *>>
 
-  _activatedRoutes: IObservableArray<SerializedActivatedRoute>
-  _prevActivatedRoutes: IObservableArray<SerializedActivatedRoute>
+  _serializedRoutes: IObservableArray<SerializedRoute>
+  _serializedPrevRouts: IObservableArray<SerializedRoute>
 
   constructor(root: RouteStateTreeNode<*, *>, children: void | RouteStateTreeNode<*, *>[]) {
     this.state = new RouterStateTree(root)
@@ -37,10 +37,10 @@ class RouterStore {
       location: {},
       error: null,
       cache: observable.map({ [root.value.key]: root }),
-      _activatedRoutes: observable.array([]),
-      _prevActivatedRoutes: observable.array([]),
-      nodes: computed(() => this.toActivatedRoutes(this._activatedRoutes)),
-      prevNodes: computed(() => this.toActivatedRoutes(this._prevActivatedRoutes))
+      _serializedRoutes: observable.array([]),
+      _serializedPrevRouts: observable.array([]),
+      routes: computed(() => this.toRoutes(this._serializedRoutes)),
+      prevRoutes: computed(() => this.toRoutes(this._serializedPrevRouts))
     })
 
     if (children) {
@@ -85,18 +85,18 @@ class RouterStore {
     })
   }
 
-  updateActivatedRoutes(nodes: ActivatedRoute<*, *>[]) {
+  updateRoutes(routes: Route<*, *>[]) {
     runInAction(() => {
-      this._prevActivatedRoutes.replace(this._activatedRoutes.slice())
-      this._activatedRoutes.replace(
-        nodes.map(x => ({
+      this._serializedPrevRouts.replace(this._serializedRoutes.slice())
+      this._serializedRoutes.replace(
+        routes.map(x => ({
           params: x.params,
           context: x.context,
           data: x.data,
           key: x.key
         }))
       )
-      // nodes.forEach(x => {
+      // routes.forEach(x => {
       //   this.cache.set(x.value.key, x)
       // })
     })
@@ -105,14 +105,14 @@ class RouterStore {
   commit(nextLocation: Location) {
     runInAction(() => {
       this.location = nextLocation
-      this._prevActivatedRoutes.replace([])
+      this._serializedPrevRouts.replace([])
     })
   }
 
   rollback() {
     runInAction(() => {
-      this._prevActivatedRoutes.replace(this._prevActivatedRoutes.slice())
-      this._prevActivatedRoutes.replace([])
+      this._serializedPrevRouts.replace(this._serializedPrevRouts.slice())
+      this._serializedPrevRouts.replace([])
     })
   }
 
@@ -122,7 +122,7 @@ class RouterStore {
     })
   }
 
-  toActivatedRoutes(serialized: IObservableArray<SerializedActivatedRoute>) {
+  toRoutes(serialized: IObservableArray<SerializedRoute>) {
       return serialized.map(x => {
         const node = this.cache.get(x.key)
         return {

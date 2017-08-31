@@ -2,8 +2,8 @@
 import { autorun, toJS } from 'mobx'
 import RouterStore from '../model/RouterStore'
 import Scheduler from './Scheduler'
+import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
 import createRoute from '../model/createRoute'
-import createActivatedRoute from '../model/createActivatedRoute'
 import { EventTypes } from './events'
 import { __, partialRight, scan } from 'ramda'
 
@@ -65,10 +65,10 @@ describe('Scheduler', () => {
       expect(spy.mock.calls[2][0].params).toEqual({ id: '123' })
 
       // Nodes are marked as active
-      expect(store.nodes.length).toEqual(4)
+      expect(store.routes.length).toEqual(4)
 
-      expect(store.nodes.map(route => route.node.value.path)).toEqual(['', '', 'todos', ':id'])
-      expect(store.nodes.map(route => route.params)).toEqual([
+      expect(store.routes.map(route => route.node.value.path)).toEqual(['', '', 'todos', ':id'])
+      expect(store.routes.map(route => route.params)).toEqual([
         {},
         {},
         {},
@@ -82,7 +82,7 @@ describe('Scheduler', () => {
       const [root, _, todosRoot, todosView] = scanChildren(store.state.root, [0, 1, 1])
       updateNode(todosRoot, { canDeactivate: rootSpy })
       updateNode(todosView, { canDeactivate: viewSpy })
-      store.updateActivatedRoutes([root, todosRoot, todosView].map(partialRight(createActivatedRoute, [{}])))
+      store.updateRoutes([root, todosRoot, todosView].map(partialRight(createRoute, [{}])))
       store.location.pathname = '/todos/123'
       scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/' } })
 
@@ -103,7 +103,7 @@ describe('Scheduler', () => {
       updateNode(todosRoot, { canDeactivate: spy })
       updateNode(todosView, { canDeactivate: spy })
       store.location.pathname = '/todos/123'
-      store.updateActivatedRoutes([root, todosRoot, todosView].map(partialRight(createActivatedRoute, [{}])))
+      store.updateRoutes([root, todosRoot, todosView].map(partialRight(createRoute, [{}])))
       scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/' } })
 
       await scheduler.processNextNavigation()
@@ -119,8 +119,8 @@ describe('Scheduler', () => {
       expect(spy.mock.calls[1][0].key).toEqual(todosRoot.value.key)
 
       // Nodes are marked as active
-      expect(store.nodes.length).toEqual(2)
-      expect(store.nodes.map(route => route.node.value.path)).toEqual(['', ''])
+      expect(store.routes.length).toEqual(2)
+      expect(store.routes.map(route => route.node.value.path)).toEqual(['', ''])
     })
 
     describe('Async activation and deactivation', () => {
@@ -151,7 +151,7 @@ describe('Scheduler', () => {
         const [_, appRootNode, todosRoot] = scanChildren(store.state.root, [0, 0])
         updateNode(todosRoot, { canDeactivate: spy })
         store.location.pathname = '/todos/'
-        store.updateActivatedRoutes([store.state.root, appRootNode, todosRoot].map(partialRight(createActivatedRoute, [{}])))
+        store.updateRoutes([store.state.root, appRootNode, todosRoot].map(partialRight(createRoute, [{}])))
         scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/' } })
 
         await scheduler.processNextNavigation()
@@ -164,7 +164,7 @@ describe('Scheduler', () => {
         const [_, appRootNode, todosRoot] = scanChildren(store.state.root, [0, 0])
         updateNode(todosRoot, { canDeactivate: spy })
         store.location.pathname = '/todos'
-        store.updateActivatedRoutes([store.state.root, appRootNode, todosRoot].map(partialRight(createActivatedRoute, [{}])))
+        store.updateRoutes([store.state.root, appRootNode, todosRoot].map(partialRight(createRoute, [{}])))
         scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/' } })
 
         await scheduler.processNextNavigation()
@@ -277,7 +277,7 @@ describe('Scheduler', () => {
 
     test('Can cancel navigation from willDeactivate', async () => {
       store.location.pathname = '/todos/'
-      store.updateActivatedRoutes([store.state.root, todosRoot].map(partialRight(createActivatedRoute, [{}])))
+      store.updateRoutes([store.state.root, todosRoot].map(partialRight(createRoute, [{}])))
 
       scheduler.scheduleNavigation({ type: 'PUSH', sequence: 0, to: { pathname: '/' } })
 
@@ -314,7 +314,7 @@ describe('Scheduler', () => {
       updateNode(todosView, {
         loadChildren: () =>
           Promise.resolve([
-            createRoute({
+            createRouteStateTreeNode({
               path: 'edit',
               loadChildren: () => Promise.resolve([{ path: 'preview' }])
             })
@@ -465,16 +465,16 @@ describe('Scheduler', () => {
       const listTransitionSpy = jest.fn(
         () =>
           new Promise(res => {
-            prevNodesDuringListTransition = store.prevNodes.slice()
-            nodesDuringListTransition = store.nodes.slice()
+            prevNodesDuringListTransition = store.prevRoutes.slice()
+            nodesDuringListTransition = store.routes.slice()
             res()
           })
       )
       const viewTransitionSpy = jest.fn(
         () =>
           new Promise(res => {
-            prevNodesDuringViewTransition = store.prevNodes.slice()
-            nodesDuringViewTransition = store.nodes.slice()
+            prevNodesDuringViewTransition = store.prevRoutes.slice()
+            nodesDuringViewTransition = store.routes.slice()
             res()
           })
       )
@@ -502,7 +502,7 @@ describe('Scheduler', () => {
         ':id'
       ])
       expect(nodesDuringViewTransition[3].params.id).toEqual('1')
-      expect(store.prevNodes.length).toBe(0) // Previous nodes are cleared after location ends.
+      expect(store.prevRoutes.length).toBe(0) // Previous nodes are cleared after location ends.
     })
   })
 
@@ -512,14 +512,14 @@ describe('Scheduler', () => {
 
   function updateLocation(location: *, nodes: *) {
     store.location.pathname = location
-    store.updateActivatedRoutes(nodes.map(partialRight(createActivatedRoute, [{}])))
+    store.updateRoutes(nodes.map(partialRight(createRoute, [{}])))
   }
 })
 
 function createStore() {
-  const store = new RouterStore(createRoute({ path: '' }, () => ({ message: 'Hello' })))
+  const store = new RouterStore(createRouteStateTreeNode({ path: '' }, () => ({ message: 'Hello' })))
   store.replaceChildren(store.state.root, [
-    createRoute({
+    createRouteStateTreeNode({
       path: '',
       children: [
         {

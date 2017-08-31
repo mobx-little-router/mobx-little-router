@@ -5,7 +5,7 @@ export type MatchFn = (url: string) => {
   matched: boolean,
   params: null | Object,
   segment: string,
-  remaining: void | string
+  remaining: string
 }
 
 export function partial(path: string): MatchFn {

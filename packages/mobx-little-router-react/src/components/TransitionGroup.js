@@ -1,5 +1,5 @@
 // @flow
-import type { ActivatedRoute } from 'mobx-little-router'
+import type { Route } from 'mobx-little-router'
 import React, { createElement, Component } from 'react'
 import { extendObservable, action } from 'mobx'
 import { observer } from 'mobx-react'
@@ -88,7 +88,7 @@ class TransitionGroup extends Component {
   }
 }
 
-const generateKey = (node: ActivatedRoute<*, *>) => {
+const generateKey = (node: Route<*, *>) => {
   return [
     node.key,
     Object.keys(node.params).map(key => `${key}:${node.params[key]}`)
