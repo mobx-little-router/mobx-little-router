@@ -189,7 +189,7 @@ export default class Scheduler {
 function toRoutes(store, nextPath) {
   return nextPath.map(({ node, params, segment }) => {
     const existing = store.routes.find(x => {
-      return x.key === node.value.key
+      return x.key === node.value.key + segment
     })
     return existing || createRoute(node, params, segment)
   })
