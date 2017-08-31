@@ -3,9 +3,9 @@ import type { RouteNode } from '../model/types'
 import Navigation from '../model/Navigation'
 
 export class TransitionFailure  {
-  node: RouteNode<*>
+  node: RouteNode<*, *>
   navigation: null | Navigation
-  constructor(node: RouteNode<*>, navigation: ?Navigation) {
+  constructor(node: RouteNode<*, *>, navigation: ?Navigation) {
     this.node = node
     this.navigation = navigation || null
   }

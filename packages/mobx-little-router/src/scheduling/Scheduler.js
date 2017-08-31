@@ -140,7 +140,7 @@ export default class Scheduler {
   // This method tries to resolve dynamic children on the currently matching node.
   // If there are children available, load them and then continue by resolving `true`.
   // Otherwise, abort by resolving `false`. Rejection means an unexpected error.
-  handleLeafNodeReached = async (lastMatchedNode: RouteNode<*>) => {
+  handleLeafNodeReached = async (lastMatchedNode: RouteNode<*, *>) => {
     // If there are dynamic children, try to load and continue.
     if (typeof lastMatchedNode.value.loadChildren === 'function') {
       const children = await lastMatchedNode.value.loadChildren()
@@ -157,7 +157,7 @@ export default class Scheduler {
   // If one guard fails, then the entire function rejects.
   assertTransitionOk = async (
     type: 'canDeactivate' | 'canActivate' | 'willDeactivate' | 'willActivate',
-    nodes: RouteNode<*>[],
+    nodes: RouteNode<*, *>[],
     navigation: Navigation
   ): Promise<void> => {
     for (const node of nodes) {
@@ -187,7 +187,7 @@ function toRouteNodes(nextPath) {
   })
 }
 
-async function diffActiveNodes(currNodes: RouteNode<*>[], nextNodes: RouteNode<*>[]) {
+async function diffActiveNodes(currNodes: RouteNode<*, *>[], nextNodes: RouteNode<*, *>[]) {
   try {
     const deactivating = differenceWith(areRoutesEqual, currNodes, nextNodes).reverse()
 

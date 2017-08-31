@@ -21,7 +21,7 @@ class Router {
 
   constructor(
     historyCreator: HistoryCreatorFn | [HistoryCreatorFn, Object],
-    config: Config[],
+    config: Config<*>[],
     getContext: void | (() => any)
   ) {
     this.disposers = []
@@ -38,7 +38,9 @@ class Router {
     extendObservable(this, {
       navigationEvent: computed(() => {
         const { event } = this.scheduler
-        return event !== null ? event.nextNavigation || null : null
+        return event !== null
+          ? event.nextNavigation !== null ? event.nextNavigation : null
+          : null
       })
     })
   }
@@ -64,7 +66,7 @@ class Router {
       await this.navigated()
 
       callback && callback(this)
-    } catch(err) {
+    } catch (err) {
       console.error(err)
       this.stop()
     }

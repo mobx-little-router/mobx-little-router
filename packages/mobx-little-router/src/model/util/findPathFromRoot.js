@@ -4,19 +4,19 @@ import type { MatchResult, Params, RouteNode } from '../types'
 
 type ShouldContinue = boolean
 
-export type OnExhaustedFn = (node: RouteNode<*>) => Promise<ShouldContinue>
+export type OnExhaustedFn = (node: RouteNode<*, *>) => Promise<ShouldContinue>
 
 export default async function findPathFromRoot(
-  node: RouteNode<*>,
+  node: RouteNode<*, *>,
   url: string,
   onExhausted: OnExhaustedFn
-): Promise<MatchResult[]> {
+): Promise<MatchResult<*, *>[]> {
   const matchedParams: { [string]: Params | null } = {}
   const matchedRemaining: { [string]: string } = {}
   let _remaining = url
 
   const path = await findPath(
-    (node: RouteNode<*>) => {
+    (node: RouteNode<*, *>) => {
       const { matched, params, remaining } = node.value.matcher(_remaining)
       matchedParams[node.value.key] = params
       matchedRemaining[node.value.key] = remaining

@@ -19,15 +19,14 @@ export type Location = $Shape<
 
 export type Href = Location | string
 
-export type Config = BasicConfig | RedirectConfig
+export type Config<D> = BasicConfig<D> | RedirectConfig<D>
 
-export type BasicConfig = {
+export type BasicConfig<D> = {
   path: string,
-  data?: Object,
-  params?: Object,
+  getData?: () => D,
   key?: string,
-  children?: Config[],
-  loadChildren?: LoadChildrenConfigFn,
+  children?: Config<D>[],
+  loadChildren?: LoadChildrenConfigFn<D>,
   match?: 'full' | 'partial',
   canActivate?: GuardFn,
   canDeactivate?: GuardFn,
@@ -37,34 +36,37 @@ export type BasicConfig = {
   onTransition?: TransitionFn
 }
 
-export type RedirectConfig = {
+export type RedirectConfig<D> = {
   path: string,
   redirectTo: Href,
+  getData?: () => D,
   key?: string,
-  params?: Object,
   match?: 'full' | 'partial',
   children?: empty
 }
 
-export type LoadChildrenConfigFn = () => Promise<Config[]>
+export type LoadChildrenConfigFn<D> = () => Promise<Config<D>[]>
 
-export type GuardFn = (node: RouteNode<*>, nav: Navigation, context: Object) => boolean | Promise<void>
+export type GuardFn = (
+  node: RouteNode<*, *>,
+  nav: Navigation,
+  context: Object
+) => boolean | Promise<void>
 
-export type LifecycleFn = (node: RouteNode<*>, nav: Navigation, context: Object) => Promise<void>
+export type LifecycleFn = (
+  node: RouteNode<*, *>,
+  nav: Navigation,
+  context: Object
+) => Promise<void>
 
-export type ErrorHandler = (node: RouteNode<*>, context: Object) => Promise<void>
+export type ErrorHandler = (node: RouteNode<*, *>, context: Object) => Promise<void>
 
-export type LoadChildrenRouteNode = () => Promise<RouteNode<*>[]>
+export type LoadChildrenRouteNode = () => Promise<RouteNode<*, *>[]>
 
-export type RouteValue<C> = {
+export type RouteValue<C, D> = {
   key: string,
   // Original path provided to this route node.
   path: string,
-  // Matched path parameters.
-  params: Params,
-  // Extra data that can be used to provide view specific functionality.
-  // e.g. Route component, loading component, etc.
-  data: Object,
   matcher: MatchFn,
   loadChildren?: null | LoadChildrenRouteNode,
   canActivate: GuardFn,
@@ -73,13 +75,14 @@ export type RouteValue<C> = {
   willDeactivate: LifecycleFn,
   onError: null | ErrorHandler,
   onTransition: null | TransitionFn,
-  getContext: () => C
+  getContext: () => C,
+  getData: () => D
 }
 
-export type RouteNode<C> = ITreeNode<RouteValue<C>>
+export type RouteNode<C, D> = ITreeNode<RouteValue<C, D>>
 
-export type MatchResult = {
-  node: RouteNode<*>,
+export type MatchResult<C, D> = {
+  node: RouteNode<C, D>,
   remaining: string,
   params: Params
 }

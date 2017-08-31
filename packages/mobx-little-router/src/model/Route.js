@@ -26,7 +26,7 @@ const validate = createValidator({
 
 type GetContext = () => *
 
-export default function Route(config: Config, getContext: ?GetContext): RouteNode<*> {
+export default function Route(config: Config, getContext: ?GetContext): RouteNode<*, *> {
   const matcher = config.match ? m[config.match] : m.partial
 
   validate(config)

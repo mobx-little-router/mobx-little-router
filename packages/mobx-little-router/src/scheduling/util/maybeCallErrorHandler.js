@@ -4,7 +4,7 @@ import type { MatchResult } from '../../model/types'
 /*
  * Tries to bubble error from bottom to top until either one node handles it, or else rejects.
  */
-export default function maybeCallErrorHandler(path: MatchResult[]) {
+export default function maybeCallErrorHandler(path: MatchResult<*, *>[]) {
   // Try to recover from error by bubbling the error from last matched no, to the first.
   let idx = path.length - 1
   // Default handler will reject with error.
