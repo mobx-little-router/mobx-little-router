@@ -23,6 +23,7 @@ class TransitionGroup extends Component {
   }
 
   transitionState: string
+  innerRefs: Array<any> = []
 
   constructor(props) {
     super(props)
@@ -80,8 +81,13 @@ class TransitionGroup extends Component {
 
     return (
       <div className="transition-group">
-        {routes.map(({ route, className }) =>
-          createElement(route.data.component, { key: route.key, params: route.params, className })
+        {routes.map(({ route, className }, idx) =>
+          createElement(route.data.component, {
+            key: route.key,
+            params: route.params,
+            className,
+            ref: (ref) => this.innerRefs[idx] = ref
+          })
         )}
       </div>
     )
