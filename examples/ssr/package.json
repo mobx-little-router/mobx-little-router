@@ -1,0 +1,21 @@
+{
+  "name": "ssr",
+  "private": true,
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.15.4",
+    "history": "^4.7.2",
+    "mobx": "^3.2.2",
+    "mobx-little-router": "*",
+    "mobx-little-router-react": "*",
+    "mobx-react": "^4.2.2",
+    "node-fetch": "^1.7.2",
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1"
+  },
+  "scripts": {
+    "start": "node index"
+  }
+}
