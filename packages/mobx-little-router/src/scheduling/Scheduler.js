@@ -1,7 +1,7 @@
 // @flow
 import type { Action } from 'history'
 import { autorun, extendObservable, runInAction } from 'mobx'
-import type { RouteNode, ActivatedRoute } from '../model/types'
+import type { RouteStateTreeNode, ActivatedRoute } from '../model/types'
 import type RouterStore from '../model/RouterStore'
 import createActivatedRoute from '../model/createActivatedRoute'
 import areRoutesEqual from '../model/util/areRoutesEqual'
@@ -146,7 +146,7 @@ export default class Scheduler {
   // This method tries to resolve dynamic children on the currently matching node.
   // If there are children available, load them and then continue by resolving `true`.
   // Otherwise, abort by resolving `false`. Rejection means an unexpected error.
-  handleLeafNodeReached = async (lastMatchedNode: RouteNode<*, *>) => {
+  handleLeafNodeReached = async (lastMatchedNode: RouteStateTreeNode<*, *>) => {
     // If there are dynamic children, try to load and continue.
     if (typeof lastMatchedNode.value.loadChildren === 'function') {
       const children = await lastMatchedNode.value.loadChildren()

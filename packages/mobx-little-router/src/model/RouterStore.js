@@ -3,7 +3,7 @@ import type { IObservableArray } from 'mobx'
 import { extendObservable, runInAction, computed, observable } from 'mobx'
 import type { ObservableMap } from 'mobx'
 import RouterStateTree from './RouterStateTree'
-import type { Location, ActivatedRoute, RouteNode, RouteValue, Params } from './types'
+import type { Location, ActivatedRoute, RouteStateTreeNode, RouteValue, Params } from './types'
 
 type RouteValueChange = $Shape<RouteValue<*, *>>
 
@@ -21,7 +21,7 @@ class RouterStore {
 
   // Create a map of all nodes in tree so we can perform faster lookup.
   // Instances should be exactly the same as in state tree.
-  cache: ObservableMap<RouteNode<*, *>>
+  cache: ObservableMap<RouteStateTreeNode<*, *>>
 
   // Keep a list of activated nodes so we can track differences when transitioning to a new state.
   nodes: IObservableArray<ActivatedRoute<*, *>>
@@ -30,7 +30,7 @@ class RouterStore {
   _activatedRoutes: IObservableArray<SerializedActivatedRoute>
   _prevActivatedRoutes: IObservableArray<SerializedActivatedRoute>
 
-  constructor(root: RouteNode<*, *>, children: void | RouteNode<*, *>[]) {
+  constructor(root: RouteStateTreeNode<*, *>, children: void | RouteStateTreeNode<*, *>[]) {
     this.state = new RouterStateTree(root)
 
     extendObservable(this, {
@@ -51,7 +51,7 @@ class RouterStore {
   /* Queries */
 
   // Ensures we always get the matched copy from state.
-  getNode(x: RouteNode<*, *>): RouteNode<*, *> {
+  getNode(x: RouteStateTreeNode<*, *>): RouteStateTreeNode<*, *> {
     const existing = this.cache.get(x.value.key)
     if (existing) {
       return existing
@@ -62,7 +62,7 @@ class RouterStore {
 
   /* Mutations */
 
-  replaceChildren(parent: RouteNode<*, *>, nodes: RouteNode<*, *>[]) {
+  replaceChildren(parent: RouteStateTreeNode<*, *>, nodes: RouteStateTreeNode<*, *>[]) {
     const existing = this.getNode(parent)
     nodes.forEach(x => {
       runInAction(() => {
@@ -78,7 +78,7 @@ class RouterStore {
     })
   }
 
-  updateNode(node: RouteNode<*, *>, updates: RouteValueChange) {
+  updateNode(node: RouteStateTreeNode<*, *>, updates: RouteValueChange) {
     const existing = this.getNode(node)
     runInAction(() => {
       Object.assign(existing.value, updates)

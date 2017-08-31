@@ -1,5 +1,5 @@
 // @flow
-import type { ActivatedRoute, RouteNode } from '../model/types'
+import type { ActivatedRoute } from '../model/types'
 import Navigation from '../model/Navigation'
 
 export class TransitionFailure  {

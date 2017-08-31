@@ -1,9 +1,9 @@
 // @flow
 import type {
   Config,
-  RouteNode,
+  RouteStateTreeNode,
   LoadChildrenConfigFn,
-  LoadChildrenRouteNode
+  LoadChildrenRouteStateTreeNode
 } from './types'
 import { TreeNode } from '../util/tree'
 import createKey from '../util/createKey'
@@ -26,7 +26,7 @@ const validate = createValidator({
 
 type GetContext = () => *
 
-export default function createRoute(config: Config<*>, getContext: ?GetContext): RouteNode<*, *> {
+export default function createRoute(config: Config<*>, getContext: ?GetContext): RouteStateTreeNode<*, *> {
   const matcher = config.match ? m[config.match] : m.partial
 
   validate(config)
@@ -52,7 +52,7 @@ export default function createRoute(config: Config<*>, getContext: ?GetContext):
       data: typeof config.data === 'object' ? config.data || {} : {},
       params: config.params !== null ? config.params: {},
       loadChildren: typeof config.loadChildren === 'function'
-        ? toLoadRouteNodeChildren(config.loadChildren)
+        ? toLoadRouteStateTreeNodeChildren(config.loadChildren)
         : null,
       // Guards
       canActivate: typeof config.canActivate === 'function' ? config.canActivate : nop,
@@ -75,7 +75,7 @@ export default function createRoute(config: Config<*>, getContext: ?GetContext):
   )
 }
 
-function toLoadRouteNodeChildren(f: void | LoadChildrenConfigFn<*>): null | LoadChildrenRouteNode {
+function toLoadRouteStateTreeNodeChildren(f: void | LoadChildrenConfigFn<*>): null | LoadChildrenRouteStateTreeNode {
   const g = f // Avoid re-binding type errors on f.
   if (typeof g === 'undefined') {
     return null

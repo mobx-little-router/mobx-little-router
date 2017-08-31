@@ -1,8 +1,8 @@
 // @flow
 import { observable } from 'mobx'
-import type { Params, ActivatedRoute, RouteNode } from './types'
+import type { Params, ActivatedRoute, RouteStateTreeNode } from './types'
 
-export default function createActivatedRoute<C,D>(node: RouteNode<C,D>, params: Params): ActivatedRoute<C,D> {
+export default function createActivatedRoute<C,D>(node: RouteStateTreeNode<C,D>, params: Params): ActivatedRoute<C,D> {
   return observable({
     node: node,
     key: node.value.key,

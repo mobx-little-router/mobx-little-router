@@ -57,16 +57,16 @@ export type LifecycleFn = (
   nav: Navigation
 ) => Promise<void>
 
-export type ErrorHandler = (node: RouteNode<*, *>, context: Object) => Promise<void>
+export type ErrorHandler = (node: RouteStateTreeNode<*, *>, context: Object) => Promise<void>
 
-export type LoadChildrenRouteNode = () => Promise<RouteNode<*, *>[]>
+export type LoadChildrenRouteStateTreeNode = () => Promise<RouteStateTreeNode<*, *>[]>
 
 export type RouteValue<C, D> = {
   key: string,
   // Original path provided to this route node.
   path: string,
   matcher: MatchFn,
-  loadChildren?: null | LoadChildrenRouteNode,
+  loadChildren?: null | LoadChildrenRouteStateTreeNode,
   canActivate: GuardFn,
   canDeactivate: GuardFn,
   willActivate: LifecycleFn,
@@ -77,17 +77,18 @@ export type RouteValue<C, D> = {
   getData: () => D
 }
 
-export type RouteNode<C, D> = ITreeNode<RouteValue<C, D>>
+export type RouteStateTreeNode<C, D> = ITreeNode<RouteValue<C, D>>
 
 export type MatchResult<C, D> = {
-  node: RouteNode<C, D>,
+  node: RouteStateTreeNode<C, D>,
   remaining: string,
+  segment: string,
   params: Params
 }
 
 export type ActivatedRoute<C,D> = {
   key: string,
-  node: RouteNode<C, D>,
+  node: RouteStateTreeNode<C, D>,
   data: D,
   context: C,
   params: Params,

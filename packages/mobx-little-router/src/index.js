@@ -24,7 +24,7 @@ export type {
   Location,
   Query,
   Params,
-  RouteNode,
+  RouteStateTreeNode,
   RouteValue
 } from './model/types'
 
