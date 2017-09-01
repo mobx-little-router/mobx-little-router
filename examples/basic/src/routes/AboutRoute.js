@@ -22,7 +22,8 @@ const Container = styled.div`
   width: 100vw;
   height: 100vh;
   background-color: white;
-  z-index: 2000;
+  z-index: 1;
+  top: 90px;
 
   &.entering {
     transition: transform 400ms ease-out;

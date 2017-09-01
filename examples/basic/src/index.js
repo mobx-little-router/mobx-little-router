@@ -31,17 +31,7 @@ const router = install({
       getData: () => {
         return { component: AboutRoute, isTransitioned: false }
       },
-      onTransition: ({ target }) => {
-        delay(400).then(() => {
-          mobx.runInAction(() => {
-            target.data.isTransitioned = true
-          })
-        })
-
-        return new Promise(res => {
-          mobx.when(() => target.data.isTransitioned, res)
-        })
-      }
+      onTransition: () => delay(400)
     },
     {
       path: 'contact',
