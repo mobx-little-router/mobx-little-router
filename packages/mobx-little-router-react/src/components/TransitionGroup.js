@@ -43,11 +43,7 @@ class TransitionGroup extends Component {
           ? el
           : el.getElementsByClassName('transition-ref')[0]
     
-        if (target) {
-          console.log("target", target)
-          
-          target.scrollTop
-
+        if (target) {          
           const handleTransitionEnd = (ev) => {
             console.log("-------transition end--------", el)
             target.removeEventListener('transitionend', handleTransitionEnd)
