@@ -39,22 +39,22 @@ class TransitionGroup extends Component {
       const el = findDOMNode(ref)
 
       if (el) {
-        const target = el.classList.contains('transition-ref')
-          ? el
-          : el.getElementsByClassName('transition-ref')[0]
+        // Find element with data-transition-ref attribute to add transitionend event listener
+        const target = el.parentElement.querySelector('[data-transition-ref]')
     
-        if (target) {          
+        if (target) {         
           const handleTransitionEnd = (ev) => {
-            console.log("-------transition end--------", el)
+            console.log("-------transition end--------", target)
             target.removeEventListener('transitionend', handleTransitionEnd)
           }
 
           target.addEventListener('transitionend', handleTransitionEnd, false)
+        
+          // Only start the transition if we find an element to transition
+          this.transitionState = 'started'
         }
       }
     })
-
-    this.transitionState = 'started'
   })
 
   stop = action(() => {

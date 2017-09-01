@@ -31,12 +31,15 @@ const router = install({
       getData: () => {
         return { component: AboutRoute, isTransitioned: false }
       },
-      onTransition: () => delay(400)
+      onTransition: (route, transition) => {
+        console.log("--about transition", route, transition)
+        return delay(500)
+      }
     },
     {
       path: 'contact',
       getData: () => ({ component: ContactRoute }),
-      onTransition: () => delay(400)
+      onTransition: () => delay(500)
     },
     {
       path: 'shows',
@@ -53,10 +56,7 @@ const router = install({
             outlet: 'modal'
           }
         },
-        onTransition: (route, transition) => {
-          console.log(route, transition)
-          return delay(400)
-        }
+        onTransition: (route, transition) => delay(400)
       }]
     },
     {

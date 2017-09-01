@@ -24,7 +24,7 @@ class Modal extends Component {
       <Container className={cx('modal', className)}>
         <ModalOverlay className={'modal-overlay'} to={closePath}/>
         <ModalContainer>
-          <ModalDialog className={cx('modal-dialog', 'transition-ref')}>
+          <ModalDialog className={'modal-dialog'} data-transition-ref>
             <CloseButton to={closePath} />
 
             {children}
