@@ -64,7 +64,7 @@ class RouterStore {
       const existingRoute = this.routes.find(
         x => x.key === `${element.node.value.key}${element.segment}`
       )
-      return existingRoute || createRoute(element.node, element.params, element.segment)
+      return existingRoute || observable(createRoute(element.node, element.params, element.segment))
     })
   }
 
