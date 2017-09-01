@@ -1,6 +1,6 @@
 // @flow
 import { findPath } from '../../util/tree'
-import type { MatchResult, Params, RouteStateTreeNode } from '../types'
+import type { PathElement, Params, RouteStateTreeNode } from '../types'
 
 type ShouldContinue = boolean
 
@@ -10,7 +10,7 @@ export default async function findPathFromRoot(
   node: RouteStateTreeNode<*, *>,
   url: string,
   onExhausted: OnExhaustedFn
-): Promise<MatchResult<*, *>[]> {
+): Promise<PathElement<*, *>[]> {
   const matchedParams: { [string]: Params | null } = {}
   const matchedRemaining: { [string]: string } = {}
   const matchedSegment: { [string]: string } = {}

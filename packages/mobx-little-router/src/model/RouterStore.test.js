@@ -1,5 +1,6 @@
 // @flow
 import { autorun } from 'mobx'
+import type { Route, PathElement } from './types'
 import RouterStore from './RouterStore'
 import createRouteStateTreeNode from './createRouteStateTreeNode'
 import createRoute from './createRoute'
@@ -66,9 +67,9 @@ describe('RouterStore', () => {
       message: 'Hello'
     })
 
-    expect(() => store.replaceChildren(createRouteStateTreeNode({ path: '' }), [])).toThrow(
-      /Node not found/
-    )
+    expect(() =>
+      store.replaceChildren(createRouteStateTreeNode({ path: '' }), [])
+    ).toThrow(/Node not found/)
   })
 
   test('Updating current nodes', () => {
@@ -94,9 +95,13 @@ describe('RouterStore', () => {
       })
     )
     store.updateRoutes([
-      createRoute(a, {
-        x: '2'
-      }, '2')
+      createRoute(
+        a,
+        {
+          x: '2'
+        },
+        '2'
+      )
     ])
 
     expect(store.routes[0]).toEqual(
@@ -138,5 +143,49 @@ describe('RouterStore', () => {
         {}
       )
     }).toThrow(/Node not found/)
+  })
+
+  test('Building routes from path', () => {
+    const spy = jest.fn(() => Promise.resolve())
+    const dataSpy = jest.fn(() => Promise.resolve())
+    const a = createRouteStateTreeNode({ path: 'a', getData: () => dataSpy('a') })
+    const b = createRouteStateTreeNode({ path: 'b', getData: () => dataSpy('b') })
+    const c = createRouteStateTreeNode({ path: 'c', getData: () => dataSpy('c') })
+    const currRoutes: Route<*, *>[] = [
+      {
+        key: `${a.value.key}/a/1`,
+        node: a,
+        context: {},
+        data: {},
+        params: { x: '1' },
+        onTransition: spy,
+        segment: '/a/1'
+      },
+      {
+        key: `${b.value.key}/b/2`,
+        node: b,
+        context: {},
+        data: {},
+        params: { y: '2' },
+        onTransition: spy,
+        segment: '/b/2'
+      }
+    ]
+    const nextPath: PathElement<*, *>[] = [
+      { node: a, params: { x: '3' }, segment: '/a/3', remaining: '/b/2/c/4' },
+      { node: b, params: { y: '2' }, segment: '/b/2', remaining: '/c/4' },
+      { node: c, params: { z: '4' }, segment: '/c/4', remaining: '' }
+    ]
+    store.routes.replace(currRoutes)
+
+    const nextRoutes = store.getNextRoutes(nextPath)
+
+    expect(dataSpy).toHaveBeenCalledTimes(2)
+    expect(dataSpy.mock.calls.map(x => x[0])).toEqual(['a', 'c']) // 'b' is not called since it did not change.
+
+    expect(nextRoutes.length).toEqual(3)
+    expect(nextRoutes[0]).not.toBe(store.routes[0])
+    expect(nextRoutes[1]).toBe(store.routes[1])
+    expect(nextRoutes[2]).toBeDefined() // Newly created route.
   })
 })

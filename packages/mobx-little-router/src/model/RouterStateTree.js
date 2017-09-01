@@ -1,7 +1,7 @@
 // @flow
 import { extendObservable } from 'mobx'
 import { findNode } from '../util/tree'
-import type { MatchResult, RouteStateTreeNode } from './types'
+import type { PathElement, RouteStateTreeNode } from './types'
 import findPathFromRoot from './util/findPathFromRoot'
 import type { OnExhaustedFn } from './util/findPathFromRoot'
 
@@ -21,7 +21,7 @@ export default class RouterStateTree {
   async pathFromRoot(
     url: string,
     onExhausted: OnExhaustedFn
-  ): Promise<MatchResult<*, *>[]> {
+  ): Promise<PathElement<*, *>[]> {
     return await findPathFromRoot(this.root, url, onExhausted)
   }
 }

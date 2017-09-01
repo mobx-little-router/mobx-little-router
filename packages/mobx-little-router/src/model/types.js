@@ -79,7 +79,7 @@ export type RouteValue<C, D> = {
 
 export type RouteStateTreeNode<C, D> = ITreeNode<RouteValue<C, D>>
 
-export type MatchResult<C, D> = {
+export type PathElement<C, D> = {
   node: RouteStateTreeNode<C, D>,
   remaining: string,
   segment: string,

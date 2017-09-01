@@ -1,19 +1,18 @@
 // @flow
 import type { IObservableArray } from 'mobx'
-import { extendObservable, runInAction, computed, observable } from 'mobx'
+import { extendObservable, runInAction, observable } from 'mobx'
 import type { ObservableMap } from 'mobx'
+import createRoute from './createRoute'
 import RouterStateTree from './RouterStateTree'
-import type { Location, Route, RouteStateTreeNode, RouteValue, Params } from './types'
+import type {
+  Location,
+  Route,
+  RouteStateTreeNode,
+  PathElement,
+  RouteValue
+} from './types'
 
 type RouteValueChange = $Shape<RouteValue<*, *>>
-
-type SerializedRoute = {
-  key: string,
-  nodeKey: string,
-  params: Params,
-  context: any,
-  data: any
-}
 
 class RouterStore {
   location: Location
@@ -23,25 +22,22 @@ class RouterStore {
   // Create a map of all nodes in tree so we can perform faster lookup.
   // Instances should be exactly the same as in state tree.
   cache: ObservableMap<RouteStateTreeNode<*, *>>
-
   // Keep a list of activated nodes so we can track differences when transitioning to a new state.
   routes: IObservableArray<Route<*, *>>
   prevRoutes: IObservableArray<Route<*, *>>
 
-  _serializedRoutes: IObservableArray<SerializedRoute>
-  _serializedPrevRouts: IObservableArray<SerializedRoute>
-
-  constructor(root: RouteStateTreeNode<*, *>, children: void | RouteStateTreeNode<*, *>[]) {
+  constructor(
+    root: RouteStateTreeNode<*, *>,
+    children: void | RouteStateTreeNode<*, *>[]
+  ) {
     this.state = new RouterStateTree(root)
 
     extendObservable(this, {
       location: {},
       error: null,
       cache: observable.map({ [root.value.key]: root }),
-      _serializedRoutes: observable.array([]),
-      _serializedPrevRouts: observable.array([]),
-      routes: computed(() => this.toRoutes(this._serializedRoutes)),
-      prevRoutes: computed(() => this.toRoutes(this._serializedPrevRouts))
+      routes: observable.array([]),
+      prevRoutes: observable.array([])
     })
 
     if (children) {
@@ -59,6 +55,17 @@ class RouterStore {
     } else {
       throw new Error('Node not found in state tree.')
     }
+  }
+
+  // Returns a list of the next routes from the matched path.
+  // If the route is not currently active or has changed, then it will be created from factory function.
+  getNextRoutes(path: PathElement<*, *>[]): Route<*, *>[] {
+    return path.map(element => {
+      const existingRoute = this.routes.find(
+        x => x.key === `${element.node.value.key}${element.segment}`
+      )
+      return existingRoute || createRoute(element.node, element.params, element.segment)
+    })
   }
 
   /* Mutations */
@@ -88,31 +95,15 @@ class RouterStore {
 
   updateRoutes(routes: Route<*, *>[]) {
     runInAction(() => {
-      this._serializedPrevRouts.replace(this._serializedRoutes.slice())
-      this._serializedRoutes.replace(
-        routes.map(x => ({
-          params: x.params,
-          nodeKey: x.node.value.key,
-          context: x.context,
-          segment: x.segment,
-          data: x.data,
-          key: x.key
-        }))
-      )
+      this.prevRoutes.replace(this.routes.slice())
+      this.routes.replace(routes)
     })
   }
 
   commit(nextLocation: Location) {
     runInAction(() => {
       this.location = nextLocation
-      this._serializedPrevRouts.replace([])
-    })
-  }
-
-  rollback() {
-    runInAction(() => {
-      this._serializedPrevRouts.replace(this._serializedPrevRouts.slice())
-      this._serializedPrevRouts.replace([])
+      this.prevRoutes.replace([])
     })
   }
 
@@ -121,17 +112,6 @@ class RouterStore {
       this.error = err
     })
   }
-
-  toRoutes(serialized: IObservableArray<SerializedRoute>) {
-      return serialized.map(x => {
-        const node = this.cache.get(x.nodeKey)
-        return {
-          node,
-          onTransition: node.value.onTransition,
-          ...x
-        }
-      })
-    }
 }
 
 export default RouterStore

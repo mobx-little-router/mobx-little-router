@@ -1,9 +1,8 @@
 // @flow
 import type { Action } from 'history'
 import { autorun, extendObservable, runInAction } from 'mobx'
-import type { RouteStateTreeNode, Route } from '../model/types'
+import type { PathElement, RouteStateTreeNode, Route } from '../model/types'
 import type RouterStore from '../model/RouterStore'
-import createRoute from '../model/createRoute'
 import areRoutesEqual from '../model/util/areRoutesEqual'
 import Navigation from '../model/Navigation'
 import type { Definition } from '../model/Navigation'
@@ -92,15 +91,12 @@ export default class Scheduler {
         nextLocation.pathname,
         this.handleLeafNodeReached
       )
-      const nextRoutes = toRoutes(this.store, nextPath)
-
       await assertUrlFullyMatched(nextLocation.pathname, nextPath)
 
+      const nextRoutes = store.getNextRoutes(nextPath)
+
       // We've found a match or unmatched error has been handled.
-      const { activating, deactivating } = await diffActiveNodes(
-        store.routes.slice(),
-        nextRoutes
-      )
+      const { activating, deactivating } = await diffRoutes(store.routes.slice(), nextRoutes)
 
       // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
       await this.assertTransitionOk('canDeactivate', deactivating, currentNavigation)
@@ -163,10 +159,10 @@ export default class Scheduler {
   // If one guard fails, then the entire function rejects.
   assertTransitionOk = async (
     type: 'canDeactivate' | 'canActivate' | 'willDeactivate' | 'willActivate',
-    Routes: Route<*, *>[],
+    routes: Route<*, *>[],
     navigation: Navigation
   ): Promise<void> => {
-    for (const route of Routes) {
+    for (const route of routes) {
       const { value } = route.node
       const result = typeof value[type] === 'function'
         ? value[type](route, navigation)
@@ -185,17 +181,7 @@ export default class Scheduler {
   }
 }
 
-// Get the existing Route from store (if segment remains the same), otherwise build new one.
-function toRoutes(store, nextPath) {
-  return nextPath.map(({ node, params, segment }) => {
-    const existing = store.routes.find(x => {
-      return x.key === node.value.key + segment
-    })
-    return existing || createRoute(node, params, segment)
-  })
-}
-
-async function diffActiveNodes(
+async function diffRoutes(
   currNodes: Route<*, *>[],
   nextNodes: Route<*, *>[]
 ) {
