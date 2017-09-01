@@ -1,6 +1,7 @@
 // @flow
 import { autorun } from 'mobx'
 import { createMemoryHistory } from 'history'
+import delay from './util/delay'
 import { EventTypes } from './scheduling/events'
 import { install } from './'
 
@@ -44,7 +45,10 @@ describe('Public API', () => {
 
     expect(changes).toEqual(['/initial/', '/foo/', '/bar/', '/foo/', '/bar/', '/quux/'])
 
-    expect(router.store.routes.map(route => route.node.value.path)).toEqual(['', ':whatever'])
+    expect(router.store.routes.map(route => route.node.value.path)).toEqual([
+      '',
+      ':whatever'
+    ])
 
     router.stop()
   })
@@ -80,7 +84,10 @@ describe('Public API', () => {
       '/10/'
     ])
 
-    expect(router.store.routes.map(route => route.node.value.path)).toEqual(['', ':whatever'])
+    expect(router.store.routes.map(route => route.node.value.path)).toEqual([
+      '',
+      ':whatever'
+    ])
 
     router.stop()
   })
@@ -125,6 +132,39 @@ describe('Public API', () => {
       )
 
       dispose()
+    })
+  })
+
+  describe('Total ordering', () => {
+    test('Navigations are guaranteed to be processed sequentially and in order', async () => {
+      const MAX_DURATION = 50
+      const spy = jest.fn(() => {
+        return delay(Math.random() * MAX_DURATION)
+      })
+      const router = install({
+        createHistory: [
+          createMemoryHistory,
+          { initialEntries: ['/initial'], initialIndex: 0 }
+        ],
+        getContext: () => ({ message: 'Hello' }),
+        routes: [{ path: ':whatever', onTransition: spy }]
+      })
+
+      const changes = []
+      await router.start()
+
+      autorun(() => changes.push(router.store.location.pathname))
+
+      router.push('/a')
+      router.push('/b')
+      router.push('/c')
+      router.push('/d')
+
+      await delay(MAX_DURATION * 4)
+
+      expect(changes).toEqual(['/initial/', '/a/', '/b/', '/c/', '/d/'])
+
+      router.stop()
     })
   })
 })

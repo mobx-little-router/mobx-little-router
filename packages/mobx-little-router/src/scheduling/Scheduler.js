@@ -1,7 +1,7 @@
 // @flow
 import type { Action } from 'history'
-import { autorun, extendObservable, runInAction } from 'mobx'
-import type { PathElement, RouteStateTreeNode, Route } from '../model/types'
+import { action, autorun, extendObservable, runInAction, when } from 'mobx'
+import type { RouteStateTreeNode, Route } from '../model/types'
 import type RouterStore from '../model/RouterStore'
 import areRoutesEqual from '../model/util/areRoutesEqual'
 import Navigation from '../model/Navigation'
@@ -20,10 +20,16 @@ export default class Scheduler {
   currentNavigation: null | Navigation
   event: null | Event
 
+  _idle: Promise<void>
+  _resolvers: Function[]
+
   constructor(store: RouterStore) {
     this.store = store
     this.disposer = null
+    this._idle = Promise.resolve()
+    this._resolvers  = []
     extendObservable(this, {
+      isIdle: true,
       currentNavigation: null,
       event: null
     })
@@ -45,7 +51,7 @@ export default class Scheduler {
     })
   }
 
-  scheduleNavigation = (next: Definition) => {
+  scheduleNavigation = async (next: Definition) => {
     const { location } = this.store
 
     // This could be a navigation that has no `to` prop. Usually a `GO_BACK`.
@@ -62,17 +68,18 @@ export default class Scheduler {
     ) {
       return
     }
+    const { currentNavigation } = this
+    this.store.error = null
+
+    const nextNav = currentNavigation
+      ? currentNavigation.next(next)
+      : new Navigation({
+          ...next,
+          from: location || null
+        })
 
     runInAction(() => {
-      const { currentNavigation } = this
-      this.store.error = null
-
-      this.currentNavigation = currentNavigation
-        ? currentNavigation.next(next)
-        : new Navigation({
-            ...next,
-            from: location || null
-          })
+      this.currentNavigation = nextNav
     })
   }
 
@@ -96,7 +103,10 @@ export default class Scheduler {
       const nextRoutes = store.getNextRoutes(nextPath)
 
       // We've found a match or unmatched error has been handled.
-      const { activating, deactivating } = await diffRoutes(store.routes.slice(), nextRoutes)
+      const { activating, deactivating } = await diffRoutes(
+        store.routes.slice(),
+        nextRoutes
+      )
 
       // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
       await this.assertTransitionOk('canDeactivate', deactivating, currentNavigation)
@@ -109,6 +119,7 @@ export default class Scheduler {
       this.emit({ type: EventTypes.NAVIGATION_ACTIVATING, navigation: currentNavigation })
 
       store.updateRoutes(nextRoutes)
+      store.updateLocation(nextLocation)
 
       // Run and wait on transition of deactivating and newly activating nodes.
       await Promise.all([
@@ -116,8 +127,7 @@ export default class Scheduler {
         TransitionManager.run('activating', activating)
       ])
 
-      // If all value resolved, then we're good to update store state.
-      store.commit(nextLocation)
+      store.clearPrevRoutes()
     } catch (error) {
       if (error instanceof TransitionFailure) {
         // Navigation error may be thrown by a guard or lifecycle hook.
@@ -181,10 +191,7 @@ export default class Scheduler {
   }
 }
 
-async function diffRoutes(
-  currNodes: Route<*, *>[],
-  nextNodes: Route<*, *>[]
-) {
+async function diffRoutes(currNodes: Route<*, *>[], nextNodes: Route<*, *>[]) {
   try {
     const deactivating = differenceWith(areRoutesEqual, currNodes, nextNodes).reverse()
 
