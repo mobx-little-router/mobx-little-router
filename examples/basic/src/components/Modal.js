@@ -22,9 +22,9 @@ class Modal extends Component {
     
     return (
       <Container className={cx('modal', className)}>
-        <ModalOverlay to={closePath}/>
+        <ModalOverlay className={'modal-overlay'} to={closePath}/>
         <ModalContainer>
-          <ModalDialog>
+          <ModalDialog className={'modal-dialog'}>
             <CloseButton to={closePath} />
 
             {children}
