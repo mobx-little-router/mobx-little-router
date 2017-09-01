@@ -1,6 +1,7 @@
 // @flow
 import type { Route } from 'mobx-little-router'
 import React, { createElement, Component } from 'react'
+import { findDOMNode } from 'react-dom'
 import { extendObservable, action } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -34,6 +35,29 @@ class TransitionGroup extends Component {
   }
 
   start = action(() => {
+    this.innerRefs.forEach(ref => {
+      const el = findDOMNode(ref)
+
+      if (el) {
+        const target = el.classList.contains('transition-ref')
+          ? el
+          : el.getElementsByClassName('transition-ref')[0]
+    
+        if (target) {
+          console.log("target", target)
+          
+          target.scrollTop
+
+          const handleTransitionEnd = (ev) => {
+            console.log("-------transition end--------", el)
+            target.removeEventListener('transitionend', handleTransitionEnd)
+          }
+
+          target.addEventListener('transitionend', handleTransitionEnd, false)
+        }
+      }
+    })
+
     this.transitionState = 'started'
   })
 
@@ -79,6 +103,10 @@ class TransitionGroup extends Component {
       routes.push({ route: to, className: toClassName })
     }
 
+    console.log("- rendering transition group:")
+    console.log("  - to:", to)
+    console.log("  - from:", from)
+
     return (
       <div className="transition-group">
         {routes.map(({ route, className }, idx) =>
@@ -86,7 +114,7 @@ class TransitionGroup extends Component {
             key: route.key,
             params: route.params,
             className,
-            ref: (ref) => this.innerRefs[idx] = ref
+            ref: (ref) => { this.innerRefs[idx] = ref }
           })
         )}
       </div>

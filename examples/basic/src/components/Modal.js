@@ -24,7 +24,7 @@ class Modal extends Component {
       <Container className={cx('modal', className)}>
         <ModalOverlay className={'modal-overlay'} to={closePath}/>
         <ModalContainer>
-          <ModalDialog className={'modal-dialog'}>
+          <ModalDialog className={cx('modal-dialog', 'transition-ref')}>
             <CloseButton to={closePath} />
 
             {children}
@@ -73,7 +73,7 @@ const Container = styled.div`
     }
 
     ${ModalDialog} {
-      transition: all 400ms ease-out;
+      transition: all 200ms ease-out;
     }
 
     &.leaving {

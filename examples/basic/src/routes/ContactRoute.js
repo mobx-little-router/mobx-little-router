@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { observer } from 'mobx-react'
-
+import cx from 'classnames'
 import styled from 'styled-components'
 
 class ContactRoute extends Component {
@@ -8,7 +8,7 @@ class ContactRoute extends Component {
     const { className } = this.props
 
     return (
-      <Container className={className}>
+      <Container className={cx('transition-ref', className)}>
         <h1>Contact Us</h1>
         <p>
           Example Inc.,<br/>
