@@ -8,7 +8,7 @@ export default function createRoute<C,D>(node: RouteStateTreeNode<C,D>, params: 
     segment,
     params,
     context: node.value.getContext(),
-    data: node.value.getData(),
+    data: { ...node.value.getData(), transitionState: null },
     onTransition: node.value.onTransition
   }
 }
