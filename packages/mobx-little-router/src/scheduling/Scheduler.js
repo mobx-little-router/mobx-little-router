@@ -121,11 +121,13 @@ export default class Scheduler {
       store.updateRoutes(nextRoutes)
       store.updateLocation(nextLocation)
 
-      // Run and wait on transition of deactivating and newly activating nodes.
-      await Promise.all([
-        TransitionManager.run('exiting', deactivating),
-        TransitionManager.run('entering', activating)
-      ])
+      if (currentNavigation.sequence > 0) {
+        // Run and wait on transition of deactivating and newly activating nodes.
+        await Promise.all([
+          TransitionManager.run('exiting', deactivating),
+          TransitionManager.run('entering', activating)
+        ])
+      }
 
       store.clearPrevRoutes()
     } catch (error) {
