@@ -22,7 +22,7 @@ describe('createRouteStateTreeNode', () => {
     expect(createRoute(node, { id: '1' }, '/1')).toEqual(
       expect.objectContaining({
         params: { id: '1' },
-        data: { message: 'Hello' },
+        data: expect.objectContaining({ message: 'Hello' }),
         context: { user: 'Alice' }
       })
     )

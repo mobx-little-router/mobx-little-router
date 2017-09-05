@@ -397,7 +397,10 @@ describe('Scheduler', () => {
       updateNode(projectsRootNode, { onTransition: spy })
       updateNode(projectsViewNode, { onTransition: spy })
       updateNode(projectsListNode, { onTransition: spy })
-      updateLocation('/todos/1', [root, todosRoot, todosView])
+
+      // Initial navigation
+      scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/todos/1' } })
+      await scheduler.processNextNavigation()
 
       scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/projects/2' } })
       await scheduler.processNextNavigation()
@@ -415,22 +418,22 @@ describe('Scheduler', () => {
         {
           key: todosView.value.key,
           path: ':id',
-          type: 'deactivating'
+          type: 'exiting'
         },
         {
           key: projectsRootNode.value.key,
           path: 'projects',
-          type: 'activating'
+          type: 'entering'
         },
         {
           key: todosRoot.value.key,
           path: 'todos',
-          type: 'deactivating'
+          type: 'exiting'
         },
         {
           key: projectsViewNode.value.key,
           path: ':id',
-          type: 'activating'
+          type: 'entering'
         }
       ])
 
@@ -440,7 +443,7 @@ describe('Scheduler', () => {
 
       expect(store.location.pathname).toEqual('/projects')
 
-      // Only the project view node is deactivating.
+      // Only the project view node is exiting.
       expect(
         spy.mock.calls.map(args => ({
           type: args[0].type,
@@ -451,12 +454,12 @@ describe('Scheduler', () => {
         {
           key: projectsViewNode.value.key,
           path: ':id',
-          type: 'deactivating'
+          type: 'exiting'
         },
         {
           key: projectsListNode.value.key,
           path: '',
-          type: 'activating'
+          type: 'entering'
         }
       ])
     })
@@ -492,7 +495,9 @@ describe('Scheduler', () => {
       )
       updateNode(todosList, { onTransition: listTransitionSpy })
       updateNode(todosView, { onTransition: viewTransitionSpy })
-      updateLocation('/todos', [root, appRoot, todosRoot, todosList])
+
+      scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/todos' } })
+      await scheduler.processNextNavigation()
 
       scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/todos/1' } })
       await scheduler.processNextNavigation()
@@ -519,11 +524,6 @@ describe('Scheduler', () => {
 
   function updateNode(node: *, props: Object) {
     store.updateNode(node, props)
-  }
-
-  function updateLocation(location: *, nodes: *) {
-    store.location.pathname = location
-    store.updateRoutes(nodes.map(x => createRoute(x, {}, '')))
   }
 })
 
