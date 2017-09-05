@@ -9,12 +9,19 @@ import stores from './stores'
 import { IndexRoute, LoginRoute, ShowsRoute, AboutRoute, ContactRoute, ShowRoute, TagRoute, ActorRoute, AdminRoute } from './routes'
 import App from './App'
 
-const delay = (ms) => {
-  return new Promise((resolve) =>
-    setTimeout(() => {
-      resolve()
-    }, ms)
-  )
+const onTransition = ({ type, target }) => {
+  console.log("onTransition", type, target.key)
+  return new Promise((resolve, reject) => {
+    mobx.when(
+      () => {
+        return target.data.transitionState === (type === 'entering' ? 'entered' : 'exited')
+      },
+      () => {
+        console.log(`------------ onTransition(): ${target.key} resolved`)
+        resolve()
+      }
+    )
+  })
 }
 
 const router = install({
@@ -26,37 +33,24 @@ const router = install({
     { path: '', match: 'full', getData: () => ({ component: IndexRoute }) },
     { path: 'redirect', match: 'full', redirectTo: '/shows' },
     { path: 'login', getData: () => ({ component: LoginRoute }) },
-    { 
-      path: 'about',
-      getData: () => {
-        return { component: AboutRoute, isTransitioned: false }
-      },
-      onTransition: (route, transition) => {
-        console.log("--about transition", route, transition)
-        return delay(500)
-      }
-    },
-    {
-      path: 'contact',
-      getData: () => ({ component: ContactRoute }),
-      onTransition: () => delay(500)
-    },
+    { path: 'about', getData: () => ({ component: AboutRoute }), onTransition },
+    { path: 'contact', getData: () => ({ component: ContactRoute }), onTransition },
     {
       path: 'shows',
       getData: () => {
-        console.log('getting shows data')
+        console.log('Fetching shows data')
         return { component: ShowsRoute }
       },
       children: [{
         path: ':id',
         getData: () => {
-          console.log('getting show view data')
+          console.log('Fetching show view data')
           return {
             component: ShowRoute,
             outlet: 'modal'
           }
         },
-        onTransition: (route, transition) => delay(400)
+        onTransition
       }]
     },
     {
@@ -65,7 +59,7 @@ const router = install({
         component: ActorRoute,
         outlet: 'modal'
       }),
-      onTransition: () => delay(400)
+      onTransition
     },
     {
       path: 'tags/:tag',
