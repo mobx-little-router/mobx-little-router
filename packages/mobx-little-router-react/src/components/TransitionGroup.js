@@ -20,7 +20,7 @@ class TransitionGroup extends Component {
     from: ?Object,
     to: ?Object,
     isTransitioning: boolean,
-    idx: number
+    additionalProps: ?Object
   }
 
   transitionState: string
@@ -42,7 +42,7 @@ class TransitionGroup extends Component {
       const el = findDOMNode(this.innerRefs[key])
       const route = routes.find(route => route && route.key === key)
 
-      if (el) {
+      if (el instanceof HTMLElement && route) {
         // Find element with data-transition-ref attribute to add transitionend event listener
         const target = el.hasAttribute('data-transition-ref')
           ? el
@@ -83,7 +83,7 @@ class TransitionGroup extends Component {
   }
 
   render() {
-    const { from, to, isTransitioning } = this.props
+    const { from, to, isTransitioning, additionalProps } = this.props
     const routes = []
 
     let fromClassName = ''
@@ -121,6 +121,7 @@ class TransitionGroup extends Component {
             key: route.key,
             params: route.params,
             className,
+            ...additionalProps,
             ref: (ref) => { this.innerRefs[route.key] = ref }
           })
         )}

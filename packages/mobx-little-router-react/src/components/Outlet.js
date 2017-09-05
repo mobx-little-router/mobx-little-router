@@ -58,7 +58,7 @@ class Outlet extends Component {
   }
 
   render() {
-    const { router, name } = this.props
+    const { router, name, ...rest } = this.props
     const idx = this.getCurrentIndex()
 
     const currRoutes = filterRoutes(router.store.routes)
@@ -75,10 +75,10 @@ class Outlet extends Component {
     }
 
     console.log('Outlet', idx, name, 'isTransitioning', isTransitioning, 'isEqual', to === from)
-
+    
     return (
       <div className={`outlet`} {...dataProps}>
-        <TransitionGroup to={to} from={from} isTransitioning={isTransitioning} />
+        <TransitionGroup to={to} from={from} isTransitioning={isTransitioning} additionalProps={rest} />
       </div>
     )
   }
