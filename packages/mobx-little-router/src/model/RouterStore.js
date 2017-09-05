@@ -100,14 +100,19 @@ class RouterStore {
     })
   }
 
-  commit(nextLocation: Location) {
+  updateLocation(nextLocation: Location) {
     runInAction(() => {
       this.location = nextLocation
+    })
+  }
+
+  clearPrevRoutes() {
+    runInAction(() => {
       this.prevRoutes.replace([])
     })
   }
 
-  updateError(err: null | Object) {
+  setError(err: null | Object) {
     runInAction(() => {
       this.error = err
     })

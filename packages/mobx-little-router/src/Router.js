@@ -107,8 +107,8 @@ class Router {
   navigated() {
     return new Promise(res => {
       when(() => {
-        const { event, requests } = this.scheduler
-        return event !== null && event.type === EventTypes.NAVIGATION_END && requests.length === 0
+        const { event } = this.scheduler
+        return event !== null && event.type === EventTypes.NAVIGATION_END
       }, res)
     })
   }

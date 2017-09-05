@@ -1,5 +1,5 @@
 // @flow
-import { useStrict, autorun } from 'mobx'
+import { autorun } from 'mobx'
 import { createMemoryHistory } from 'history'
 import delay from './util/delay'
 import { EventTypes } from './scheduling/events'
@@ -138,8 +138,8 @@ describe('Public API', () => {
   describe('Total ordering', () => {
     test('Navigations are guaranteed to be processed sequentially and in order', async () => {
       const MAX_DURATION = 50
-      const spy = jest.fn((x) => {const t = Math.random() * MAX_DURATION
-        return delay(t)
+      const spy = jest.fn(() => {
+        return delay(Math.random() * MAX_DURATION)
       })
       const router = install({
         createHistory: [
@@ -147,7 +147,7 @@ describe('Public API', () => {
           { initialEntries: ['/initial'], initialIndex: 0 }
         ],
         getContext: () => ({ message: 'Hello' }),
-        routes: [{ path: ':whatever', canActivate: spy }]
+        routes: [{ path: ':whatever', onTransition: spy }]
       })
 
       const changes = []

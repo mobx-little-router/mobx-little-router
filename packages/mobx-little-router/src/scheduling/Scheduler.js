@@ -1,7 +1,6 @@
 // @flow
 import type { Action } from 'history'
 import { action, autorun, extendObservable, runInAction, when } from 'mobx'
-import type { IObservableArray } from 'mobx'
 import type { RouteStateTreeNode, Route } from '../model/types'
 import type RouterStore from '../model/RouterStore'
 import areRoutesEqual from '../model/util/areRoutesEqual'
@@ -18,19 +17,20 @@ import assertUrlFullyMatched from './util/assertUrlFullyMatched'
 export default class Scheduler {
   store: RouterStore
   disposer: null | Function
-  requests: IObservableArray<Navigation>
-  lastNavigation: null | Navigation
+  currentNavigation: null | Navigation
   event: null | Event
 
-  idle: Promise<void>
+  _idle: Promise<void>
+  _resolvers: Function[]
 
   constructor(store: RouterStore) {
     this.store = store
     this.disposer = null
-    this.idle = Promise.resolve()
+    this._idle = Promise.resolve()
+    this._resolvers  = []
     extendObservable(this, {
-      requests: [],
-      lastNavigation: null,
+      isIdle: true,
+      currentNavigation: null,
       event: null
     })
   }
@@ -68,37 +68,29 @@ export default class Scheduler {
     ) {
       return
     }
-    const { lastNavigation } = this
+    const { currentNavigation } = this
     this.store.error = null
 
-    const nextNav = lastNavigation
-      ? lastNavigation.next(next)
+    const nextNav = currentNavigation
+      ? currentNavigation.next(next)
       : new Navigation({
           ...next,
           from: location || null
         })
 
     runInAction(() => {
-      this.requests.push(nextNav)
+      this.currentNavigation = nextNav
     })
   }
 
   processNextNavigation = async () => {
-    if (this.requests.length === 0) return
-    const currentNavigation = this.requests[0]
-    if (currentNavigation === this.lastNavigation) {
-      return
-    }
-
-    runInAction(() => {
-      this.lastNavigation = currentNavigation
-    })
+    const { currentNavigation, store } = this
+    if (!currentNavigation) return
 
     const { to: nextLocation } = currentNavigation
     if (!nextLocation) return
 
     try {
-      const { store } = this
       this.emit({ type: EventTypes.NAVIGATION_START, navigation: currentNavigation })
 
       // This match call may have side-effects of loading dynamic children.
@@ -127,6 +119,7 @@ export default class Scheduler {
       this.emit({ type: EventTypes.NAVIGATION_ACTIVATING, navigation: currentNavigation })
 
       store.updateRoutes(nextRoutes)
+      store.updateLocation(nextLocation)
 
       if (currentNavigation.sequence > 0) {
         // Run and wait on transition of deactivating and newly activating nodes.
@@ -136,7 +129,7 @@ export default class Scheduler {
         ])
       }
 
-      store.commit(nextLocation)
+      store.clearPrevRoutes()
     } catch (error) {
       if (error instanceof TransitionFailure) {
         // Navigation error may be thrown by a guard or lifecycle hook.
@@ -146,7 +139,7 @@ export default class Scheduler {
         })
       } else {
         // Error instances should be set on the store and an error event is emitted.
-        this.store.updateError(error)
+        this.store.setError(error)
         this.emit({
           type: EventTypes.NAVIGATION_ERROR,
           error,
@@ -154,9 +147,6 @@ export default class Scheduler {
         })
       }
     } finally {
-      runInAction(() => {
-        this.requests.shift()
-      })
       this.emit({ type: EventTypes.NAVIGATION_END, navigation: currentNavigation })
     }
   }
