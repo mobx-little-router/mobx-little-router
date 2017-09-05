@@ -2,7 +2,7 @@
 import type { Route } from 'mobx-little-router'
 import React, { createElement, Component } from 'react'
 import { findDOMNode } from 'react-dom'
-import { extendObservable, action } from 'mobx'
+import { extendObservable, action, runInAction } from 'mobx'
 import { observer } from 'mobx-react'
 
 const transitioningClassName = 'transitioning'
@@ -24,7 +24,7 @@ class TransitionGroup extends Component {
   }
 
   transitionState: string
-  innerRefs: Array<any> = []
+  innerRefs: Object = {}
 
   constructor(props) {
     super(props)
@@ -35,23 +35,34 @@ class TransitionGroup extends Component {
   }
 
   start = action(() => {
-    this.innerRefs.forEach(ref => {
-      const el = findDOMNode(ref)
+    const { to, from } = this.props
+    const routes = [to, from]
+
+    Object.keys(this.innerRefs).forEach(key => {
+      const el = findDOMNode(this.innerRefs[key])
+      const route = routes.find(route => route && route.key === key)
 
       if (el) {
         // Find element with data-transition-ref attribute to add transitionend event listener
-        const target = el.parentElement.querySelector('[data-transition-ref]')
+        const target = el.hasAttribute('data-transition-ref')
+          ? el
+          : el.querySelector('[data-transition-ref]')
     
-        if (target) {         
-          const handleTransitionEnd = (ev) => {
-            console.log("-------transition end--------", target)
+        if (target) {  
+          const handleTransitionEnd = (ev) => {            
+            runInAction(() => {
+              route.data.transitionState = route === to ? 'entered' : 'exited'
+            })
+
             target.removeEventListener('transitionend', handleTransitionEnd)
           }
 
           target.addEventListener('transitionend', handleTransitionEnd, false)
         
-          // Only start the transition if we find an element to transition
-          this.transitionState = 'started'
+          runInAction(() => {
+            route.data.transitionState = route === to ? 'entering' : 'exiting'
+            this.transitionState = 'started'
+          })
         }
       }
     })
@@ -110,7 +121,7 @@ class TransitionGroup extends Component {
             key: route.key,
             params: route.params,
             className,
-            ref: (ref) => { this.innerRefs[idx] = ref }
+            ref: (ref) => { this.innerRefs[route.key] = ref }
           })
         )}
       </div>
