@@ -123,8 +123,8 @@ export default class Scheduler {
 
       // Run and wait on transition of deactivating and newly activating nodes.
       await Promise.all([
-        TransitionManager.run('deactivating', deactivating),
-        TransitionManager.run('activating', activating)
+        TransitionManager.run('exiting', deactivating),
+        TransitionManager.run('entering', activating)
       ])
 
       store.clearPrevRoutes()

@@ -7,24 +7,24 @@ describe('TransitionManager', () => {
     const spy = jest.fn((evt: *) => delay(Math.random() * 20))
     const nodes = [createNode('a', spy), createNode('b', spy), createNode('c', spy)]
 
-    await TransitionManager.run('activating', nodes)
+    await TransitionManager.run('entering', nodes)
 
     expect(spy).toHaveBeenCalledTimes(3)
     expect(spy.mock.calls.map(x => x[0])).toEqual([
-      { type: 'activating', target: nodes[0] },
-      { type: 'activating', target: nodes[1] },
-      { type: 'activating', target: nodes[2] }
+      { type: 'entering', target: nodes[0] },
+      { type: 'entering', target: nodes[1] },
+      { type: 'entering', target: nodes[2] }
     ])
 
     spy.mockReset()
 
-    await TransitionManager.run('deactivating', nodes)
+    await TransitionManager.run('exiting', nodes)
 
     expect(spy).toHaveBeenCalledTimes(3)
     expect(spy.mock.calls.map(x => x[0])).toEqual([
-      { type: 'deactivating', target: nodes[0] },
-      { type: 'deactivating', target: nodes[1] },
-      { type: 'deactivating', target: nodes[2] }
+      { type: 'exiting', target: nodes[0] },
+      { type: 'exiting', target: nodes[1] },
+      { type: 'exiting', target: nodes[2] }
     ])
   })
 })

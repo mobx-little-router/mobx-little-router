@@ -7,8 +7,8 @@ export type Transitionable = $Shape<{
 export type TransitionFn  = (evt: TransitionEvent) => Promise<void>
 
 export const TransitionTypes = {
-  'activating': 'activating',
-  'deactivating': 'deactivating'
+  'entering': 'entering',
+  'exiting': 'exiting'
 }
 
 export type TransitionType = $Keys<typeof TransitionTypes>
