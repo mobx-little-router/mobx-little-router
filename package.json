@@ -1,12 +1,11 @@
 {
   "private": true,
-  "version": "independent",
-  "repository": "git@github.com:jaysoo/mobx-router.git",
-  "author": "Jack Hsu <jack.hsu@gmail.com>",
+  "version": "1.0.0-rc2",
+  "repository": "git@github.com:mobx-little-router/mobx-little-router.git",
   "license": "MIT",
   "scripts": {
     "build": "lerna run build --stream",
-    "publish": "lerna run publish --independent",
+    "publish": "lerna run publish",
     "test": "lerna run test --stream"
   },
   "workspaces": [
