@@ -11,7 +11,7 @@ type Options = {
 }
 
 export function install(opts: Options): Router {
-  return new Router(opts.createHistory, opts.routes, opts.getContext || (() => ({})))
+  return new Router(opts.history, opts.routes, opts.getContext || (() => ({})))
 }
 
 export { default as RouterStore } from './model/RouterStore'

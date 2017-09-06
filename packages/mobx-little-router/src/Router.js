@@ -10,8 +10,6 @@ import { EventTypes } from './scheduling/events'
 import { NavigationTypes } from './model/Navigation'
 import { InvalidNavigation } from './errors'
 
-export type HistoryCreatorFn = (opts: any) => History
-
 class Router {
   store: RouterStore
   scheduler: Scheduler
@@ -20,16 +18,13 @@ class Router {
   navigationEvent: * // This is computed from Scheduler event observable.
 
   constructor(
-    historyCreator: HistoryCreatorFn | [HistoryCreatorFn, Object],
+    history: History,
     config: Config<*>[],
     getContext: void | (() => any)
   ) {
     this.disposers = []
 
-    // TODO: We should just be passing in the History object instead of the creator.
-    this.history = typeof historyCreator === 'function'
-      ? historyCreator()
-      : historyCreator[0](historyCreator[1])
+    this.history = history
     const root = createRouteStateTreeNode({ path: '' }, getContext) // Initial root.
     const routes = config.map(x => createRouteStateTreeNode(x, getContext))
     this.store = new RouterStore(root, routes)
