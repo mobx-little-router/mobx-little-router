@@ -6,7 +6,7 @@ node_js:
 sudo: false
 
 before_install:
-  - npm install -g yarn@">=0.28
+  - npm install -g yarn@">=0.28"
   - export PATH="$HOME/.yarn/bin:$PATH"
 
 cache:
