@@ -1,3 +1,20 @@
+const transformRunTime = process.env.BABEL_ENV === 'umd' ? [
+  'transform-runtime',
+  {
+    helpers: false,
+    polyfill: false,
+    regenerator: true,
+    'moduleName': 'rollup-regenerator-runtime'
+  }
+] : [
+  'transform-runtime',
+  {
+    helpers: false,
+    polyfill: false,
+    regenerator: true
+  }
+]
+
 const plugins = [
   'syntax-dynamic-import',
   'transform-export-extensions',
@@ -5,15 +22,7 @@ const plugins = [
   'transform-class-properties',
   'transform-flow-strip-types',
   'transform-regenerator',
-  [
-    'transform-runtime',
-    {
-      helpers: false,
-      polyfill: false,
-      regenerator: true,
-      'moduleName': 'rollup-regenerator-runtime'
-    }
-  ]
+  transformRunTime
 ]
 
 if (process.env.BABEL_ENV === 'umd') {
