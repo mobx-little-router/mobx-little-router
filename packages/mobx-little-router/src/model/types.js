@@ -21,7 +21,7 @@ export type Href = Location | string
 
 export type Config<D> = BasicConfig<D> | RedirectConfig<D>
 
-export type BasicConfig<D> = {
+export type BasicConfig<D: Object> = {
   path: string,
   getData?: () => D,
   key?: string,
@@ -36,7 +36,7 @@ export type BasicConfig<D> = {
   onTransition?: TransitionFn
 }
 
-export type RedirectConfig<D> = {
+export type RedirectConfig<D: Object> = {
   path: string,
   redirectTo: Href,
   getData?: () => D,
@@ -61,7 +61,7 @@ export type ErrorHandler = (node: RouteStateTreeNode<*, *>, context: Object) => 
 
 export type LoadChildrenRouteStateTreeNode = () => Promise<RouteStateTreeNode<*, *>[]>
 
-export type RouteValue<C, D> = {
+export type RouteValue<C: Object, D: Object> = {
   key: string,
   // Original path provided to this route node.
   path: string,

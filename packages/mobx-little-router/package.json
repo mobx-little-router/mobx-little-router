@@ -2,8 +2,7 @@
   "name": "mobx-little-router",
   "version": "1.0.0-rc6.0",
   "description": "Implementation of an universal router that uses MobX to manage state.",
-  "repository": "git@github.com:jaysoo/mobx-router.git",
-  "author": "Jack Hsu <jack.hsu@gmail.com>",
+  "repository": "git@github.com:mobx-little-router/mobx-little-router.git",
   "license": "MIT",
   "files": [
     "lib",
@@ -12,72 +11,11 @@
   ],
   "main": "lib/index.js",
   "module": "es/index.js",
-  "scripts": {
-    "flow": "flow",
-    "test": "node scripts/test.js",
-    "clean": "rm -rf es lib",
-    "build": "yarn run clean && node scripts/build.js"
-  },
   "dependencies": {
     "history": "^4.6.3",
     "url-pattern": "^1.0.3"
   },
   "peerDependencies": {
     "mobx": "^3.2.2"
-  },
-  "devDependencies": {
-    "babel-cli": "^6.24.1",
-    "babel-core": "^6.25.0",
-    "babel-eslint": "^7.2.3",
-    "babel-jest": "^20.0.3",
-    "babel-loader": "^7.1.1",
-    "babel-plugin-dynamic-import-node": "^1.0.2",
-    "babel-plugin-external-helpers": "^6.22.0",
-    "babel-plugin-syntax-dynamic-import": "^6.18.0",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-plugin-transform-export-extensions": "^6.22.0",
-    "babel-plugin-transform-flow-strip-types": "^6.22.0",
-    "babel-plugin-transform-object-rest-spread": "^6.23.0",
-    "babel-plugin-transform-regenerator": "^6.24.1",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-env": "^1.6.0",
-    "babel-preset-flow": "^6.23.0",
-    "babel-runtime": "^6.25.0",
-    "data.maybe": "^1.2.2",
-    "eslint": "^4.4.1",
-    "eslint-plugin-flowtype": "^2.35.0",
-    "eslint-plugin-import": "^2.7.0",
-    "flow-bin": "^0.52.0",
-    "flow-copy-source": "^1.2.0",
-    "gzip-size": "^3.0.0",
-    "jest": "^20.0.4",
-    "mobx": "^3.2.2",
-    "pretty-bytes": "^4.0.2",
-    "ramda": "^0.24.1",
-    "rollup": "^0.47.4",
-    "rollup-plugin-babel": "^2.7.1",
-    "rollup-plugin-commonjs": "^8.1.0",
-    "rollup-plugin-node-resolve": "^3.0.0",
-    "rollup-plugin-replace": "^1.1.1",
-    "rollup-plugin-uglify": "^2.0.1"
-  },
-  "jest": {
-    "collectCoverageFrom": [
-      "src/**/*.js"
-    ],
-    "transform": {
-      "^.+\\.jsx?$": "babel-jest"
-    },
-    "setupTestFrameworkScriptFile": "<rootDir>/config/jest.js",
-    "testMatch": [
-      "<rootDir>/src/**/__tests__/**/*.js",
-      "<rootDir>/src/**/?(*.)test.js"
-    ],
-    "testEnvironment": "node"
-  },
-  "babel": {
-    "presets": [
-      "./config/babel-preset"
-    ]
   }
 }

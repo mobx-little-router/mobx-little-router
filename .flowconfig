@@ -17,6 +17,7 @@ esproposal.class_static_fields=enable
 esproposal.class_instance_fields=enable
 module.file_ext=.js
 module.system=haste
+module.name_mapper='\(mobx-little-router[^/]*\)' -> '<PROJECT_ROOT>/packages/\1/src/index.js'
 
 suppress_comment=\\(.\\|\n\\)*\\$FlowFixMe
 suppress_comment=\\(.\\|\n\\)*\\$FlowIssue
