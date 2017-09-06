@@ -74,8 +74,6 @@ class Outlet extends Component {
       'data-name': name
     }
 
-    console.log('Outlet', idx, name, 'isTransitioning', isTransitioning, 'isEqual', to === from)
-    
     return (
       <div className={`outlet`} {...dataProps}>
         <TransitionGroup to={to} from={from} isTransitioning={isTransitioning} additionalProps={rest} />

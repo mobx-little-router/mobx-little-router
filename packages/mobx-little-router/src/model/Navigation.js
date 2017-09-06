@@ -55,7 +55,8 @@ export default class Navigation {
       type: NavigationTypes.GO_BACK,
       sequence: this.sequence + 1,
       from: this.to,
-      to: null
+      to: null,
+      shouldTransition: true
     })
   }
 

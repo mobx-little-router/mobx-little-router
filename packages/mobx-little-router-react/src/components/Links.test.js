@@ -1,13 +1,13 @@
 // @flow
 import React from 'react'
-import { createRouteStateTreeNoder, mountInProvider } from '../testUtil'
+import { createRouter, mountInProvider } from '../testUtil'
 import Link from './Link'
 
 describe('Link', () => {
   let router
 
   beforeEach(() => {
-    router = createRouteStateTreeNoder( [{ path: '', match: 'full'}, { path: 'foo' }])
+    router = createRouter( [{ path: '', match: 'full'}, { path: 'foo' }])
     return router.start()
   })
 

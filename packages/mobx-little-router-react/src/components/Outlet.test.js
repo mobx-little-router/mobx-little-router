@@ -1,29 +1,29 @@
 // @flow
 import React from 'react'
-import { createRouteStateTreeNoder, mountInProvider } from '../testUtil'
+import { createRouter, delay, mountInProvider } from '../testUtil'
 import Outlet from './Outlet'
 
 describe('Outlet', () => {
   let router
 
   beforeEach(() => {
-    router = createRouteStateTreeNoder(
+    router = createRouter(
       [
         {
           path: '',
-          data: { component: RootPage },
+          getData: () => ({ component: RootPage }),
           children: [
-            { path: '', match: 'full', data: { component: HomePage } },
+            { path: '', match: 'full', getData: () => ({ component: HomePage }) },
             {
               path: 'about',
-              data: { component: AboutPage },
-              children: [{ path: 'contact', data: { component: ContactPage } }]
+              getData: () => ({ component: AboutPage }),
+              children: [{ path: 'contact', getData: () => ({ component: ContactPage }) }]
             },
             {
               path: 'posts',
               children: [
-                { path: '', data: { component: PostListPage } },
-                { path: ':id', data: { component: PostViewPage } }
+                { path: '', getData: () => ({ component: PostListPage }) },
+                { path: ':id', getData: () => ({ component: PostViewPage }) }
               ]
             }
           ]

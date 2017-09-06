@@ -22,6 +22,7 @@
     "babel-loader": "^7.1.1",
     "babel-plugin-dynamic-import-node": "^1.0.2",
     "babel-plugin-external-helpers": "^6.22.0",
+    "babel-plugin-module-resolver": "^2.7.1",
     "babel-plugin-syntax-dynamic-import": "^6.18.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-export-extensions": "^6.22.0",
@@ -33,6 +34,8 @@
     "babel-preset-flow": "^6.23.0",
     "babel-preset-react": "^6.23.0",
     "babel-runtime": "^6.25.0",
+    "classnames": "^2.2.5",
+    "codecov": "^2.3.0",
     "data.maybe": "^1.2.2",
     "enzyme": "^2.9.1",
     "eslint": "^4.4.1",
@@ -42,8 +45,11 @@
     "flow-copy-source": "^1.2.0",
     "gzip-size": "^3.0.0",
     "jest": "^20.0.4",
+    "jsdom": "^11.2.0",
     "lerna": "^2.0.0",
     "mobx": "~3.2.2",
+    "mobx-little-router": "*",
+    "mobx-little-router-react": "*",
     "mobx-react": "~4.2.2",
     "pretty-bytes": "^4.0.2",
     "ramda": "^0.24.1",
@@ -64,6 +70,9 @@
       "packages/.*/lib",
       "integration_tests/runtime-internal-module-registry/__mocks__"
     ],
+    "moduleNameMapper": {
+      "mobx-little-router": "<rootDir>/packages/mobx-little-router/src/index.js"
+    },
     "collectCoverageFrom": [
       "packages/**/src/**/*.js"
     ],

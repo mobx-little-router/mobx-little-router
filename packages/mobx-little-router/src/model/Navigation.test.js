@@ -23,7 +23,7 @@ describe('Navigation', () => {
       sequence: 1,
       from: { pathname: '/' },
       to: null,
-      shouldTransition: false
+      shouldTransition: true
     })
 
     // Sequence increments after each call.
@@ -49,13 +49,17 @@ describe('Navigation', () => {
     expect(a.redirectTo('/login')).rejects.toEqual({
       type: 'PUSH',
       from: { pathname: '/' },
-      to: { pathname: '/login' }
+      to: { pathname: '/login' },
+      sequence: 1,
+      shouldTransition: true
     })
 
     expect(a.goBack()).rejects.toEqual({
       type: 'GO_BACK',
       from: { pathname: '/' },
-      to: null
+      to: null,
+      sequence: 1,
+      shouldTransition: true
     })
   })
 })

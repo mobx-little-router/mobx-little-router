@@ -110,10 +110,6 @@ class TransitionGroup extends Component {
       routes.push({ route: to, className: toClassName })
     }
 
-    console.log("- rendering transition group:")
-    console.log("  - to:", to)
-    console.log("  - from:", from)
-
     return (
       <div className="transition-group">
         {routes.map(({ route, className }, idx) =>
