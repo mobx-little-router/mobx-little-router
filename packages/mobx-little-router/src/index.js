@@ -1,11 +1,10 @@
 // @flow
-import type { HistoryCreatorFn } from './Router'
 import Router from './Router'
 import type { Config } from './model/types'
 import type { History } from 'history'
 
 type Options = {
-  createHistory: HistoryCreatorFn | [HistoryCreatorFn, Object],
+  history: History,
   routes: Config<*>[],
   getContext: () => any
 }

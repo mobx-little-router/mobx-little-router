@@ -7,14 +7,11 @@ import { createMemoryHistory } from 'history'
 
 export function createRouter(routes: Array<*>, initialEntry: ?string = '/') {
   return typeof initialEntry === 'string' ? install({
-    createHistory: [
-      createMemoryHistory,
-      { initialEntries: [initialEntry] }
-    ],
+    history: createMemoryHistory({ initialEntries: [initialEntry] }),
     getContext: () => ({}),
     routes
   }) : install({
-    createHistory: createMemoryHistory,
+    history: createMemoryHistory(),
     getContext: () => ({}),
     routes
   })

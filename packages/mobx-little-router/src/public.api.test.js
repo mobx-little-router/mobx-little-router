@@ -10,10 +10,7 @@ describe('Public API', () => {
 
   beforeEach(() => {
     router = install({
-      createHistory: [
-        createMemoryHistory,
-        { initialEntries: ['/initial'], initialIndex: 0 }
-      ],
+      history: createMemoryHistory({ initialEntries: ['/initial'], initialIndex: 0 }),
       getContext: () => ({ message: 'Hello' }),
       routes: [{ path: ':whatever' }]
     })
@@ -142,10 +139,7 @@ describe('Public API', () => {
         return delay(Math.random() * MAX_DURATION)
       })
       const router = install({
-        createHistory: [
-          createMemoryHistory,
-          { initialEntries: ['/initial'], initialIndex: 0 }
-        ],
+        history: createMemoryHistory({ initialEntries: ['/initial'], initialIndex: 0 }),
         getContext: () => ({ message: 'Hello' }),
         routes: [{ path: ':whatever', onTransition: spy }]
       })
