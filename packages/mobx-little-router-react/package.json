@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "classnames": "^2.2.5",
-    "mobx-little-router": "^1.0.0-rc2"
+    "mobx-little-router": "1.0.0-rc5.0"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
