@@ -1,6 +1,6 @@
 {
   "name": "basic",
-  "version": "1.0.0-rc5.0",
+  "version": "1.0.0-rc6.0",
   "private": true,
   "dependencies": {
     "autoprefixer": "7.1.2",
