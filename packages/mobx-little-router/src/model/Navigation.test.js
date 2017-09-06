@@ -14,14 +14,16 @@ describe('Navigation', () => {
       type: 'PUSH',
       sequence: 1,
       from: { pathname: '/' },
-      to: { pathname: '/login' }
+      to: { pathname: '/login' },
+      shouldTransition: true
     })
 
     expect(a.prev()).toEqual({
       type: 'GO_BACK',
       sequence: 1,
       from: { pathname: '/' },
-      to: null
+      to: null,
+      shouldTransition: false
     })
 
     // Sequence increments after each call.

@@ -21,7 +21,8 @@ export type Definition = {
   type: NavigationType,
   sequence?: number,
   to?: Location,
-  from?: Location
+  from?: Location,
+  shouldTransition?: boolean
 }
 
 export default class Navigation {
@@ -29,12 +30,14 @@ export default class Navigation {
   to: null | Location
   from: null | Location
   sequence: number
+  shouldTransition: boolean
 
   constructor(x: Definition) {
     this.type = x.type
     this.sequence = x.sequence || 0
     this.to = x.to || null
     this.from = x.from || null
+    this.shouldTransition = typeof x.shouldTransition === 'boolean' ? x.shouldTransition : false
   }
 
   next(next: Definition) {
@@ -42,7 +45,8 @@ export default class Navigation {
       type: next.type,
       sequence: this.sequence + 1,
       from: this.to,
-      to: next.to
+      to: next.to,
+      shouldTransition: true
     })
   }
 

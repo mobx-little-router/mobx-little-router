@@ -121,7 +121,7 @@ export default class Scheduler {
       store.updateRoutes(nextRoutes)
       store.updateLocation(nextLocation)
 
-      if (currentNavigation.sequence > 0) {
+      if (currentNavigation.shouldTransition) {
         // Run and wait on transition of deactivating and newly activating nodes.
         await Promise.all([
           TransitionManager.run('exiting', deactivating),
