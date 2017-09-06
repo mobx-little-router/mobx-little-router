@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "build": "lerna run build --stream",
-    "publish": "yarn build && lerna publish",
+    "publish": "yarn build && lerna publish --silent",
     "updated": "lerna updated",
     "test": "lerna run test --stream"
   },
