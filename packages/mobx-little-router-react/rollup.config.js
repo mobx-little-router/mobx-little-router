@@ -13,7 +13,8 @@ const config = {
     'react': 'React',
     'react-dom': 'ReactDOM',
     'prop-types': 'PropTypes',
-    mobx: 'mobx'
+    mobx: 'mobx',
+    classnames: 'classNames'
   },
   external: [
     'mobx-little-router',
@@ -21,7 +22,8 @@ const config = {
     'react',
     'react-dom',
     'mobx',
-    'prop-types'
+    'prop-types',
+    'classnames'
   ],
   plugins: [
     babel({
