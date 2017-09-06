@@ -5,10 +5,11 @@
   "scripts": {
     "publish": "yarn build && lerna publish --silent",
     "updated": "lerna updated",
+    "clean": "rm -rf es lib",
+    "build": "yarn run clean && node scripts/build.js",
     "typecheck": "flow",
     "test": "node scripts/test.js",
-    "clean": "rm -rf es lib",
-    "build": "yarn run clean && node scripts/build.js"
+    "test-ci": "yarn run typecheck && yarn run test -- --coverage && codecov"
   },
   "workspaces": [
     "packages/*",
