@@ -1,6 +1,6 @@
 {
   "name": "mobx-little-router",
-  "version": "0.9.5",
+  "version": "1.0.0-r1",
   "description": "Implementation of an universal router that uses MobX to manage state.",
   "repository": "git@github.com:jaysoo/mobx-router.git",
   "author": "Jack Hsu <jack.hsu@gmail.com>",
@@ -68,9 +68,7 @@
     "transform": {
       "^.+\\.jsx?$": "babel-jest"
     },
-    "setupTestFrameworkScriptFile":
-      "<rootDir>/config/jest.js"
-    ,
+    "setupTestFrameworkScriptFile": "<rootDir>/config/jest.js",
     "testMatch": [
       "<rootDir>/src/**/__tests__/**/*.js",
       "<rootDir>/src/**/?(*.)test.js"
