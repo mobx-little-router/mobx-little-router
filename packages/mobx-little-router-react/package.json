@@ -10,6 +10,7 @@
     "umd"
   ],
   "main": "lib/index.js",
+  "module": "es/index.js",
   "peerDependencies": {
     "mobx": "~3.2.2",
     "mobx-little-router": "^1.0.0-rc6.0",

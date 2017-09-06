@@ -5,7 +5,7 @@ import commonjs from 'rollup-plugin-commonjs'
 import resolve from 'rollup-plugin-node-resolve'
 
 const config = {
-  entry: 'packages/mobx-little-router/src/index.js',
+  entry: 'src/index.js',
   moduleName: 'mobxLittleRouter',
   globals: {
     mobx: 'mobx'
