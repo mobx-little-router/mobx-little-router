@@ -12,6 +12,7 @@ const config = {
     'mobx-react': 'mobxReact',
     'react': 'React',
     'react-dom': 'ReactDOM',
+    'prop-types': 'PropTypes',
     mobx: 'mobx'
   },
   external: [
@@ -19,7 +20,8 @@ const config = {
     'mobx-react',
     'react',
     'react-dom',
-    'mobx'
+    'mobx',
+    'prop-types'
   ],
   plugins: [
     babel({
