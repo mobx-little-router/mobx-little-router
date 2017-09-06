@@ -10,7 +10,8 @@ const plugins = [
     {
       helpers: false,
       polyfill: false,
-      regenerator: true
+      regenerator: true,
+      'moduleName': 'rollup-regenerator-runtime'
     }
   ]
 ]

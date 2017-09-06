@@ -26,14 +26,14 @@ fs.readdirSync(`${BASE_DIR}/packages`).forEach(module => {
   if (process.argv.includes(`umd`)) {
     console.log(`\nBuilding umd/${module}.js ...`)
 
-    exec(`rollup -c rollup.config.js -f umd -o umd/${module}.js`, {
+    exec(`rollup -c -f umd -o umd/${module}.js`, {
       BABEL_ENV: `umd`,
       NODE_ENV: `development`
     })
 
     console.log(`\nBuilding umd/${module}.min.js ...`)
 
-    exec(`rollup -c rollup.config.js -f umd -o umd/${module}.min.js`, {
+    exec(`rollup -c -f umd -o umd/${module}.min.js`, {
       BABEL_ENV: `umd`,
       NODE_ENV: `production`
     })

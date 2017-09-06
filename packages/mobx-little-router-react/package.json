@@ -9,6 +9,9 @@
     "es",
     "umd"
   ],
+  "scripts": {
+    "clean": "rm -rf es lib umd"
+  },
   "main": "lib/index.js",
   "module": "es/index.js",
   "peerDependencies": {

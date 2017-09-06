@@ -5,7 +5,7 @@
   "scripts": {
     "publish": "yarn build umd && lerna publish --silent",
     "updated": "lerna updated",
-    "clean": "rm -rf es lib",
+    "clean": "lerna run clean",
     "build": "yarn run clean && node scripts/build.js",
     "typecheck": "flow",
     "test": "node scripts/test.js",
@@ -61,7 +61,9 @@
     "rollup-plugin-commonjs": "^8.1.0",
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-replace": "^1.1.1",
-    "rollup-plugin-uglify": "^2.0.1"
+    "rollup-plugin-uglify": "^2.0.1",
+    "rollup-regenerator-runtime": "^6.23.1",
+    "uglify-es": "^3.0.28"
   },
   "jest": {
     "modulePathIgnorePatterns": [

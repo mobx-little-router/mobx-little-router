@@ -3,6 +3,7 @@ import uglify from 'rollup-plugin-uglify'
 import replace from 'rollup-plugin-replace'
 import commonjs from 'rollup-plugin-commonjs'
 import resolve from 'rollup-plugin-node-resolve'
+import { minify } from 'uglify-es'
 
 const config = {
   entry: 'src/index.js',
@@ -28,7 +29,7 @@ const config = {
 }
 
 if (process.env.NODE_ENV === 'production') {
-  config.plugins.push(uglify())
+  config.plugins.push(uglify({}, minify))
 }
 
 export default config
