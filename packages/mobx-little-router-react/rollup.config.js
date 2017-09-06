@@ -5,16 +5,20 @@ import commonjs from 'rollup-plugin-commonjs'
 import resolve from 'rollup-plugin-node-resolve'
 
 const config = {
-  entry: 'src/index.js',
+  entry: 'packages/mobx-little-router-react/src/index.js',
   moduleName: 'mobxLittleRouterReact',
   globals: {
     'mobx-little-router': 'mobxLittleRouter',
     'mobx-react': 'mobxReact',
+    'react': 'React',
+    'react-dom': 'ReactDOM',
     mobx: 'mobx'
   },
   external: [
     'mobx-little-router',
     'mobx-react',
+    'react',
+    'react-dom',
     'mobx'
   ],
   plugins: [

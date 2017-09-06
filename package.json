@@ -31,8 +31,10 @@
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.0",
     "babel-preset-flow": "^6.23.0",
+    "babel-preset-react": "^6.23.0",
     "babel-runtime": "^6.25.0",
     "data.maybe": "^1.2.2",
+    "enzyme": "^2.9.1",
     "eslint": "^4.4.1",
     "eslint-plugin-flowtype": "^2.35.0",
     "eslint-plugin-import": "^2.7.0",
@@ -45,6 +47,9 @@
     "mobx-react": "~4.2.2",
     "pretty-bytes": "^4.0.2",
     "ramda": "^0.24.1",
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1",
+    "react-test-renderer": "^15.6.1",
     "rollup": "^0.47.4",
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-commonjs": "^8.1.0",
@@ -53,16 +58,28 @@
     "rollup-plugin-uglify": "^2.0.1"
   },
   "jest": {
+    "modulePathIgnorePatterns": [
+      "examples/.*",
+      "packages/.*/es",
+      "packages/.*/lib",
+      "integration_tests/runtime-internal-module-registry/__mocks__"
+    ],
     "collectCoverageFrom": [
-      "src/**/*.js"
+      "packages/**/src/**/*.js"
     ],
     "transform": {
       "^.+\\.jsx?$": "babel-jest"
     },
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/examples/",
+      "/packages/.*/es",
+      "/packages/.*/lib"
+    ],
     "setupTestFrameworkScriptFile": "<rootDir>/config/jest.js",
     "testMatch": [
-      "<rootDir>/src/**/__tests__/**/*.js",
-      "<rootDir>/src/**/?(*.)test.js"
+      "<rootDir>/packages/**/src/**/__tests__/**/*.js",
+      "<rootDir>/packages/**/src/**/?(*.)test.js"
     ],
     "testEnvironment": "node"
   },

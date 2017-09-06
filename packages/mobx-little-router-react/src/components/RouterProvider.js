@@ -20,6 +20,6 @@ export default class RouterProvider extends Component {
   }
 
   render() {
-    return Children.only(this.props.children)
+    return React.Children.only(this.props.children)
   }
 }
