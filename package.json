@@ -1,11 +1,11 @@
 {
   "private": true,
-  "version": "1.0.0-rc2",
   "repository": "git@github.com:mobx-little-router/mobx-little-router.git",
   "license": "MIT",
   "scripts": {
     "build": "lerna run build --stream",
-    "publish": "lerna run publish",
+    "publish": "yarn build && lerna publish",
+    "updated": "lerna updated",
     "test": "lerna run test --stream"
   },
   "workspaces": [
