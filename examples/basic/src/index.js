@@ -25,7 +25,7 @@ const onTransition = ({ type, target }) => {
 }
 
 const router = install({
-  createHistory: createHashHistory,
+  history: createHashHistory(),
   getContext: () => ({
     stores
   }),
@@ -70,7 +70,7 @@ const router = install({
       getData: () => ({ component: AdminRoute }),
       canActivate: (route, navigation) => {
         const { stores: { SessionStore } } = route.context
-        
+
         if (SessionStore.isAuthenticated) {
           return true
         } else {

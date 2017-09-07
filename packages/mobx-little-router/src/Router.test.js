@@ -9,7 +9,7 @@ describe('Router', () => {
   let router
 
   beforeEach(() => {
-    router = new Router(createMemoryHistory, [
+    router = new Router(createMemoryHistory(), [
       { path: '', match: 'full' },
       { path: 'a' },
       { path: 'b' },
