@@ -1,11 +1,14 @@
 // @flow
 import type { IObservableArray } from 'mobx'
-import { extendObservable, runInAction, observable } from 'mobx'
+import { extendObservable, runInAction, observable, computed } from 'mobx'
 import type { ObservableMap } from 'mobx'
 import createRoute from './createRoute'
 import RouterStateTree from './RouterStateTree'
+import * as QueryString from 'qs'
+
 import type {
   Location,
+  Query,
   Route,
   RouteStateTreeNode,
   PathElement,
@@ -25,6 +28,7 @@ class RouterStore {
   // Keep a list of activated nodes so we can track differences when transitioning to a new state.
   routes: IObservableArray<Route<*, *>>
   prevRoutes: IObservableArray<Route<*, *>>
+  query: Query
 
   constructor(
     root: RouteStateTreeNode<*, *>,
@@ -34,6 +38,7 @@ class RouterStore {
 
     extendObservable(this, {
       location: {},
+      query: computed(() => this.getQueryParams(this.location)),
       error: null,
       cache: observable.map({ [root.value.key]: root }),
       routes: observable.array([]),
@@ -116,6 +121,12 @@ class RouterStore {
     runInAction(() => {
       this.error = err
     })
+  }
+
+  getQueryParams(location: Location) {
+    return location.search
+      ? QueryString.parse(location.search.substr(1))
+      : {}
   }
 }
 
