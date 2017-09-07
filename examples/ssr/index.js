@@ -12,7 +12,7 @@ const app = express()
 app.get('*', function(req, res) {
   const dataStore = new DataStore()
   const router = Router.install({
-    createHistory: [History.createMemoryHistory, { initialEntries: [req.url] }],
+    history: History.createMemoryHistory({ initialEntries: [req.url] }),
     routes: routes,
     getContext: () => ({
       dataStore: dataStore
