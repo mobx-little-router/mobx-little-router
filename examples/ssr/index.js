@@ -26,7 +26,11 @@ app.get('*', function(req, res) {
       React.createElement(App, { dataStore: dataStore, router: router })
     )
 
-    res.status(ctx.status).send(html)
+    if (ctx.status > 300 && ctx.status < 400) {
+      res.redirect(ctx.status, router.store.location.pathname)
+    } else {
+      res.status(ctx.status).send(html)
+    }
   })
 })
 
