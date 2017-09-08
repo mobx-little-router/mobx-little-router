@@ -399,7 +399,11 @@ describe('Scheduler', () => {
       updateNode(projectsListNode, { onTransition: spy })
       updateLocation('/todos/1', [root, todosRoot, todosView])
 
-      scheduler.scheduleNavigation({ shouldTransition: true, type: 'PUSH', to: { pathname: '/projects/2' } })
+      scheduler.scheduleNavigation({
+        shouldTransition: true,
+        type: 'PUSH',
+        to: { pathname: '/projects/2' }
+      })
       await scheduler.processNextNavigation()
 
       expect(store.location.pathname).toEqual('/projects/2')
@@ -494,7 +498,11 @@ describe('Scheduler', () => {
       updateNode(todosView, { onTransition: viewTransitionSpy })
       updateLocation('/todos', [root, appRoot, todosRoot, todosList])
 
-      scheduler.scheduleNavigation({ shouldTransition: true, type: 'PUSH', to: { pathname: '/todos/1' } })
+      scheduler.scheduleNavigation({
+        shouldTransition: true,
+        type: 'PUSH',
+        to: { pathname: '/todos/1' }
+      })
       await scheduler.processNextNavigation()
 
       expect(nodesDuringListTransition.length).toBe(4)
@@ -529,11 +537,12 @@ describe('Scheduler', () => {
 
 function createStore() {
   const store = new RouterStore(
-    createRouteStateTreeNode({ path: '' }, () => ({ message: 'Hello' }))
+    createRouteStateTreeNode({ path: '', match: 'partial' }, () => ({ message: 'Hello' }))
   )
   store.replaceChildren(store.state.root, [
     createRouteStateTreeNode({
       path: '',
+      match: 'partial',
       children: [
         {
           path: 'todos',

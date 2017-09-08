@@ -22,7 +22,8 @@ module.exports = ({ router, dataStore }) => {
               h('li', {}, h(RouterReact.Link, { to: '/' }, 'Home')),
               h('li', {}, h(RouterReact.Link, { to: '/about' }, 'About')),
               h('li', {}, h(RouterReact.Link, { to: '/gif/cat' }, 'Cat GIF')),
-              h('li', {}, h(RouterReact.Link, { to: '/gif/dog' }, 'Dog GIF'))
+              h('li', {}, h(RouterReact.Link, { to: '/gif/dog' }, 'Dog GIF')),
+              h('li', {}, h(RouterReact.Link, { to: '/404' }, '404'))
             ]
           }),
           h('div', { style: { flex: 1 } }, h(RouterReact.Outlet))

@@ -111,7 +111,7 @@ describe('Public API', () => {
   })
 
   describe('Events', () => {
-    test('Subscription', async () => {
+    test('subscription', async () => {
       const spy = jest.fn()
       const dispose = router.subscribeEvent(spy)
       await router.start()
@@ -132,8 +132,8 @@ describe('Public API', () => {
     })
   })
 
-  describe('Total ordering', () => {
-    test('Navigations are guaranteed to be processed sequentially and in order', async () => {
+  describe('total ordering', () => {
+    test('navigation is guaranteed to be processed sequentially and in order', async () => {
       const MAX_DURATION = 50
       const spy = jest.fn(() => {
         return delay(Math.random() * MAX_DURATION)
@@ -160,5 +160,24 @@ describe('Public API', () => {
 
       router.stop()
     })
+  })
+
+  test('catch-all routes', async () => {
+    const router = install({
+      history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
+      getContext: () => ({}),
+      routes: [{ path: 'a' }, { path: '**' }]
+    })
+
+    const changes = []
+    await router.start()
+
+    autorun(() => changes.push(router.store.location.pathname))
+
+    await router.push('/404')
+
+    expect(changes).toEqual(['/a/', '/404/'])
+
+    router.stop()
   })
 })

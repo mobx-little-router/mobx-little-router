@@ -1,6 +1,9 @@
 const Home = require('./Home')
 const About = require('./About')
+const AboutNotFound = require('./AboutNotFound')
 const Gif = require('./Gif')
+const NotFound = require('./NotFound')
+const mobx = require('mobx')
 const fetch = require('node-fetch')
 
 module.exports = [
@@ -11,7 +14,25 @@ module.exports = [
   },
   {
     path: 'about',
-    getData: () => ({ component: About })
+    getData: () => ({ component: About }),
+    children: [
+      {
+        path: '',
+        getData: () => ({
+          component: () => null
+        })
+      },
+      {
+        path: '**',
+        willActivate: (route) => {
+          route.context.status = 404
+          return Promise.resolve()
+        },
+        getData: () => ({
+          component: AboutNotFound
+        })
+      }
+    ]
   },
   {
     path: 'gif/:topic',
@@ -32,5 +53,15 @@ module.exports = [
           })
       })
     }
+  },
+  {
+    path: '**',
+    willActivate: mobx.action((route) => {
+      route.context.status = 404
+      return Promise.resolve()
+    }),
+    getData: () => ({
+      component: NotFound
+    })
   }
 ]

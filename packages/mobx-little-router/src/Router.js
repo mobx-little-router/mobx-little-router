@@ -25,7 +25,7 @@ class Router {
     this.disposers = []
 
     this.history = history
-    const root = createRouteStateTreeNode({ path: '' }, getContext) // Initial root.
+    const root = createRouteStateTreeNode({ path: '', match: 'partial' }, getContext) // Initial root.
     const routes = config.map(x => createRouteStateTreeNode(x, getContext))
     this.store = new RouterStore(root, routes)
     this.scheduler = new Scheduler(this.store)

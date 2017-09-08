@@ -7,6 +7,7 @@ describe('createRouteStateTreeNode', () => {
   test('Handles nesting and compound paths', () => {
     const config = {
       path: '',
+      match: 'partial',
       children: [
         {
           path: 'a/b/c',
