@@ -103,7 +103,8 @@ class Router {
     return new Promise(res => {
       when(() => {
         const { event } = this.scheduler
-        return event !== null && event.type === EventTypes.NAVIGATION_END
+        const { location } = this.store
+        return event !== null && event.type === EventTypes.NAVIGATION_END && typeof location.pathname === 'string'
       }, res)
     })
   }

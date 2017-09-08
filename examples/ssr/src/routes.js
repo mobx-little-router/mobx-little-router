@@ -55,6 +55,14 @@ module.exports = [
     }
   },
   {
+    path: 'g/:topic',
+    redirectTo: '/gif/:topic',
+    willActivate: (route) => {
+      route.context.status = 302
+      return Promise.resolve()
+    },
+  },
+  {
     path: '**',
     willActivate: mobx.action((route) => {
       route.context.status = 404

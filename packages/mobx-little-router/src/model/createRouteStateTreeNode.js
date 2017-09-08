@@ -1,16 +1,19 @@
 // @flow
 import type {
   Config,
+  Route,
   RouteStateTreeNode,
   LoadChildrenConfigFn,
   LoadChildrenRouteStateTreeNode
 } from './types'
+import type Navigation from './Navigation'
 import { TreeNode } from '../util/tree'
 import createKey from '../util/createKey'
 import * as m from './matchers'
 import { array, string, optional, func, createValidator } from '../validation'
+import UrlPattern from 'url-pattern'
 
-async function nop() {}
+async function nop(a: *, b: *) {}
 
 // Don't run validators in production bundle
 const validate = createValidator({
@@ -27,7 +30,10 @@ const validate = createValidator({
 
 type GetContext = () => *
 
-export default function createRouteStateTreeNode(config: Config<*>, getContext: ?GetContext): RouteStateTreeNode<*, *> {
+export default function createRouteStateTreeNode(
+  config: Config<*>,
+  getContext: ?GetContext
+): RouteStateTreeNode<*, *> {
   const matcher = getMatcher(config)
 
   validate(config)
@@ -41,14 +47,13 @@ export default function createRouteStateTreeNode(config: Config<*>, getContext: 
       )
     : []
 
-  const query: Array<string> = typeof config.query !== 'undefined' ? config.query : []
-
   return TreeNode(
     {
       key: typeof config.key === 'string' ? config.key : createKey(6),
       path: config.path,
       matcher: matcher(config.path),
-      query: query,
+      query: typeof config.query !== 'undefined' ? config.query : [],
+      params: config.params !== null ? config.params : {},
       loadChildren: typeof config.loadChildren === 'function'
         ? toLoadRouteStateTreeNodeChildren(config.loadChildren)
         : null,
@@ -84,7 +89,7 @@ export function getMatcher(config: Config<*>) {
     return m[config.match]
   }
 
-  if (!config.children &&  typeof config.loadChildren !== 'function') {
+  if (!config.children && typeof config.loadChildren !== 'function') {
     // If we are in a leaf node, then match must be full.
     return m.full
   }
@@ -93,17 +98,24 @@ export function getMatcher(config: Config<*>) {
   return m.partial
 }
 
+// If a `redirectTo` has been specified on this route config, then the `willActivate`
+// callback will redirect throw with a redirect.
 export function getWillActivate(config: Config<*>) {
   let f = typeof config.willActivate === 'function' ? config.willActivate : nop
-
   if (typeof config.redirectTo === 'string') {
-    return (node: *, navigation: *, context: *) => navigation.redirectTo((config: any).redirectTo)
+    const pattern = new UrlPattern(config.redirectTo)
+    return (route: Route<*, *>, navigation: Navigation) =>{
+      f(route, navigation)
+      return navigation.redirectTo(pattern.stringify(route.params))
+    }
   } else {
     return f
   }
 }
 
-function toLoadRouteStateTreeNodeChildren(f: void | LoadChildrenConfigFn<*>): null | LoadChildrenRouteStateTreeNode {
+function toLoadRouteStateTreeNodeChildren(f: void | LoadChildrenConfigFn<
+  *
+>): null | LoadChildrenRouteStateTreeNode {
   const g = f // Avoid re-binding type errors on f.
   if (typeof g === 'undefined') {
     return null

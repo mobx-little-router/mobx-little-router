@@ -97,27 +97,29 @@ describe('createRouteStateTreeNode', () => {
     })
   })
 
-  test('Handles redirect config', (done) => {
+  test('Handles redirect config', async () => {
     const node = createRouteStateTreeNode(
       {
-        path: 'a',
-        redirectTo: '/b'
+        path: 'a/:id',
+        redirectTo: '/b/:id'
       },
       () => ({ message: 'Hello' })
     )
 
-    expect(node.value.path).toEqual('a')
+    expect(node.value.path).toEqual('a/:id')
 
     const { willActivate } = node.value
     const navigation = new Navigation({
       type: 'PUSH',
       sequence: 0
     })
-
-    willActivate(createRoute(node, '', {}, {}), navigation).catch(err => {
-      expect(err).toBeInstanceOf(Navigation)
-      expect(err.to.pathname).toEqual('/b')
-      done()
-    })
+    const promise = willActivate(createRoute(node, '/a/1', { id: '1' }, {}), navigation)
+    await expect(promise).rejects.toEqual(
+      expect.objectContaining({
+        to: expect.objectContaining({
+          pathname: '/b/1'
+        })
+      })
+    )
   })
 })
