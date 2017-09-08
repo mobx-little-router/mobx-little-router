@@ -8,13 +8,14 @@ import type {
 import { TreeNode } from '../util/tree'
 import createKey from '../util/createKey'
 import * as m from './matchers'
-import { string, optional, func, createValidator } from '../validation'
+import { array, string, optional, func, createValidator } from '../validation'
 
 async function nop() {}
 
 // Don't run validators in production bundle
 const validate = createValidator({
   path: string,
+  children: optional(array),
   loadChildren: optional(func),
   onError: optional(func),
   canActivate: optional(func),
@@ -75,13 +76,23 @@ export default function createRouteStateTreeNode(config: Config<*>, getContext: 
 }
 
 export function getMatcher(config: Config<*>) {
-  switch (config.path) {
+  if (config.path === '**') {
     // Catch-all matcher for handling "Not Found", etc.
-    case '**':
-      return m.any
-    default:
-      return config.match ? m[config.match] : m.partial
+    return m.any
   }
+
+  if (config.match) {
+    // Match was specified.
+    return m[config.match]
+  }
+
+  if (!config.children &&  typeof config.loadChildren !== 'function') {
+    // If we are in a leaf node, then match must be full.
+    return m.full
+  }
+
+  // Otherwise we default to partial.
+  return m.partial
 }
 
 function toLoadRouteStateTreeNodeChildren(f: void | LoadChildrenConfigFn<*>): null | LoadChildrenRouteStateTreeNode {

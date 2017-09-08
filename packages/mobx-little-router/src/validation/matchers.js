@@ -27,3 +27,11 @@ export function func(x: any) {
     pass: typeof x === 'function'
   }
 }
+
+
+export function array(x: any) {
+  return {
+    type: 'array',
+    pass: Array.isArray(x)
+  }
+}

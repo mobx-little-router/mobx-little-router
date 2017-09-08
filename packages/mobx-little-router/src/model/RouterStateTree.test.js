@@ -72,8 +72,11 @@ describe('createRouteStateTreeNode tests', () => {
         })
       )
 
-      const result = await tree.pathFromRoot('/c', () => Promise.resolve(true))
+      let result = await tree.pathFromRoot('/c', () => Promise.resolve(true))
+      expect(result.map(r => r.node.value.path)).toEqual(['', '**'])
 
+      // Bubbles back up.
+      result = await tree.pathFromRoot('/a/404', () => Promise.resolve(true))
       expect(result.map(r => r.node.value.path)).toEqual(['', '**'])
     })
 
