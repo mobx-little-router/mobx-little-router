@@ -137,8 +137,4 @@ const SearchInput = styled.input.attrs({
   padding: 0 9px;
 `
 
-const SearchButton = styled.button`
-
-`
-
 export default inject('ShowsStore')(observer(ShowsRoute))
