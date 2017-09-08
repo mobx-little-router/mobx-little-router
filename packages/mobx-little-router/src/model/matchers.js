@@ -9,13 +9,17 @@ export type MatchFn = (url: string) => {
 }
 
 export function partial(path: string): MatchFn {
-  const normalized = path === '' ? '*' : `/${path}*`
-  return createMatcher(new UrlPattern(normalized))
+  path = normalize(path)
+  return createMatcher(new UrlPattern(path === '/' ? '*' : `${path}*`))
 }
 
 export function full(path: string): MatchFn {
-  const normalized = path === '' ? '(/)' : `/${path}(/)`
-  return createMatcher(new UrlPattern(normalized))
+  path = normalize(path)
+  return createMatcher(new UrlPattern(path === '/' ? '(/)' : `${path}(/)`))
+}
+
+function normalize(path: string): string {
+  return path.startsWith('/') ? path : `/${path}`
 }
 
 function createMatcher(pattern: UrlPattern) {

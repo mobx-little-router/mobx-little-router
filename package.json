@@ -44,7 +44,7 @@
     "flow-copy-source": "^1.2.0",
     "gzip-size": "^3.0.0",
     "jest": "^20.0.4",
-    "jsdom": "^11.1.0",
+    "jsdom": "11.1.0",
     "lerna": "^2.0.0",
     "mobx": "~3.2.2",
     "mobx-react": "~4.2.2",
