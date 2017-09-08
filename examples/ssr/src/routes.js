@@ -17,6 +17,12 @@ module.exports = [
     getData: () => ({ component: About }),
     children: [
       {
+        path: '',
+        getData: () => ({
+          component: () => null
+        })
+      },
+      {
         path: '**',
         willActivate: (route) => {
           route.context.status = 404
