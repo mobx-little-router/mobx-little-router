@@ -41,10 +41,6 @@ export default function createRouteStateTreeNode(config: Config<*>, getContext: 
       )
     : []
 
-  const willActivate = typeof config.redirectTo === 'string'
-    ? (node: *, navigation: *, context: *) => navigation.redirectTo((config: any).redirectTo)
-    : typeof config.willActivate === 'function' ? config.willActivate : nop
-
   return TreeNode(
     {
       key: typeof config.key === 'string' ? config.key : createKey(6),
@@ -59,7 +55,7 @@ export default function createRouteStateTreeNode(config: Config<*>, getContext: 
       canDeactivate: typeof config.canDeactivate === 'function'
         ? config.canDeactivate
         : nop,
-      willActivate,
+      willActivate: getWillActivate(config),
       willDeactivate: typeof config.willDeactivate === 'function'
         ? config.willDeactivate
         : nop,
@@ -93,6 +89,16 @@ export function getMatcher(config: Config<*>) {
 
   // Otherwise we default to partial.
   return m.partial
+}
+
+export function getWillActivate(config: Config<*>) {
+  let f = typeof config.willActivate === 'function' ? config.willActivate : nop
+
+  if (typeof config.redirectTo === 'string') {
+    return (node: *, navigation: *, context: *) => navigation.redirectTo((config: any).redirectTo)
+  } else {
+    return f
+  }
 }
 
 function toLoadRouteStateTreeNodeChildren(f: void | LoadChildrenConfigFn<*>): null | LoadChildrenRouteStateTreeNode {

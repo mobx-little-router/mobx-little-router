@@ -9,6 +9,7 @@ describe('createValidator', () => {
 
   beforeEach(() => {
     validate = createValidator({
+      w: optional(m.array),
       x: m.string,
       y: m.func,
       z: optional(or(m.string, m.number))
@@ -28,6 +29,7 @@ describe('createValidator', () => {
     })).not.toBeDefined()
 
     expect(validate({
+      w: [],
       x: 'hello',
       y: () => {},
       z: 'abc'
@@ -44,5 +46,12 @@ describe('createValidator', () => {
       y: () => {},
       z: () => {}
     })).toThrow(/Expected `z` to be of type `or\(empty or\(string number\)\)`/)
+
+    expect(() => validate({
+      w: 1,
+      x: 'hello',
+      y: () => {},
+      z: () => {}
+    })).toThrow(/Expected `w` to be of type `or\(empty array\)`/)
   })
 })
