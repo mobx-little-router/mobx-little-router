@@ -2,94 +2,114 @@
 import createRouteStateTreeNode from './createRouteStateTreeNode'
 import RouterStateTree from './RouterStateTree'
 
-describe('createRouteStateTreeNode tree tests', () => {
-  test('Finding path with simple matches', async () => {
-    const tree = new RouterStateTree(
-      createRouteStateTreeNode({
-        path: 'a',
-        children: [
-          {
-            path: 'b',
-            children: [{ path: 'c' }]
-          }
-        ]
-      })
-    )
+describe('createRouteStateTreeNode tests', () => {
+  describe('pathFromRoot', () => {
+    test('path with simple matches', async () => {
+      const tree = new RouterStateTree(
+        createRouteStateTreeNode({
+          path: 'a',
+          children: [
+            {
+              path: 'b',
+              children: [{ path: 'c' }]
+            }
+          ]
+        })
+      )
 
-    const result = await tree.pathFromRoot('/a/b/c', () => Promise.resolve(true))
+      const result = await tree.pathFromRoot('/a/b/c', () => Promise.resolve(true))
 
-    expect(result.map(r => r.node.value.path)).toEqual(['a', 'b', 'c'])
-  })
+      expect(result.map(r => r.node.value.path)).toEqual(['a', 'b', 'c'])
+    })
 
-  test('Finding path with param matching', async () => {
-    const tree = new RouterStateTree(
-      createRouteStateTreeNode({
-        path: 'a',
-        children: [
-          {
-            path: ':what',
-            children: [{ path: 'c' }]
-          }
-        ]
-      })
-    )
+    test('path with param matching', async () => {
+      const tree = new RouterStateTree(
+        createRouteStateTreeNode({
+          path: 'a',
+          children: [
+            {
+              path: ':what',
+              children: [{ path: 'c' }]
+            }
+          ]
+        })
+      )
 
-    const result = await tree.pathFromRoot('/a/b/c', () => Promise.resolve(true))
+      const result = await tree.pathFromRoot('/a/b/c', () => Promise.resolve(true))
 
-    expect(result.map(r => r.node.value.path)).toEqual(['a', ':what', 'c'])
-  })
+      expect(result.map(r => r.node.value.path)).toEqual(['a', ':what', 'c'])
+    })
 
-  test('Finding path with empty paths', async () => {
-    const tree = new RouterStateTree(
-      createRouteStateTreeNode({
-        path: '',
-        data: { uid: '' },
-        children: [
-          {
-            path: '',
-            data: { uid: '' },
-            children: [{ path: 'c' }]
-          }
-        ]
-      })
-    )
+    test('path with empty paths', async () => {
+      const tree = new RouterStateTree(
+        createRouteStateTreeNode({
+          path: '',
+          match: 'partial',
+          data: { uid: '' },
+          children: [
+            {
+              path: '',
+              match: 'partial',
+              data: { uid: '' },
+              children: [{ path: 'c' }]
+            }
+          ]
+        })
+      )
 
-    const result = await tree.pathFromRoot('/c', () => Promise.resolve(true))
+      const result = await tree.pathFromRoot('/c', () => Promise.resolve(true))
 
-    expect(result.map(r => r.node.value.path)).toEqual(['', '', 'c'])
-  })
+      expect(result.map(r => r.node.value.path)).toEqual(['', '', 'c'])
+    })
 
-  test('No match from path', async () => {
-    const tree = new RouterStateTree(
-      createRouteStateTreeNode({
-        path: 'a',
-        children: [
-          {
-            path: '',
-            children: [{ path: 'c' }]
-          }
-        ]
-      })
-    )
+    test('catch-all paths (**)', async () => {
+      const tree = new RouterStateTree(
+        createRouteStateTreeNode({
+          path: '',
+          match: 'partial',
+          data: { uid: '' },
+          children: [{ path: 'a' }, { path: 'b' }, { path: '**' }]
+        })
+      )
 
-    const result = await tree.pathFromRoot('/a/d', () => Promise.resolve(true))
+      const result = await tree.pathFromRoot('/c', () => Promise.resolve(true))
 
-    expect(result.map(r => r.node.value.path)).toEqual(['a', ''])
-  })
+      expect(result.map(r => r.node.value.path)).toEqual(['', '**'])
+    })
 
-  test('Exhausting route nodes on search', async () => {
-    const tree = new RouterStateTree(
-      createRouteStateTreeNode({
-        path: 'a',
-        children: [{ path: 'b', data: { uid: 'b' } }]
-      })
-    )
+    test('no match from path', async () => {
+      const tree = new RouterStateTree(
+        createRouteStateTreeNode({
+          path: 'a',
+          children: [
+            {
+              path: '',
+              match: 'partial',
+              children: [{ path: 'c' }]
+            }
+          ]
+        })
+      )
 
-    const onExhausted = jest.fn(() => Promise.resolve())
-    const result = await tree.pathFromRoot('/a/b/c', onExhausted)
+      const result = await tree.pathFromRoot('/a/d', () => Promise.resolve(true))
 
-    expect(result.map(r => r.node.value.path)).toEqual(['a', 'b'])
-    expect(onExhausted).toHaveBeenCalledTimes(1)
+      expect(result.map(r => r.node.value.path)).toEqual(['a', ''])
+    })
+
+    test('exhausting route nodes on search', async () => {
+      const tree = new RouterStateTree(
+        createRouteStateTreeNode({
+          path: 'a',
+          children: [{ path: 'b', data: { uid: 'b' } }]
+        })
+      )
+
+      const onExhausted = jest.fn(() => Promise.resolve())
+      const result = await tree.pathFromRoot('/a/b/c', onExhausted)
+
+      expect(result.map(r => r.node.value.path)).toEqual(['a', 'b'])
+      expect(onExhausted).toHaveBeenCalledTimes(1)
+    })
   })
 
   test('find', () => {
@@ -99,6 +119,7 @@ describe('createRouteStateTreeNode tree tests', () => {
         children: [
           {
             path: '',
+            match: 'partial',
             data: { uid: '' },
             children: [{ path: 'c' }]
           }

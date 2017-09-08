@@ -75,4 +75,12 @@ describe('URL matchers', () => {
       remaining: '/shows/1'
     })
   })
+
+  test('any', () => {})
+  expect(m.any()('/whatever')).toEqual({
+    matched: true,
+    params: null,
+    segment: '',
+    remaining: "/whatever"
+  })
 })

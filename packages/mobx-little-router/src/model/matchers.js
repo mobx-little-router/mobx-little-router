@@ -18,6 +18,17 @@ export function full(path: string): MatchFn {
   return createMatcher(new UrlPattern(path === '/' ? '(/)' : `${path}(/)`))
 }
 
+export function any(path: string): MatchFn {
+  return (url: string) => {
+    return {
+      matched: true,
+      params: null,
+      segment: '',
+      remaining: url
+    }
+  }
+}
+
 function normalize(path: string): string {
   return path.startsWith('/') ? path : `/${path}`
 }

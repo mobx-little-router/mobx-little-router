@@ -27,7 +27,7 @@ const validate = createValidator({
 type GetContext = () => *
 
 export default function createRouteStateTreeNode(config: Config<*>, getContext: ?GetContext): RouteStateTreeNode<*, *> {
-  const matcher = config.match ? m[config.match] : m.partial
+  const matcher = getMatcher(config)
 
   validate(config)
 
@@ -72,6 +72,16 @@ export default function createRouteStateTreeNode(config: Config<*>, getContext: 
     },
     children
   )
+}
+
+export function getMatcher(config: Config<*>) {
+  switch (config.path) {
+    // Catch-all matcher for handling "Not Found", etc.
+    case '**':
+      return m.any
+    default:
+      return config.match ? m[config.match] : m.partial
+  }
 }
 
 function toLoadRouteStateTreeNodeChildren(f: void | LoadChildrenConfigFn<*>): null | LoadChildrenRouteStateTreeNode {
