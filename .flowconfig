@@ -3,6 +3,7 @@
 .*node_modules/fbjs.*
 .*/node_modules/styled-components/.*
 .*/node_modules/react\(-dom\)?/.*
+.*.js.flow
 
 [include]
 
