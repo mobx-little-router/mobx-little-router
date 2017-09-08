@@ -103,7 +103,10 @@ describe('createRouteStateTreeNode tests', () => {
       const tree = new RouterStateTree(
         createRouteStateTreeNode({
           path: 'a',
-          children: [{ path: 'b', data: { uid: 'b' } }]
+          children: [{
+            match: 'partial',
+            path: 'b', data: { uid: 'b' }
+          }]
         })
       )
 
