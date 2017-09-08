@@ -5,18 +5,21 @@ const History = require('history')
 const Router = require('mobx-little-router')
 const App = require('./src/App')
 const routes = require('./src/routes')
+const mobx = require('mobx')
 const DataStore = require('./src/DataStore')
 
 const app = express()
 
 app.get('*', function(req, res) {
   const dataStore = new DataStore()
+  const ctx = mobx.observable({
+    status: 200,
+    dataStore: dataStore
+  })
   const router = Router.install({
     history: History.createMemoryHistory({ initialEntries: [req.url] }),
     routes: routes,
-    getContext: () => ({
-      dataStore: dataStore
-    })
+    getContext: () => ctx
   })
 
   router.start(() => {
@@ -24,7 +27,7 @@ app.get('*', function(req, res) {
       React.createElement(App, { dataStore: dataStore, router: router })
     )
 
-    res.send(html)
+    res.status(ctx.status).send(html)
   })
 })
 
