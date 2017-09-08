@@ -76,11 +76,11 @@ describe('URL matchers', () => {
     })
   })
 
-  test('any', () => {})
-  expect(m.any()('/whatever')).toEqual({
-    matched: true,
-    params: null,
-    segment: '',
-    remaining: "/whatever"
-  })
+  test('any', () => {
+    expect(m.any('')('/whatever')).toEqual({
+      matched: true,
+      params: null,
+      segment: '/whatever',
+      remaining: ''
+    })})
 })

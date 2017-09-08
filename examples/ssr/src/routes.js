@@ -1,6 +1,8 @@
 const Home = require('./Home')
 const About = require('./About')
+const AboutNotFound = require('./AboutNotFound')
 const Gif = require('./Gif')
+const NotFound = require('./NotFound')
 const fetch = require('node-fetch')
 
 module.exports = [
@@ -11,7 +13,15 @@ module.exports = [
   },
   {
     path: 'about',
-    getData: () => ({ component: About })
+    getData: () => ({ component: About }),
+    children: [
+      {
+        path: '**',
+        getData: () => ({
+          component: AboutNotFound
+        })
+      }
+    ]
   },
   {
     path: 'gif/:topic',
@@ -32,5 +42,11 @@ module.exports = [
           })
       })
     }
+  },
+  {
+    path: '**',
+    getData: () => ({
+      component: NotFound
+    })
   }
 ]

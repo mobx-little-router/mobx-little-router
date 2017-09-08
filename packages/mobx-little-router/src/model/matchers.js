@@ -23,8 +23,8 @@ export function any(path: string): MatchFn {
     return {
       matched: true,
       params: null,
-      segment: '',
-      remaining: url
+      segment: url,
+      remaining: ''
     }
   }
 }
