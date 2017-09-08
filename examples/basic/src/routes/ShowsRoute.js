@@ -1,10 +1,18 @@
 import React, { Component } from 'react'
 import { inject, observer } from 'mobx-react'
-import { runInAction } from 'mobx'
+import { runInAction, extendObservable } from 'mobx'
 import { Link } from 'mobx-little-router-react'
 import styled from 'styled-components'
 
 class ShowsRoute extends Component {
+  constructor(props) {
+    super(props)
+
+    extendObservable(this, {
+      query: ''
+    })
+  }
+
   componentDidMount() {
     const { query } = this.props
     this.onSearch(query.q || 'gundam')
@@ -16,6 +24,7 @@ class ShowsRoute extends Component {
     const data = await res.json()
 
     runInAction(() => {
+      this.query = query
       ShowsStore.collection = data.map(({ show }) => show)
     })
   }
@@ -26,7 +35,7 @@ class ShowsRoute extends Component {
     return (
       <Container>
         <SearchHeader>
-          <SearchInput onChange={ev => this.onSearch(ev.target.value)} defaultValue="gundam" />
+          <SearchInput onChange={ev => this.onSearch(ev.target.value)} value={this.query} />
         </SearchHeader>
         <SearchResults>
           {ShowsStore.collection.map(show =>
