@@ -130,7 +130,7 @@ class RouterStore {
   }
 
   getQueryParams(location: Location): Query {
-    return location.search
+    return location.search != null
       ? QueryString.parse(location.search.substr(1))
       : {}
   }
