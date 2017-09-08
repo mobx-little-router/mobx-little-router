@@ -41,12 +41,14 @@ export default function createRouteStateTreeNode(config: Config<*>, getContext: 
       )
     : []
 
+  const query: Array<string> = typeof config.query !== 'undefined' ? config.query : []
+
   return TreeNode(
     {
       key: typeof config.key === 'string' ? config.key : createKey(6),
       path: config.path,
       matcher: matcher(config.path),
-      query: typeof config.query !== 'undefined' ? config.query : [],
+      query: query,
       loadChildren: typeof config.loadChildren === 'function'
         ? toLoadRouteStateTreeNodeChildren(config.loadChildren)
         : null,

@@ -39,6 +39,7 @@ export type BasicConfig<D: Object> = {
 
 export type RedirectConfig<D: Object> = {
   path: string,
+  query?: empty,
   redirectTo: Href,
   getData?: () => D,
   key?: string,
