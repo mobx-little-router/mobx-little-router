@@ -116,6 +116,7 @@ class TransitionGroup extends Component {
           createElement(route.data.component, {
             key: route.key,
             params: route.params,
+            query: route.query,
             className,
             ...additionalProps,
             ref: (ref) => { this.innerRefs[route.key] = ref }

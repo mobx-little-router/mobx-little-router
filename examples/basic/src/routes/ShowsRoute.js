@@ -6,7 +6,8 @@ import styled from 'styled-components'
 
 class ShowsRoute extends Component {
   componentDidMount() {
-    this.onSearch('gundam')
+    const { query } = this.props
+    this.onSearch(query.q || 'gundam')
   }
 
   onSearch = async (query) => {
@@ -125,6 +126,10 @@ const SearchInput = styled.input.attrs({
 
   font-size: 21px;
   padding: 0 9px;
+`
+
+const SearchButton = styled.button`
+
 `
 
 export default inject('ShowsStore')(observer(ShowsRoute))
