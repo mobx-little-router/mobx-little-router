@@ -191,4 +191,45 @@ describe('RouterStore', () => {
     store.location = { pathname: '/', search: '?q=Hello' }
     expect(store.query).toEqual({ q: 'Hello' })
   })
+
+  test('Routes with query params', () => {
+    const a = createRouteStateTreeNode({
+      path: 'a',
+      children: [],
+      query: ['q']
+    })
+
+    const b = createRouteStateTreeNode({
+      path: 'b',
+      children: [],
+      query: ['r']
+    })
+
+    store.replaceChildren(store.state.root, [a, b])
+    store.updateRoutes([createRoute(a, '', {}, { q: 'hey' })])
+
+    expect(store.routes[0]).toEqual(
+      expect.objectContaining({
+        query: { q: 'hey' },
+        node: expect.objectContaining({
+          value: expect.objectContaining({
+            path: 'a'
+          })
+        })
+      })
+    )
+
+    store.updateRoutes([createRoute(b, '', {}, { r: 'what' })])
+
+    expect(store.routes[0]).toEqual(
+      expect.objectContaining({
+        query: { r: 'what' },
+        node: expect.objectContaining({
+          value: expect.objectContaining({
+            path: 'b'
+          })
+        })
+      })
+    )
+  })
 })
