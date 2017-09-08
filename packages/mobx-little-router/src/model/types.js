@@ -23,6 +23,7 @@ export type Config<D> = BasicConfig<D> | RedirectConfig<D>
 
 export type BasicConfig<D: Object> = {
   path: string,
+  query?: Array<string>,
   getData?: () => D,
   key?: string,
   children?: Config<D>[],
@@ -65,6 +66,7 @@ export type RouteValue<C: Object, D: Object> = {
   key: string,
   // Original path provided to this route node.
   path: string,
+  query: Array<string>,
   matcher: MatchFn,
   loadChildren?: null | LoadChildrenRouteStateTreeNode,
   canActivate: GuardFn,
@@ -92,6 +94,7 @@ export type Route<C,D> = {
   data: D,
   context: C,
   params: Params,
+  query: Query,
   segment: string, // This is the matched segment from URL. e.g. "/123" for ":id"
   onTransition: null | TransitionFn
 }

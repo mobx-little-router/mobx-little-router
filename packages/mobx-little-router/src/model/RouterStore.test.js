@@ -82,7 +82,7 @@ describe('RouterStore', () => {
     })
 
     store.replaceChildren(store.state.root, [a])
-    store.updateRoutes([createRoute(a, { x: '1' }, '1')])
+    store.updateRoutes([createRoute(a, '1', { x: '1' }, {})])
 
     expect(store.routes[0]).toEqual(
       expect.objectContaining({
@@ -94,15 +94,8 @@ describe('RouterStore', () => {
         })
       })
     )
-    store.updateRoutes([
-      createRoute(
-        a,
-        {
-          x: '2'
-        },
-        '2'
-      )
-    ])
+
+    store.updateRoutes([createRoute(a, '2', { x: '2' }, {})])
 
     expect(store.routes[0]).toEqual(
       expect.objectContaining({
@@ -158,6 +151,7 @@ describe('RouterStore', () => {
         context: {},
         data: {},
         params: { x: '1' },
+        query: {},
         onTransition: spy,
         segment: '/a/1'
       },
@@ -167,6 +161,7 @@ describe('RouterStore', () => {
         context: {},
         data: {},
         params: { y: '2' },
+        query: {},
         onTransition: spy,
         segment: '/b/2'
       }
@@ -178,7 +173,7 @@ describe('RouterStore', () => {
     ]
     store.routes.replace(currRoutes)
 
-    const nextRoutes = store.getNextRoutes(nextPath)
+    const nextRoutes = store.getNextRoutes(nextPath, {})
 
     expect(dataSpy).toHaveBeenCalledTimes(2)
     expect(dataSpy.mock.calls.map(x => x[0])).toEqual(['a', 'c']) // 'b' is not called since it did not change.

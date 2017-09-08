@@ -83,7 +83,7 @@ describe('Scheduler', () => {
       const [root, _, todosRoot, todosView] = scanChildren(store.state.root, [0, 1, 1])
       updateNode(todosRoot, { canDeactivate: rootSpy })
       updateNode(todosView, { canDeactivate: viewSpy })
-      store.updateRoutes([root, todosRoot, todosView].map(x => createRoute(x, {}, '')))
+      store.updateRoutes([root, todosRoot, todosView].map(x => createRoute(x, '', {}, {})))
       store.location.pathname = '/todos/123'
       scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/' } })
 
@@ -104,7 +104,7 @@ describe('Scheduler', () => {
       updateNode(todosRoot, { canDeactivate: spy })
       updateNode(todosView, { canDeactivate: spy })
       store.location.pathname = '/todos/123'
-      store.updateRoutes([root, todosRoot, todosView].map(x => createRoute(x, {}, '')))
+      store.updateRoutes([root, todosRoot, todosView].map(x => createRoute(x, '', {}, {})))
       scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/' } })
 
       await scheduler.processNextNavigation()
@@ -153,7 +153,7 @@ describe('Scheduler', () => {
         updateNode(todosRoot, { canDeactivate: spy })
         store.location.pathname = '/todos/'
         store.updateRoutes(
-          [store.state.root, appRootNode, todosRoot].map(x => createRoute(x, {}, ''))
+          [store.state.root, appRootNode, todosRoot].map(x => createRoute(x, '', {}, {}))
         )
         scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/' } })
 
@@ -168,7 +168,7 @@ describe('Scheduler', () => {
         updateNode(todosRoot, { canDeactivate: spy })
         store.location.pathname = '/todos'
         store.updateRoutes(
-          [store.state.root, appRootNode, todosRoot].map(x => createRoute(x, {}, ''))
+          [store.state.root, appRootNode, todosRoot].map(x => createRoute(x, '', {}, {}))
         )
         scheduler.scheduleNavigation({ type: 'PUSH', to: { pathname: '/' } })
 
@@ -289,7 +289,7 @@ describe('Scheduler', () => {
 
     test('Can cancel navigation from willDeactivate', async () => {
       store.location.pathname = '/todos/'
-      store.updateRoutes([store.state.root, todosRoot].map(x => createRoute(x, {}, '')))
+      store.updateRoutes([store.state.root, todosRoot].map(x => createRoute(x, '', {}, {})))
 
       scheduler.scheduleNavigation({ type: 'PUSH', sequence: 0, to: { pathname: '/' } })
 
@@ -531,7 +531,7 @@ describe('Scheduler', () => {
 
   function updateLocation(location: *, nodes: *) {
     store.location.pathname = location
-    store.updateRoutes(nodes.map(x => createRoute(x, {}, '')))
+    store.updateRoutes(nodes.map(x => createRoute(x, '', {}, {})))
   }
 })
 

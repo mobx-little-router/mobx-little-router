@@ -100,7 +100,7 @@ export default class Scheduler {
       )
       await assertUrlFullyMatched(nextLocation.pathname, nextPath)
 
-      const nextRoutes = store.getNextRoutes(nextPath)
+      const nextRoutes = store.getNextRoutes(nextPath, nextLocation)
 
       // We've found a match or unmatched error has been handled.
       const { activating, deactivating } = await diffRoutes(

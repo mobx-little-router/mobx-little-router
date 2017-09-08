@@ -37,6 +37,7 @@ const router = install({
     { path: 'contact', getData: () => ({ component: ContactRoute }), onTransition },
     {
       path: 'shows',
+      query: ['q'],
       getData: () => {
         console.log('Fetching shows data')
         return { component: ShowsRoute }

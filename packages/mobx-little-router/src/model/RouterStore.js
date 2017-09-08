@@ -3,6 +3,7 @@ import type { IObservableArray } from 'mobx'
 import { extendObservable, runInAction, observable, computed } from 'mobx'
 import type { ObservableMap } from 'mobx'
 import createRoute from './createRoute'
+import createRouteKey from './createRouteKey'
 import RouterStateTree from './RouterStateTree'
 import * as QueryString from 'qs'
 
@@ -64,12 +65,17 @@ class RouterStore {
 
   // Returns a list of the next routes from the matched path.
   // If the route is not currently active or has changed, then it will be created from factory function.
-  getNextRoutes(path: PathElement<*, *>[]): Route<*, *>[] {
+  getNextRoutes(path: PathElement<*, *>[], location: Location): Route<*, *>[] {
+    const queryParams = this.getQueryParams(location)
+    
     return path.map(element => {
+      const matchedQueryParams = this.getMatchedQueryParams(element.node, queryParams)
+
       const existingRoute = this.routes.find(
-        x => x.key === `${element.node.value.key}${element.segment}`
+        x => x.key === createRouteKey(element.node, element.segment, matchedQueryParams)
       )
-      return existingRoute || observable(createRoute(element.node, element.params, element.segment))
+
+      return existingRoute || observable(createRoute(element.node, element.segment, element.params, matchedQueryParams))
     })
   }
 
@@ -123,10 +129,19 @@ class RouterStore {
     })
   }
 
-  getQueryParams(location: Location) {
+  getQueryParams(location: Location): Query {
     return location.search
       ? QueryString.parse(location.search.substr(1))
       : {}
+  }
+
+  getMatchedQueryParams(node: RouteStateTreeNode<*, *>, query: Query): Query {
+    return Object.keys(query)
+      .filter(key => node.value.query.includes(key))
+      .reduce((acc, key) => {
+        acc[key] = query[key]
+        return acc
+      }, {})
   }
 }
 

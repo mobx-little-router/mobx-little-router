@@ -114,7 +114,7 @@ describe('createRouteStateTreeNode', () => {
       sequence: 0
     })
 
-    willActivate(createRoute(node, {}, ''), navigation).catch(err => {
+    willActivate(createRoute(node, '', {}, {}), navigation).catch(err => {
       expect(err).toBeInstanceOf(Navigation)
       expect(err.to.pathname).toEqual('/b')
       done()
