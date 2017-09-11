@@ -15,7 +15,7 @@ describe('Link', () => {
     router.stop()
   })
 
-  test('Handles clicks', async () => {
+  test('handles clicks', async () => {
     const wrapper = mountInProvider(router)(
       <div>
         <Link className="index" to="/">Index</Link>
@@ -34,7 +34,7 @@ describe('Link', () => {
     expect(router.store.location.pathname).toEqual('/')
   })
 
-  it('Supports reload prop to skip router', async () => {
+  test('supports reload prop to skip router', async () => {
     const wrapper = mountInProvider(router)(
       <div>
         <Link reload className="foo" to="/foo">Foo</Link>
@@ -45,6 +45,20 @@ describe('Link', () => {
     await delay(0)
 
     expect(router.store.location.pathname).toEqual('/')
+  })
+
+  test('supports onClick prop', async () => {
+    const spy = jest.fn()
+    const wrapper = mountInProvider(router)(
+      <div>
+        <Link onClick={spy} className="foo" to="/foo">Foo</Link>
+      </div>
+    )
+
+    wrapper.find('.foo').simulate('click')
+    await delay(0)
+
+    expect(spy).toHaveBeenCalled()
   })
 })
 

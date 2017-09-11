@@ -17,11 +17,12 @@ class Link extends Component {
     style?: Object,
     children?: React.Element<*>,
     exact?: boolean,
-    reload?: boolean
+    reload?: boolean,
+    onClick: Function
   }
 
   onClick = (evt: Event) => {
-    const { to, reload } = this.props
+    const { to, reload, onClick } = this.props
 
     if (reload === true) {
       return
@@ -29,6 +30,8 @@ class Link extends Component {
 
     evt.preventDefault()
     this.context.router.history.push(to)
+
+    onClick && onClick(evt)
   }
 
   render() {
