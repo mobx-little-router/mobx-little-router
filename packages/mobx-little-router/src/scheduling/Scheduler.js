@@ -4,6 +4,7 @@ import { action, autorun, extendObservable, runInAction, when } from 'mobx'
 import type { RouteStateTreeNode, Route } from '../model/types'
 import type RouterStore from '../model/RouterStore'
 import areRoutesEqual from '../model/util/areRoutesEqual'
+import areRouteStateTreeNodesEqual from '../model/util/areRouteStateTreeNodesEqual'
 import Navigation from '../model/Navigation'
 import type { Definition } from '../model/Navigation'
 import TransitionManager from '../transition/TransitionManager'
@@ -100,13 +101,15 @@ export default class Scheduler {
       )
       await assertUrlFullyMatched(nextLocation.pathname, nextPath)
 
+      const currRoutes = store.routes.slice()
       const nextRoutes = store.getNextRoutes(nextPath, nextLocation)
 
-      // We've found a match or unmatched error has been handled.
-      const { activating, deactivating } = await diffRoutes(
-        store.routes.slice(),
-        nextRoutes
-      )
+      const {
+        activating,
+        deactivating,
+        entering,
+        exiting
+      } = diffRoutes(currRoutes, nextRoutes)
 
       // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
       await this.assertTransitionOk('canDeactivate', deactivating, currentNavigation)
@@ -116,6 +119,9 @@ export default class Scheduler {
       await this.assertTransitionOk('willDeactivate', deactivating, currentNavigation)
       await this.assertTransitionOk('willActivate', activating, currentNavigation)
 
+      // Every route will resolve when first loading or when route params or watched query params change
+      await this.assertTransitionOk('willResolve', entering, currentNavigation)
+
       this.emit({ type: EventTypes.NAVIGATION_ACTIVATING, navigation: currentNavigation })
 
       store.updateRoutes(nextRoutes)
@@ -124,8 +130,8 @@ export default class Scheduler {
       if (currentNavigation.shouldTransition) {
         // Run and wait on transition of deactivating and newly activating nodes.
         await Promise.all([
-          TransitionManager.run('exiting', deactivating),
-          TransitionManager.run('entering', activating)
+          TransitionManager.run('exiting', exiting),
+          TransitionManager.run('entering', entering)
         ])
       }
 
@@ -170,7 +176,7 @@ export default class Scheduler {
   // Runs guards (if they exist) on each node until they all pass.
   // If one guard fails, then the entire function rejects.
   assertTransitionOk = async (
-    type: 'canDeactivate' | 'canActivate' | 'willDeactivate' | 'willActivate',
+    type: 'canDeactivate' | 'canActivate' | 'willResolve' | 'willDeactivate' | 'willActivate',
     routes: Route<*, *>[],
     navigation: Navigation
   ): Promise<void> => {
@@ -193,17 +199,31 @@ export default class Scheduler {
   }
 }
 
-async function diffRoutes(currNodes: Route<*, *>[], nextNodes: Route<*, *>[]) {
+function diffRoutes(currRoutes: Route<*, *>[], nextRoutes: Route<*, *>[]) {
   try {
-    const deactivating = differenceWith(areRoutesEqual, currNodes, nextNodes).reverse()
+    // Deactivating this route state tree node
+    const deactivating = differenceWith((a, b) => {
+      return a.node === b.node
+    }, currRoutes, nextRoutes).reverse()
 
-    const activating = nextNodes.filter(x => {
-      return !currNodes.some(y => {
+    // Activating this route state tree node
+    const activating = nextRoutes.filter(x => {
+      return !currRoutes.some(y => {
+        return x.node === y.node
+      })
+    })
+
+    // Exiting this specific route instance
+    const exiting = differenceWith(areRoutesEqual, currRoutes, nextRoutes).reverse()
+
+    // Entering this spectic route instance
+    const entering = nextRoutes.filter(x => {
+      return !currRoutes.some(y => {
         return areRoutesEqual(x, y)
       })
     })
 
-    return { deactivating, activating }
+    return { activating, deactivating, entering, exiting }
   } catch (err) {
     // Make sure we chain errors back up!
     throw err

@@ -15,6 +15,7 @@ describe('createRouteStateTreeNode', () => {
           willDeactivate: async () => {},
           canActivate: async () => {},
           canDeactivate: async () => {},
+          willResolve: async () => {},
           data: { msg: 'hello' },
           children: [
             {

@@ -33,6 +33,7 @@ export type BasicConfig<D: Object> = {
   canDeactivate?: GuardFn,
   willActivate?: LifecycleFn,
   willDeactivate?: LifecycleFn,
+  willResolve?: LifecycleFn,
   onError?: ErrorHandler,
   onTransition?: TransitionFn
 }
@@ -74,6 +75,7 @@ export type RouteValue<C: Object, D: Object> = {
   canDeactivate: GuardFn,
   willActivate: LifecycleFn,
   willDeactivate: LifecycleFn,
+  willResolve: LifecycleFn,
   onError: null | ErrorHandler,
   onTransition: null | TransitionFn,
   getContext: () => C,

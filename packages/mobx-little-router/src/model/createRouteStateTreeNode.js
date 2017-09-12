@@ -25,7 +25,8 @@ const validate = createValidator({
   canDeactivate: optional(func),
   onTransition: optional(func),
   willActivate: optional(func),
-  willDeactivate: optional(func)
+  willDeactivate: optional(func),
+  willResolve: optional(func)
 })
 
 type GetContext = () => *
@@ -67,6 +68,9 @@ export default function createRouteStateTreeNode(
         ? config.willDeactivate
         : nop,
       // Lifecycle callback
+      willResolve: typeof config.willResolve === 'function'
+        ? config.willResolve
+        : nop,
       onError: typeof config.onError === 'function' ? config.onError : null,
       onTransition: typeof config.onTransition === 'function'
         ? config.onTransition

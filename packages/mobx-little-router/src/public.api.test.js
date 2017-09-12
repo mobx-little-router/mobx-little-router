@@ -180,4 +180,36 @@ describe('Public API', () => {
 
     router.stop()
   })
+
+  test('willResolve hook', async () => {
+    const willActivateSpy = jest.fn(() => Promise.resolve())
+    const willResolveSpy = jest.fn(() => Promise.resolve())
+    const willDeactivateSpy = jest.fn(() => Promise.resolve())
+
+    const router = install({
+      history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
+      getContext: () => ({}),
+      routes: [{
+        path: 'a',
+        query: ['q'],
+        willActivate: willActivateSpy,
+        willResolve: willResolveSpy,
+        willDeactivate: willDeactivateSpy
+      }]
+    })
+
+    await router.start()
+    await router.push('/a?q=hey')
+    await router.push('/a?q=now')
+
+    expect(willActivateSpy.mock.calls.length).toBe(1)
+    expect(willResolveSpy.mock.calls.length).toBe(3)
+    expect(willDeactivateSpy.mock.calls.length).toBe(0)
+
+    await router.push('/')
+
+    expect(willDeactivateSpy.mock.calls.length).toBe(1)
+
+    router.stop()
+  })
 })
