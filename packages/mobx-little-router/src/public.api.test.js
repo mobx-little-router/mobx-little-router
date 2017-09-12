@@ -187,10 +187,10 @@ describe('Public API', () => {
     const willDeactivateSpy = jest.fn(() => Promise.resolve())
 
     const router = install({
-      history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
+      history: createMemoryHistory({ initialEntries: ['/a/1'], initialIndex: 0 }),
       getContext: () => ({}),
       routes: [{
-        path: 'a',
+        path: 'a/:id',
         query: ['q'],
         willActivate: willActivateSpy,
         willResolve: willResolveSpy,
@@ -199,11 +199,13 @@ describe('Public API', () => {
     })
 
     await router.start()
-    await router.push('/a?q=hey')
-    await router.push('/a?q=now')
+    await router.push('/a/2')
+    await router.push('/a/2?q=hey')
+    await router.push('/a/2?q=now')
+    await router.push('/a/2?q=now&w=what')
 
     expect(willActivateSpy.mock.calls.length).toBe(1)
-    expect(willResolveSpy.mock.calls.length).toBe(3)
+    expect(willResolveSpy.mock.calls.length).toBe(4)
     expect(willDeactivateSpy.mock.calls.length).toBe(0)
 
     await router.push('/')
