@@ -43,28 +43,6 @@ describe('createRouteStateTreeNode', () => {
     expect(root.children[0].value.canDeactivate).toBeInstanceOf(Function)
   })
 
-  test('Sets correct dynamic children loader', async () => {
-    const config = {
-      path: '',
-      loadChildren: () =>
-        Promise.resolve([
-          {
-            path: 'a'
-          },
-          {
-            path: 'b'
-          },
-          {
-            path: 'c'
-          }
-        ])
-    }
-
-    const root = createRouteStateTreeNode(config)
-    const nodes = root.value.loadChildren ? await root.value.loadChildren() : []
-    expect(nodes.map(n => n.value.path)).toEqual(['a', 'b', 'c'])
-  })
-
   test('Validation', () => {
     let x: any = {}
     expect(() => createRouteStateTreeNode(x)).toThrow(/`path`/)

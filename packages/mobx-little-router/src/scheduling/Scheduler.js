@@ -1,231 +1,131 @@
 // @flow
 import type { Action } from 'history'
-import { action, autorun, extendObservable, runInAction, when } from 'mobx'
-import type { RouteStateTreeNode, Route } from '../model/types'
+import { TransitionFailure } from '../errors'
+import { action, autorun, extendObservable, reaction, runInAction, when } from 'mobx'
 import type RouterStore from '../model/RouterStore'
-import areRoutesEqual from '../model/util/areRoutesEqual'
-import areRouteStateTreeNodesEqual from '../model/util/areRouteStateTreeNodesEqual'
-import Navigation from '../model/Navigation'
 import type { Definition } from '../model/Navigation'
+import Navigation from '../model/Navigation'
 import TransitionManager from '../transition/TransitionManager'
-import shallowEqual from '../util/shallowEqual'
-import differenceWith from '../util/differenceWith'
-import { TransitionFailure } from '../errors/index'
 import type { Event } from './events'
 import { EventTypes } from './events'
-import assertUrlFullyMatched from './util/assertUrlFullyMatched'
+import nextEvent from './nextEvent'
 
 export default class Scheduler {
   store: RouterStore
-  disposer: null | Function
-  currentNavigation: null | Navigation
-  event: null | Event
+  disposers: Function[]
+  currentNavigation: Navigation
+  event: Event
+  middleware: (evt: Event) => null | Event
 
-  _idle: Promise<void>
-  _resolvers: Function[]
-
-  constructor(store: RouterStore) {
+  constructor(store: RouterStore, middleware: ?((evt: Event) => null | Event)) {
     this.store = store
-    this.disposer = null
-    this._idle = Promise.resolve()
-    this._resolvers  = []
+    this.middleware = middleware || (x => x)
+    this.disposers = []
     extendObservable(this, {
-      isIdle: true,
-      currentNavigation: null,
-      event: null
+      currentNavigation: new Navigation({
+        type: 'POP',
+        sequence: -1,
+        to: null,
+        from: null
+      }),
+      event: { type: EventTypes.INITIAL }
     })
   }
 
   start() {
-    this.disposer = autorun(this.processNextNavigation)
+    // TODO: These should be in built-in middleware.
+    // Also, CHILDREN_LOAD should always trigger NAVIGATION_RETRY, and should be in nextEvent.
+    this.disposers.push(reaction(() => this.event, (evt) => {
+      if (evt.type === EventTypes.CHILDREN_LOAD) {
+        const { navigation, pathElements, leaf, children } = evt
+        runInAction(() => {
+          leaf.node.children.replace(children.slice())
+        })
+        this.dispatch({
+          type: EventTypes.NAVIGATION_RETRY,
+          navigation,
+          pathElements,
+          continueFrom: leaf
+        })
+      }
+    }))
+
+    this.disposers.push(reaction(() => this.event, (evt) => {
+      const { store } = this
+      if (evt.type === EventTypes.NAVIGATION_AFTER_ACTIVATE) {
+        const { navigation, routes, exiting, entering } = evt
+        store.updateRoutes(routes)
+        store.updateLocation(navigation.to)
+        if (navigation.shouldTransition) {
+          // Run and wait on transition of exiting and newly entering nodes.
+          Promise.all([
+            TransitionManager.run('exiting', exiting),
+            TransitionManager.run('entering', entering)
+          ]).then(() => {
+            store.clearPrevRoutes()
+          })
+        }
+      }
+    }))
+
+    this.disposers.push(reaction(() => this.event, (evt) => {
+      const { store } = this
+      if (evt.type === EventTypes.NAVIGATION_ERROR) {
+        const { error } = evt
+        if (error instanceof TransitionFailure) {
+          // Navigation error may be thrown by a guard or lifecycle hook.
+          this.dispatch({
+            type: EventTypes.NAVIGATION_CANCELLED,
+            nextNavigation: error.navigation
+          })
+        } else {
+          // Error instances should be set on the store and an error event is emitted.
+          store.setError(error)
+        }
+      }
+    }))
+
+    this.disposers.push(reaction(() => this.event, (evt) => {
+      nextEvent(evt, this.store)
+        .then(next => {
+          if (next) {
+            this.dispatch(next)
+          }
+        })
+    }))
   }
 
   stop() {
-    this.disposer && this.disposer()
-    this.disposer = null
+    this.disposers.forEach(f => f())
+    this.disposers = []
   }
 
   // Emit navigation events.
-  emit(evt: Event) {
+  dispatch = (evt: null | Event) => {
     runInAction(() => {
-      this.event = evt
-    })
-  }
-
-  scheduleNavigation = async (next: Definition) => {
-    const { location } = this.store
-
-    // This could be a navigation that has no `to` prop. Usually a `GO_BACK`.
-    if (!next.to) {
-      return
-    }
-
-    // If location path and query has not changed, skip it.
-    if (
-      location &&
-      location.pathname === next.to.pathname &&
-      location.query &&
-      shallowEqual(location.query, next.to.query)
-    ) {
-      return
-    }
-    const { currentNavigation } = this
-    this.store.error = null
-
-    const nextNav = currentNavigation
-      ? currentNavigation.next(next)
-      : new Navigation({
-          ...next,
-          from: location || null
-        })
-
-    runInAction(() => {
-      this.currentNavigation = nextNav
-    })
-  }
-
-  processNextNavigation = async () => {
-    const { currentNavigation, store } = this
-    if (!currentNavigation) return
-
-    const { to: nextLocation } = currentNavigation
-    if (!nextLocation) return
-
-    try {
-      this.emit({ type: EventTypes.NAVIGATION_START, navigation: currentNavigation })
-
-      // This match call may have side-effects of loading dynamic children.
-      const nextPath = await store.state.pathFromRoot(
-        nextLocation.pathname,
-        this.handleLeafNodeReached
-      )
-      await assertUrlFullyMatched(nextLocation.pathname, nextPath)
-
-      const currRoutes = store.routes.slice()
-      const nextRoutes = store.getNextRoutes(nextPath, nextLocation)
-
-      const {
-        activating,
-        deactivating,
-        entering,
-        exiting
-      } = diffRoutes(currRoutes, nextRoutes)
-
-      // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
-      await this.assertTransitionOk('canDeactivate', deactivating, currentNavigation)
-      await this.assertTransitionOk('canActivate', activating, currentNavigation)
-
-      // If guards have passed, call the before hooks to give each node a chance to cancel the transition.
-      await this.assertTransitionOk('willDeactivate', deactivating, currentNavigation)
-      await this.assertTransitionOk('willActivate', activating, currentNavigation)
-
-      // Every route will resolve when first loading or when route params or watched query params change
-      await this.assertTransitionOk('willResolve', entering, currentNavigation)
-
-      this.emit({ type: EventTypes.NAVIGATION_ACTIVATING, navigation: currentNavigation })
-
-      store.updateRoutes(nextRoutes)
-      store.updateLocation(nextLocation)
-
-      if (currentNavigation.shouldTransition) {
-        // Run and wait on transition of deactivating and newly activating nodes.
-        await Promise.all([
-          TransitionManager.run('exiting', exiting),
-          TransitionManager.run('entering', entering)
-        ])
-      }
-
-      store.clearPrevRoutes()
-    } catch (error) {
-      if (error instanceof TransitionFailure) {
-        // Navigation error may be thrown by a guard or lifecycle hook.
-        this.emit({
-          type: EventTypes.NAVIGATION_CANCELLED,
-          nextNavigation: error.navigation
-        })
-      } else {
-        // Error instances should be set on the store and an error event is emitted.
-        this.store.setError(error)
-        this.emit({
-          type: EventTypes.NAVIGATION_ERROR,
-          error,
-          navigation: currentNavigation
-        })
-      }
-    } finally {
-      this.emit({ type: EventTypes.NAVIGATION_END, navigation: currentNavigation })
-    }
-  }
-
-  // This method tries to resolve dynamic children on the currently matching node.
-  // If there are children available, load them and then continue by resolving `true`.
-  // Otherwise, abort by resolving `false`. Rejection means an unexpected error.
-  handleLeafNodeReached = async (lastMatchedNode: RouteStateTreeNode<*, *>) => {
-    // If there are dynamic children, try to load and continue.
-    if (typeof lastMatchedNode.value.loadChildren === 'function') {
-      const children = await lastMatchedNode.value.loadChildren()
-      runInAction(() => {
-        lastMatchedNode.children.replace(children)
-      })
-      return true
-    } else {
-      return false
-    }
-  }
-
-  // Runs guards (if they exist) on each node until they all pass.
-  // If one guard fails, then the entire function rejects.
-  assertTransitionOk = async (
-    type: 'canDeactivate' | 'canActivate' | 'willResolve' | 'willDeactivate' | 'willActivate',
-    routes: Route<*, *>[],
-    navigation: Navigation
-  ): Promise<void> => {
-    for (const route of routes) {
-      const { value } = route.node
-      const result = typeof value[type] === 'function'
-        ? value[type](route, navigation)
-        : true
-
-      try {
-        if (false === result) {
-          await navigation.goBack()
-        } else if (typeof result.then === 'function') {
-          await result
+      if (evt) {
+        evt = this.middleware(evt)
+        if (evt) {
+          this.event = evt
         }
-      } catch (e) {
-        throw new TransitionFailure(route, e instanceof Navigation ? e : null)
       }
-    }
+    })
+  }
+
+  schedule = async (next: Definition) => {
+    if (!hasChanged(this.store.location, next.to)) return
+    this.dispatch({
+      type: EventTypes.NAVIGATION_START,
+      navigation: this.currentNavigation.next(next)
+    })
   }
 }
 
-function diffRoutes(currRoutes: Route<*, *>[], nextRoutes: Route<*, *>[]) {
-  try {
-    // Deactivating this route state tree node
-    const deactivating = differenceWith((a, b) => {
-      return a.node === b.node
-    }, currRoutes, nextRoutes).reverse()
-
-    // Activating this route state tree node
-    const activating = nextRoutes.filter(x => {
-      return !currRoutes.some(y => {
-        return x.node === y.node
-      })
-    })
-
-    // Exiting this specific route instance
-    const exiting = differenceWith(areRoutesEqual, currRoutes, nextRoutes).reverse()
-
-    // Entering this spectic route instance
-    const entering = nextRoutes.filter(x => {
-      return !currRoutes.some(y => {
-        return areRoutesEqual(x, y)
-      })
-    })
-
-    return { activating, deactivating, entering, exiting }
-  } catch (err) {
-    // Make sure we chain errors back up!
-    throw err
+function hasChanged(curr, next) {
+  // This could be a navigation that has no `to` prop. Usually a `GO_BACK`.
+  if (!next) {
+    return false
   }
+  // If location path and query has not changed, skip it.
+  return !curr || curr.pathname !== next.pathname || curr.search !== next.search
 }

@@ -1,16 +1,23 @@
 // @flow
 import Router from './Router'
 import type { Config } from './model/types'
+import type { Event } from './scheduling/events'
 import type { History } from 'history'
 
 type Options = {
   history: History,
   routes: Config<*>[],
-  getContext: () => any
+  getContext: () => any,
+  middleware?: (evt: Event) => null | Event
 }
 
 export function install(opts: Options): Router {
-  return new Router(opts.history, opts.routes, opts.getContext || (() => ({})))
+  return new Router(
+    opts.history,
+    opts.routes,
+    opts.getContext || (() => ({})),
+    opts.middleware
+  )
 }
 
 export { default as RouterStore } from './model/RouterStore'

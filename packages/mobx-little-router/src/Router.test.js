@@ -25,19 +25,19 @@ describe('Router', () => {
 
   describe('events', () => {
     test('handling transition events', async () => {
-      router.scheduler.emit(
+      router.scheduler.dispatch(
         abortNavigation('PUSH', { pathname: '/' }, { pathname: '/a' })
       )
       await delay(0)
 
       expect(router.store.location.pathname).toEqual('/a/')
 
-      router.scheduler.emit(abortNavigation('GO_BACK', { pathname: '/' }, null))
+      router.scheduler.dispatch(abortNavigation('GO_BACK', { pathname: '/' }, null))
       await delay(0)
 
       expect(router.store.location.pathname).toEqual('/')
 
-      router.scheduler.emit(
+      router.scheduler.dispatch(
         abortNavigation('REPLACE', { pathname: '/' }, { pathname: '/b' })
       )
       await delay(0)

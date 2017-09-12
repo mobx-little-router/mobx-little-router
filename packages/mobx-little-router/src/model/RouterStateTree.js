@@ -3,7 +3,6 @@ import { extendObservable } from 'mobx'
 import { findNode } from '../util/tree'
 import type { PathElement, RouteStateTreeNode } from './types'
 import findPathFromRoot from './util/findPathFromRoot'
-import type { OnExhaustedFn } from './util/findPathFromRoot'
 
 export default class RouterStateTree {
   root: RouteStateTreeNode<*, *>
@@ -18,10 +17,16 @@ export default class RouterStateTree {
     return findNode(predicate, this.root)
   }
 
-  async pathFromRoot(
-    url: string,
-    onExhausted: OnExhaustedFn
-  ): Promise<PathElement<*, *>[]> {
-    return await findPathFromRoot(this.root, url, onExhausted)
+  pathFromRoot(
+    url: string
+  ): PathElement<*, *>[] {
+    return findPathFromRoot(this.root, url)
+  }
+
+  pathFrom(
+    node: RouteStateTreeNode<*, *>,
+    url: string
+  ): PathElement<*, *>[] {
+    return findPathFromRoot(node, url)
   }
 }

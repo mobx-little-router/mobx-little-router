@@ -4,29 +4,25 @@ import type { PathElement, Params, RouteStateTreeNode } from '../types'
 
 type ShouldContinue = boolean
 
-export type OnExhaustedFn = (node: RouteStateTreeNode<*, *>) => Promise<ShouldContinue>
-
-export default async function findPathFromRoot(
+export default function findPathFromRoot(
   node: RouteStateTreeNode<*, *>,
-  url: string,
-  onExhausted: OnExhaustedFn
-): Promise<PathElement<*, *>[]> {
+  url: string
+): PathElement<*, *>[] {
   const matchedParams: { [string]: Params | null } = {}
   const matchedRemaining: { [string]: string } = {}
   const matchedSegment: { [string]: string } = {}
   let _remaining = url
 
-  const path = await findPath(
+  const path = findPath(
     (node: RouteStateTreeNode<*, *>) => {
       const { matched, params, remaining, segment } = node.value.matcher(_remaining)
       matchedParams[node.value.key] = params
       matchedRemaining[node.value.key] = remaining
       matchedSegment[node.value.key] = segment
       _remaining = remaining
-      return Promise.resolve(matched)
+      return matched
     },
-    node,
-    onExhausted
+    node
   )
 
   return path.map(node => ({

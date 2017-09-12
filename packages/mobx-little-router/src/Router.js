@@ -20,7 +20,8 @@ class Router {
   constructor(
     history: History,
     config: Config<*>[],
-    getContext: void | (() => any)
+    getContext: void | (() => any),
+    middleware: ?((evt: Event) => null | Event)
   ) {
     this.disposers = []
 
@@ -28,7 +29,7 @@ class Router {
     const root = createRouteStateTreeNode({ path: '', match: 'partial' }, getContext) // Initial root.
     const routes = config.map(x => createRouteStateTreeNode(x, getContext))
     this.store = new RouterStore(root, routes)
-    this.scheduler = new Scheduler(this.store)
+    this.scheduler = new Scheduler(this.store, middleware)
 
     extendObservable(this, {
       navigationEvent: computed(() => {
@@ -55,7 +56,7 @@ class Router {
       this.disposers.push(this.history.listen(this.handleLocationChange))
 
       // Schedule initial navigation.
-      await this.scheduler.scheduleNavigation(asNavigation(this.history.location))
+      await this.scheduler.schedule(asNavigation(this.history.location))
 
       // Wait until navigation is processed.
       await this.navigated()
@@ -104,7 +105,7 @@ class Router {
       when(() => {
         const { event } = this.scheduler
         const { location } = this.store
-        return event !== null && event.type === EventTypes.NAVIGATION_END && typeof location.pathname === 'string'
+        return event.type === EventTypes.NAVIGATION_END && typeof location.pathname === 'string'
       }, res)
     })
   }
@@ -129,7 +130,7 @@ class Router {
   }
 
   handleLocationChange = (location: Object, action: ?Action) => {
-    this.scheduler.scheduleNavigation(asNavigation(location, action))
+    this.scheduler.schedule(asNavigation(location, action))
   }
 
   logErrors = (evt: Event) => {
