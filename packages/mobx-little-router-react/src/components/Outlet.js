@@ -2,7 +2,8 @@
 import React, { Component } from 'react'
 import withRouter from '../hoc/withRouter'
 import { observer } from 'mobx-react'
-import { Router, areRoutesEqual } from 'mobx-little-router'
+import type { Router } from 'mobx-little-router'
+import { areRoutesEqual } from 'mobx-little-router'
 import { OutletType, RouterType } from '../propTypes'
 
 import TransitionGroup from './TransitionGroup'
