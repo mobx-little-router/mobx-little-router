@@ -54,13 +54,8 @@ const router = install({
       component: ShowsRoute,
       children: [{
         path: ':id',
-        getData: () => {
-          console.log('Fetching show view data')
-          return {
-            component: ShowRoute,
-            outlet: 'modal'
-          }
-        },
+        component: ShowRoute,
+        outlet: 'modal',
         onTransition
       }]
     },
@@ -80,7 +75,6 @@ const router = install({
       canActivate: (route, navigation) => {
         const { stores: { SessionStore } } = route.context
 
-        console.log('navigation', navigation)
         if (SessionStore.isAuthenticated) {
           return true
         } else {

@@ -8,12 +8,21 @@ import transformEventType from './transformEventType'
 export default (f: (x: any) => any) =>
   transformEventType(EventTypes.CHILDREN_LOAD)(evt => {
     const { children } = evt
-    if (children && children.length) {
-      return {
-        ...evt,
-        children: children.map(f)
-      }
-    } else {
-      return evt
+    return {
+      ...evt,
+      children: mapChildren(f, children)
     }
   })
+
+function mapChildren(f, children) {
+  if (children && children.length) {
+    return children.map(x => {
+      return {
+        ...f(x),
+        children: mapChildren(f, x.children)
+      }
+    })
+  } else {
+  return children
+  }
+}

@@ -20,16 +20,22 @@ describe('transformConfig middleware', () => {
       pathElements: [],
       children: [
         { path: 'b' },
-        { path: 'c' }
+        { path: 'c', children: [{ path: 'd', children: [{ path: 'e' }] }] }
       ]
     }
 
-    expect(g.fold(c)).toEqual(expect.objectContaining({
-      children: [
-        { path: 'b', getData: f },
-        { path: 'c', getData: f }
+    expect(g.fold(c)).toEqual(
+      expect.objectContaining({
+        children: [
+          { path: 'b', getData: f },
+          {
+            path: 'c',
+            getData: f,
+            children: [{ path: 'd', getData: f, children: [{ path: 'e', getData: f }] }]
+          }
         ]
-    }))
+      })
+    )
   })
 })
 
