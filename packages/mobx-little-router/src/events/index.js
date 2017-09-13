@@ -96,7 +96,7 @@ export type NavigationAfterActivate = {
 
 export type NavigationCancelled = {
   type: 'NAVIGATION_CANCELLED',
-  nextNavigation: Navigation,
+  nextNavigation?: Navigation,
   etc?: any
 }
 

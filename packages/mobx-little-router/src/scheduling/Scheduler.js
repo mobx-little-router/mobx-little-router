@@ -11,18 +11,17 @@ import { EventTypes } from '../events'
 import type { IMiddleware } from '../middleware/Middleware'
 import Middleware from '../middleware/Middleware'
 import nextEvent from './nextEvent'
+import withQueryMiddleware from './util/withQueryMiddleware'
+import transformEventType from '../middleware/transformEventType'
 
 export default class Scheduler {
+  disposer: null | Function
   store: RouterStore
-  disposers: Function[]
+  middleware: IMiddleware
   currentNavigation: Navigation
   event: Event
-  middleware: IMiddleware
 
   constructor(store: RouterStore, mComputation: ?(evt: Event) => null | Event) {
-    this.store = store
-    this.middleware = Middleware(mComputation || (x => x))
-    this.disposers = []
     extendObservable(this, {
       currentNavigation: new Navigation({
         type: 'POP',
@@ -32,115 +31,107 @@ export default class Scheduler {
       }),
       event: { type: EventTypes.INITIAL }
     })
+
+    this.disposer = null
+    this.store = store
+    this.middleware = withQueryMiddleware
+      .concat(mComputation ? Middleware(mComputation) : Middleware.EMPTY)
+      .concat(handleChildrenLoad)
+      .concat(updateStore(store))
+      .concat(handleTransitionFailure(store))
   }
 
   start() {
-    // TODO: These should be in built-in middleware.
-    // Also, CHILDREN_LOAD should always trigger NAVIGATION_RETRY, and should be in nextEvent.
-    this.disposers.push(
-      reaction(
-        () => this.event,
-        evt => {
-          if (evt.type === EventTypes.CHILDREN_LOAD) {
-            const { navigation, pathElements, leaf, children } = evt
-            runInAction(() => {
-              leaf.node.children.replace(children.slice())
-            })
-            this.dispatch({
-              type: EventTypes.NAVIGATION_RETRY,
-              navigation,
-              pathElements,
-              continueFrom: leaf
-            })
-          }
+    // Watch for event changes, and dispatches the next event in the chain if it is not cancelled or ended.
+    this.disposer = reaction(
+      () => this.event,
+      evt => {
+        if (
+          evt.type === EventTypes.NAVIGATION_CANCELLED ||
+          evt.type === EventTypes.NAVIGATION_END
+        ) {
+          return
         }
-      )
-    )
-
-    this.disposers.push(
-      reaction(
-        () => this.event,
-        evt => {
-          const { store } = this
-          if (evt.type === EventTypes.NAVIGATION_AFTER_ACTIVATE) {
-            const { navigation, routes, exiting, entering } = evt
-            store.updateRoutes(routes)
-            store.updateLocation(navigation.to)
-            if (navigation.shouldTransition) {
-              // Run and wait on transition of exiting and newly entering nodes.
-              Promise.all([
-                TransitionManager.run('exiting', exiting),
-                TransitionManager.run('entering', entering)
-              ]).then(() => {
-                store.clearPrevRoutes()
-              })
-            }
-          }
-        }
-      )
-    )
-
-    this.disposers.push(
-      reaction(
-        () => this.event,
-        evt => {
-          const { store } = this
-          if (evt.type === EventTypes.NAVIGATION_ERROR) {
-            const { error } = evt
-            if (error instanceof TransitionFailure) {
-              // Navigation error may be thrown by a guard or lifecycle hook.
-              this.dispatch({
-                type: EventTypes.NAVIGATION_CANCELLED,
-                nextNavigation: error.navigation
-              })
-            } else {
-              // Error instances should be set on the store and an error event is emitted.
-              store.setError(error)
-            }
-          }
-        }
-      )
-    )
-
-    this.disposers.push(
-      reaction(
-        () => this.event,
-        evt => {
-          nextEvent(evt, this.store).then(next => {
-            if (next) {
-              this.dispatch(next)
-            }
-          })
-        }
-      )
+        nextEvent(evt, this.store).then(next => {
+          next && this.dispatch(next)
+        })
+      }
     )
   }
 
   stop() {
-    this.disposers.forEach(f => f())
-    this.disposers = []
+    this.disposer && this.disposer()
+    this.disposer = null
   }
 
-  // Emit navigation events.
-  dispatch = (evt: null | Event) => {
-    runInAction(() => {
+  dispatch = action((evt: null | Event) => {
+    if (evt) {
+      evt = this.middleware.fold(evt)
       if (evt) {
-        evt = this.middleware.fold(evt)
-        if (evt) {
-          this.event = evt
-        }
+        this.event = evt
       }
-    })
-  }
+    }
+  })
 
-  schedule = async (next: Definition) => {
+  schedule = action((next: Definition) => {
     if (!hasChanged(this.store.location, next.to)) return
+    this.currentNavigation = this.currentNavigation.next(next)
     this.dispatch({
       type: EventTypes.NAVIGATION_START,
-      navigation: this.currentNavigation.next(next)
+      navigation: this.currentNavigation
     })
-  }
+  })
 }
+
+const handleChildrenLoad = transformEventType(EventTypes.CHILDREN_LOAD)(
+  action(evt => {
+    const { navigation, pathElements, leaf, children } = evt
+    leaf.node.children.replace(children.slice())
+    return {
+      type: EventTypes.NAVIGATION_RETRY,
+      navigation,
+      pathElements,
+      continueFrom: leaf
+    }
+  })
+)
+
+const updateStore = store =>
+  transformEventType(EventTypes.NAVIGATION_AFTER_ACTIVATE)(
+    action(evt => {
+      const { navigation, routes, exiting, entering } = evt
+      store.updateRoutes(routes)
+      store.updateLocation(navigation.to)
+      if (navigation.shouldTransition) {
+        // Run and wait on transition of exiting and newly entering nodes.
+        Promise.all([
+          TransitionManager.run('exiting', exiting),
+          TransitionManager.run('entering', entering)
+        ]).then(() => {
+          store.clearPrevRoutes()
+        })
+      }
+      return evt
+    })
+  )
+
+const handleTransitionFailure = store =>
+  transformEventType(EventTypes.NAVIGATION_ERROR)(
+    action(evt => {
+      const { error } = evt
+      if (error instanceof TransitionFailure) {
+        // Navigation error may be thrown by a guard or lifecycle hook.
+        return {
+          type: EventTypes.NAVIGATION_CANCELLED,
+          nextNavigation: error.navigation
+        }
+      } else {
+        // Error instances should be set on the store and an error event is emitted.
+        store.setError(error)
+        return evt
+      }
+    })
+  )
 
 function hasChanged(curr, next) {
   // This could be a navigation that has no `to` prop. Usually a `GO_BACK`.

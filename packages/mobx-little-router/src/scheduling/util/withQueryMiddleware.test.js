@@ -1,10 +1,10 @@
 // @flow
-import { EventTypes } from '../events'
-import Navigation from '../model/Navigation'
-import type { NavigationStart } from '../events'
-import withQuery from './withQuery'
+import { EventTypes } from '../../events'
+import Navigation from '../../model/Navigation'
+import type { NavigationStart } from '../../events'
+import withQueryMiddleware from './withQueryMiddleware'
 
-describe('withQuery middleware', () => {
+describe('withQueryMiddleware middleware', () => {
   test('transforms config load event', () => {
     const c: NavigationStart = {
       type: EventTypes.NAVIGATION_START,
@@ -17,7 +17,7 @@ describe('withQuery middleware', () => {
       })
     }
 
-    expect(withQuery.fold(c)).toEqual(expect.objectContaining({
+    expect(withQueryMiddleware.fold(c)).toEqual(expect.objectContaining({
       navigation: expect.objectContaining({
         to: {
           pathname: '/a',

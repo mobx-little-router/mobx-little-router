@@ -1,6 +1,6 @@
 // @flow
 import * as QueryString from 'qs'
-import transformNavigation from './transformNavigation'
+import transformNavigation from '../../middleware/transformNavigation'
 
 export default transformNavigation(navigation => {
   const { to } = navigation

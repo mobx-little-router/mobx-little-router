@@ -10,13 +10,15 @@ import areRoutesEqual from '../model/util/areRoutesEqual'
 import { EventTypes } from '../events'
 import type { Event } from '../events'
 
-export default async function nextEvent(evt: Event, store: RouterStore): Promise<null | Event> {
+export default async function nextEvent(evt: Event, store: RouterStore): Promise<Event> {
   switch (evt.type) {
     case EventTypes.NAVIGATION_START: {
       const { navigation } = evt
       const { to: nextLocation } = navigation
       if (!nextLocation) {
-        return null
+        return {
+          type: EventTypes.NAVIGATION_CANCELLED
+        }
       }
       const nextPath = store.state.pathFromRoot(nextLocation.pathname)
       if (isUrlFullyMatched(nextLocation.pathname, nextPath)) {
@@ -147,7 +149,7 @@ export default async function nextEvent(evt: Event, store: RouterStore): Promise
         }
       }
     default:
-      return null
+      return evt
   }
 }
 

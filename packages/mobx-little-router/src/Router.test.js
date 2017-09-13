@@ -9,12 +9,11 @@ describe('Router', () => {
   let router
 
   beforeEach(() => {
-    router = new Router(createMemoryHistory(), [
-      { path: '', match: 'full' },
-      { path: 'a' },
-      { path: 'b' },
-      { path: 'c' }
-    ], () => ({ message: 'Hello' }))
+    router = new Router(
+      createMemoryHistory(),
+      [{ path: '', match: 'full' }, { path: 'a' }, { path: 'b' }, { path: 'c' }],
+      () => ({ message: 'Hello' })
+    )
 
     return router.start()
   })
@@ -44,6 +43,17 @@ describe('Router', () => {
 
       expect(router.store.location.pathname).toEqual('/b/')
     })
+  })
+
+  test('stringify query into query', async () => {
+    await router.push({ pathname: '/a', query: { b: '2', c: '3' } })
+    expect(router.store.location.search).toEqual('?b=2&c=3')
+
+    await router.push({ pathname: '/a', query: {} })
+    expect(router.store.location.search).toEqual('')
+
+    await router.push(({ pathname: '/a', query: null }: any)) // In case of dynamic `any` being pushed.
+    expect(router.store.location.search).toEqual('')
   })
 })
 

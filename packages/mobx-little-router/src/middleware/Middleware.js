@@ -12,3 +12,5 @@ export default function Middleware(f: Computation): IMiddleware {
     concat: other => Middleware(evt => other.fold(f(evt)))
   }
 }
+
+Middleware.EMPTY = Middleware(x => x)

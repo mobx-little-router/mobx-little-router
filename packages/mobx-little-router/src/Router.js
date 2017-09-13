@@ -9,6 +9,7 @@ import type { Event } from './events'
 import { EventTypes } from './events'
 import { NavigationTypes } from './model/Navigation'
 import { InvalidNavigation } from './errors'
+import * as QueryString from 'querystring'
 
 class Router {
   store: RouterStore
@@ -83,12 +84,12 @@ class Router {
   }
 
   push(href: Href) {
-    this.history.push(href)
+    this.history.push(withSearch(href))
     return this.navigated()
   }
 
   replace(href: Href) {
-    this.history.replace(href)
+    this.history.replace(withSearch(href))
     return this.navigated()
   }
 
@@ -143,8 +144,6 @@ class Router {
   }
 }
 
-export default Router
-
 function asNavigation(location: Object, action: ?Action) {
   return {
     type: action || 'POP',
@@ -156,9 +155,19 @@ function asNavigation(location: Object, action: ?Action) {
 }
 
 function normalizePath(x: string) {
-  if (x.endsWith('/')) {
-    return x
+  return x.endsWith('/') ? x : `${x}/`
+}
+
+function withSearch(href: Href) {
+  if (typeof href === 'string') {
+    return href
   } else {
-    return `${x}/`
+    const qs = href.query ? QueryString.stringify(href.query)  : ''
+    return {
+      ...href,
+      search: qs ? `?${qs}` : qs
+    }
   }
 }
+
+export default Router
