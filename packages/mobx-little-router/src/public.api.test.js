@@ -3,7 +3,7 @@ import { autorun } from 'mobx'
 import { createMemoryHistory } from 'history'
 import delay from './util/delay'
 import { EventTypes } from './events'
-import { install } from './'
+import { install, Middleware } from './'
 
 describe('Public API', () => {
   let router
@@ -231,7 +231,7 @@ describe('Public API', () => {
     const router = install({
       history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
       getContext: () => ({}),
-      middleware,
+      middleware: Middleware(middleware),
       routes: [
         {
           path: 'a',

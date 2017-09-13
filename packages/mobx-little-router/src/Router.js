@@ -1,5 +1,6 @@
 // @flow
 import { autorun, computed, extendObservable, when } from 'mobx'
+import QueryString from 'qs'
 import delay from './util/delay'
 import type { Action, History } from 'history'
 import createRouteStateTreeNode from './model/createRouteStateTreeNode'
@@ -10,7 +11,7 @@ import type { Event } from './events'
 import { EventTypes } from './events'
 import { NavigationTypes } from './model/Navigation'
 import { InvalidNavigation } from './errors'
-import QueryString from 'qs'
+import type { IMiddleware } from './middleware/Middleware'
 
 class Router {
   store: RouterStore
@@ -24,7 +25,7 @@ class Router {
     history: History,
     config: Config<*>[],
     getContext: void | (() => any),
-    middleware: ?(evt: Event) => null | Event
+    middleware: IMiddleware
   ) {
     this.disposers = []
 

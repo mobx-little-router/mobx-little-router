@@ -3,12 +3,14 @@ import Router from './Router'
 import type { Config } from './model/types'
 import type { Event } from './events'
 import type { History } from 'history'
+import Middleware from './middleware/Middleware'
+import type { IMiddleware } from './middleware/Middleware'
 
 type Options = {
   history: History,
   routes: Config<*>[],
   getContext: () => any,
-  middleware?: (evt: Event) => null | Event
+  middleware?: IMiddleware
 }
 
 export function install(opts: Options): Router {
@@ -16,7 +18,7 @@ export function install(opts: Options): Router {
     opts.history,
     opts.routes,
     opts.getContext || (() => ({})),
-    opts.middleware
+    opts.middleware || Middleware.EMPTY
   )
 }
 

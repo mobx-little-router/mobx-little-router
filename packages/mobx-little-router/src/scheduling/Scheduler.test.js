@@ -1,12 +1,13 @@
 // @flow
 import { autorun, toJS } from 'mobx'
+import { scan } from 'ramda'
+import Middleware from '../middleware/Middleware'
 import RouterStore from '../model/RouterStore'
 import delay from '../util/delay'
 import Scheduler from './Scheduler'
 import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
 import createRoute from '../model/createRoute'
 import { EventTypes } from '../events'
-import { scan } from 'ramda'
 
 const scanChildren = scan((curr, idx) => curr.children[idx])
 
@@ -583,5 +584,5 @@ function createStore() {
 }
 
 function createScheduler(store) {
-  return new Scheduler(store)
+  return new Scheduler(store, Middleware.EMPTY)
 }

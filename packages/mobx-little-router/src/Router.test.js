@@ -1,5 +1,6 @@
 // @flow
 import { createMemoryHistory } from 'history'
+import Middleware from './middleware/Middleware'
 import { EventTypes } from './events'
 import Navigation from './model/Navigation'
 import Router from './Router'
@@ -12,7 +13,8 @@ describe('Router', () => {
     router = new Router(
       createMemoryHistory(),
       [{ path: '', match: 'full' }, { path: 'a' }, { path: 'b' }, { path: 'c' }],
-      () => ({ message: 'Hello' })
+      () => ({ message: 'Hello' }),
+      Middleware.EMPTY
     )
 
     return router.start()

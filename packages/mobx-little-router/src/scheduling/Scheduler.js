@@ -10,7 +10,6 @@ import TransitionManager from '../transition/TransitionManager'
 import type { Event } from '../events'
 import { EventTypes } from '../events'
 import type { IMiddleware } from '../middleware/Middleware'
-import Middleware from '../middleware/Middleware'
 import nextEvent from './nextEvent'
 import withQueryMiddleware from './util/withQueryMiddleware'
 import transformEventType from '../middleware/transformEventType'
@@ -22,7 +21,7 @@ export default class Scheduler {
   currentNavigation: Navigation
   event: Event
 
-  constructor(store: RouterStore, mComputation: ?(evt: Event) => null | Event) {
+  constructor(store: RouterStore, middleware: IMiddleware) {
     extendObservable(this, {
       currentNavigation: new Navigation({
         type: 'POP',
@@ -37,7 +36,7 @@ export default class Scheduler {
     this.store = store
     this.middleware = withQueryMiddleware
       // Run custom middleware first before handing off to our own.
-      .concat(mComputation ? Middleware(mComputation) : Middleware.EMPTY)
+      .concat(middleware)
       .concat(handleChildrenLoad)
       .concat(updateStore(store))
       .concat(handleTransitionFailure(store))
