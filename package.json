@@ -59,6 +59,7 @@
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-replace": "^1.1.1",
     "rollup-plugin-uglify": "^2.0.1",
+    "rollup-plugin-visualizer": "^0.3.1",
     "rollup-regenerator-runtime": "^6.23.1",
     "uglify-es": "^3.0.28"
   },

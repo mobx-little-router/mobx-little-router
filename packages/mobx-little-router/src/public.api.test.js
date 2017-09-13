@@ -2,7 +2,7 @@
 import { autorun } from 'mobx'
 import { createMemoryHistory } from 'history'
 import delay from './util/delay'
-import { EventTypes } from './scheduling/events'
+import { EventTypes } from './events'
 import { install } from './'
 
 describe('Public API', () => {
@@ -124,9 +124,9 @@ describe('Public API', () => {
         expect.arrayContaining([EventTypes.NAVIGATION_START, EventTypes.NAVIGATION_END])
       )
 
-      expect(spy.mock.calls.map(x => x[0].navigation.to.pathname)).toEqual(
-        expect.arrayContaining(['/initial/', '/bar/'])
-      )
+      expect(
+        spy.mock.calls.map(x => x[0].navigation && x[0].navigation.to.pathname)
+      ).toEqual(expect.arrayContaining(['/initial/', '/bar/']))
 
       dispose()
     })
@@ -189,13 +189,15 @@ describe('Public API', () => {
     const router = install({
       history: createMemoryHistory({ initialEntries: ['/a/1'], initialIndex: 0 }),
       getContext: () => ({}),
-      routes: [{
-        path: 'a/:id',
-        query: ['q'],
-        willActivate: willActivateSpy,
-        willResolve: willResolveSpy,
-        willDeactivate: willDeactivateSpy
-      }]
+      routes: [
+        {
+          path: 'a/:id',
+          query: ['q'],
+          willActivate: willActivateSpy,
+          willResolve: willResolveSpy,
+          willDeactivate: willDeactivateSpy
+        }
+      ]
     })
 
     await router.start()
@@ -213,5 +215,42 @@ describe('Public API', () => {
     expect(willDeactivateSpy.mock.calls.length).toBe(1)
 
     router.stop()
+  })
+
+  test('middleware', async () => {
+    const middleware = (evt): any => {
+      if (evt.type === 'CHILDREN_CONFIG_LOAD') {
+        return {
+          ...evt,
+          module: evt.module.routes
+        }
+      }
+      return evt
+    }
+
+    const router = install({
+      history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
+      getContext: () => ({}),
+      middleware,
+      routes: [
+        {
+          path: 'a',
+          loadChildren: () => {
+            return Promise.resolve({
+              routes: [{ path: 'b' }]
+            })
+          }
+        }
+      ]
+    })
+
+    await router.start()
+    await router.push('/a/b')
+
+    expect(router.store.location).toEqual(
+      expect.objectContaining({
+        pathname: '/a/b/'
+      })
+    )
   })
 })

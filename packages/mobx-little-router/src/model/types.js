@@ -48,7 +48,7 @@ export type RedirectConfig<D: Object> = {
   children?: empty
 }
 
-export type LoadChildrenConfigFn<D> = () => Promise<Config<D>[]>
+export type LoadChildrenConfigFn<D> = () => Promise<any>
 
 export type GuardFn = (
   node: Route<*, *>,
@@ -62,7 +62,7 @@ export type LifecycleFn = (
 
 export type ErrorHandler = (node: RouteStateTreeNode<*, *>, context: Object) => Promise<void>
 
-export type LoadChildrenRouteStateTreeNode = () => Promise<RouteStateTreeNode<*, *>[]>
+export type LoadChildrenRouteStateTreeNode = () => Promise<any>
 
 export type RouteValue<C: Object, D: Object> = {
   key: string,

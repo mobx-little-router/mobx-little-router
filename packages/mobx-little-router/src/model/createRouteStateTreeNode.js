@@ -56,7 +56,7 @@ export default function createRouteStateTreeNode(
       query: typeof config.query !== 'undefined' ? config.query : [],
       params: config.params !== null ? config.params : {},
       loadChildren: typeof config.loadChildren === 'function'
-        ? toLoadRouteStateTreeNodeChildren(config.loadChildren)
+        ? config.loadChildren
         : null,
       // Guards
       canActivate: typeof config.canActivate === 'function' ? config.canActivate : nop,
@@ -114,16 +114,5 @@ export function getWillActivate(config: Config<*>) {
     }
   } else {
     return f
-  }
-}
-
-function toLoadRouteStateTreeNodeChildren(f: void | LoadChildrenConfigFn<
-  *
->): null | LoadChildrenRouteStateTreeNode {
-  const g = f // Avoid re-binding type errors on f.
-  if (typeof g === 'undefined') {
-    return null
-  } else {
-    return () => g().then(nodes => nodes.map(x => createRouteStateTreeNode(x)))
   }
 }

@@ -1,37 +1,41 @@
 // @flow
 import { autorun, computed, extendObservable, when } from 'mobx'
-import type { History, Action } from 'history'
+import delay from './util/delay'
+import type { Action, History } from 'history'
 import createRouteStateTreeNode from './model/createRouteStateTreeNode'
 import RouterStore from './model/RouterStore'
-import type { Href, Config } from './model/types'
+import type { Config, Href } from './model/types'
 import Scheduler from './scheduling/Scheduler'
-import type { Event } from './scheduling/events'
-import { EventTypes } from './scheduling/events'
+import type { Event } from './events'
+import { EventTypes } from './events'
 import { NavigationTypes } from './model/Navigation'
 import { InvalidNavigation } from './errors'
+import QueryString from 'qs'
 
 class Router {
   store: RouterStore
   scheduler: Scheduler
+  initialChildren: Config<*>[]
   history: History
   disposers: Function[]
-  navigationEvent: * // This is computed from Scheduler event observable.
+  nextNavigation: * // This is computed from Scheduler event observable.
 
   constructor(
     history: History,
     config: Config<*>[],
-    getContext: void | (() => any)
+    getContext: void | (() => any),
+    middleware: ?(evt: Event) => null | Event
   ) {
     this.disposers = []
 
     this.history = history
     const root = createRouteStateTreeNode({ path: '', match: 'partial' }, getContext) // Initial root.
-    const routes = config.map(x => createRouteStateTreeNode(x, getContext))
-    this.store = new RouterStore(root, routes)
-    this.scheduler = new Scheduler(this.store)
+    this.initialChildren = config
+    this.store = new RouterStore(root)
+    this.scheduler = new Scheduler(this.store, middleware)
 
     extendObservable(this, {
-      navigationEvent: computed(() => {
+      nextNavigation: computed(() => {
         const { event } = this.scheduler
         return event !== null
           ? event.nextNavigation !== null ? event.nextNavigation : null
@@ -51,13 +55,25 @@ class Router {
         this.disposers.push(this.subscribeEvent(this.logErrors))
       }
 
-      this.disposers.push(autorun(this.handleNavigationEvents))
+      // Loads initial set of children (running through all middleware).
+      this.scheduler.dispatch({
+        type: EventTypes.CHILDREN_LOAD,
+        leaf: { node: this.store.state.root },
+        children: this.initialChildren
+      })
+
+      // Look for any next navigation from events and call corresponding method on history.
+      this.disposers.push(autorun(this.handleNextNavigation))
+
+      // Initial location.
       this.disposers.push(this.history.listen(this.handleLocationChange))
 
-      // Schedule initial navigation.
-      await this.scheduler.scheduleNavigation(asNavigation(this.history.location))
+      await delay(0)
 
-      // Wait until navigation is processed.
+      // Schedule initial nextNavigation.
+      await this.scheduler.schedule(asNavigation(this.history.location))
+
+      // Wait until nextNavigation is processed.
       await this.navigated()
 
       callback && callback(this)
@@ -82,12 +98,12 @@ class Router {
   }
 
   push(href: Href) {
-    this.history.push(href)
+    this.history.push(withSearch(href))
     return this.navigated()
   }
 
   replace(href: Href) {
-    this.history.replace(href)
+    this.history.replace(withSearch(href))
     return this.navigated()
   }
 
@@ -104,32 +120,35 @@ class Router {
       when(() => {
         const { event } = this.scheduler
         const { location } = this.store
-        return event !== null && event.type === EventTypes.NAVIGATION_END && typeof location.pathname === 'string'
+        return (
+          event.type === EventTypes.NAVIGATION_END &&
+          typeof location.pathname === 'string'
+        )
       }, res)
     })
   }
 
-  handleNavigationEvents = () => {
-    const { navigationEvent } = this
+  handleNextNavigation = () => {
+    const { nextNavigation } = this
 
-    if (!navigationEvent) {
+    if (!nextNavigation) {
       return
     }
 
-    switch (navigationEvent.type) {
+    switch (nextNavigation.type) {
       case NavigationTypes.PUSH:
-        return this.push(navigationEvent.to)
+        return this.push(nextNavigation.to)
       case NavigationTypes.REPLACE:
-        return this.replace(navigationEvent.to)
+        return this.replace(nextNavigation.to)
       case NavigationTypes.GO_BACK:
         return this.goBack()
       default:
-        throw new InvalidNavigation(navigationEvent)
+        throw new InvalidNavigation(nextNavigation)
     }
   }
 
   handleLocationChange = (location: Object, action: ?Action) => {
-    this.scheduler.scheduleNavigation(asNavigation(location, action))
+    this.scheduler.schedule(asNavigation(location, action))
   }
 
   logErrors = (evt: Event) => {
@@ -138,8 +157,6 @@ class Router {
     }
   }
 }
-
-export default Router
 
 function asNavigation(location: Object, action: ?Action) {
   return {
@@ -152,9 +169,19 @@ function asNavigation(location: Object, action: ?Action) {
 }
 
 function normalizePath(x: string) {
-  if (x.endsWith('/')) {
-    return x
+  return x.endsWith('/') ? x : `${x}/`
+}
+
+function withSearch(href: Href) {
+  if (typeof href === 'string') {
+    return href
   } else {
-    return `${x}/`
+    const qs = href.query ? QueryString.stringify(href.query)  : ''
+    return {
+      ...href,
+      search: qs ? `?${qs}` : qs
+    }
   }
 }
+
+export default Router

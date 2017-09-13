@@ -15,10 +15,10 @@ describe('findPathFromRoot', () => {
       ]
     })
 
-    const r1 = await findPathFromRoot(root, '/a/b', () => Promise.resolve(true))
+    const r1 = await findPathFromRoot(root, '/a/b')
     expect(r1.map(x => x.node.value.path)).toEqual(['a', 'b'])
 
-    const r2 = await findPathFromRoot(root, '/a/c/d', () => Promise.resolve(true))
+    const r2 = await findPathFromRoot(root, '/a/c/d')
     expect(r2.map(x => x.node.value.path)).toEqual(['a', 'c', 'd'])
   })
 
@@ -37,10 +37,10 @@ describe('findPathFromRoot', () => {
       ])
     )
 
-    const r1 = await findPathFromRoot(root, '/a/b/c', () => Promise.resolve(true))
+    const r1 = await findPathFromRoot(root, '/a/b/c')
     expect(r1.map(x => x.node.value.path)).toEqual(['', 'a', 'b', 'c', ''])
 
-    const r2 = await findPathFromRoot(root, '/', () => Promise.resolve(true))
+    const r2 = await findPathFromRoot(root, '/')
     expect(r2.map(x => x.node.value.path)).toEqual(['', ''])
   })
 })

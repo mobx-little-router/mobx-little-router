@@ -1,4 +1,4 @@
-import * as QueryString from 'qs'
+import QueryString from 'qs'
 import type { Query, RouteStateTreeNode } from './types'
 
 export default function createRouteKey(node: RouteStateTreeNode<*, *>, segment: string, query: Query) {
