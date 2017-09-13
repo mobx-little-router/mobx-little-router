@@ -3,7 +3,7 @@
   "repository": "git@github.com:mobx-little-router/mobx-little-router.git",
   "license": "MIT",
   "scripts": {
-    "publish": "yarn build umd && lerna publish --silent",
+    "publish": "yarn build umd && lerna publish --silent --registry=https://registry.npmjs.org/",
     "updated": "lerna updated",
     "clean": "lerna run clean",
     "build": "yarn run clean && node scripts/build.js",
