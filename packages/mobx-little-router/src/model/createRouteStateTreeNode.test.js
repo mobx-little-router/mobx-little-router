@@ -90,7 +90,10 @@ describe('createRouteStateTreeNode', () => {
     const { willActivate } = node.value
     const navigation = new Navigation({
       type: 'PUSH',
-      sequence: 0
+      sequence: 0,
+      to: {
+        pathname: '/'
+      }
     })
     const promise = willActivate(createRoute(node, '/a/1', { id: '1' }, {}), navigation)
     await expect(promise).rejects.toEqual(

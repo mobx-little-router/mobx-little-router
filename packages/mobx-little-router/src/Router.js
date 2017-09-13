@@ -10,7 +10,7 @@ import type { Event } from './events'
 import { EventTypes } from './events'
 import { NavigationTypes } from './model/Navigation'
 import { InvalidNavigation } from './errors'
-import * as QueryString from 'qs'
+import QueryString from 'qs'
 
 class Router {
   store: RouterStore

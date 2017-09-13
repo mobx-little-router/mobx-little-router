@@ -5,7 +5,7 @@ import type { ObservableMap } from 'mobx'
 import createRoute from './createRoute'
 import createRouteKey from './createRouteKey'
 import RouterStateTree from './RouterStateTree'
-import * as QueryString from 'qs'
+import QueryString from 'qs'
 
 import type {
   Location,
