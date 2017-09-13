@@ -6,5 +6,5 @@ export default function isUrlFullyMatched(
   path: PathElement<*, *>[]
 ): boolean {
   const lastMatch = path[path.length - 1]
-  return lastMatch && lastMatch.remaining === '' || lastMatch.remaining === '/'
+  return lastMatch && (lastMatch.remaining === '' || lastMatch.remaining === '/')
 }
