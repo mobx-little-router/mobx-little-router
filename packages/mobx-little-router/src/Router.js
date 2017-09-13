@@ -1,12 +1,12 @@
 // @flow
 import { autorun, computed, extendObservable, when } from 'mobx'
-import type { History, Action } from 'history'
+import type { Action, History } from 'history'
 import createRouteStateTreeNode from './model/createRouteStateTreeNode'
 import RouterStore from './model/RouterStore'
-import type { Href, Config } from './model/types'
+import type { Config, Href } from './model/types'
 import Scheduler from './scheduling/Scheduler'
-import type { Event } from './scheduling/events'
-import { EventTypes } from './scheduling/events'
+import type { Event } from './events'
+import { EventTypes } from './events'
 import { NavigationTypes } from './model/Navigation'
 import { InvalidNavigation } from './errors'
 
@@ -21,7 +21,7 @@ class Router {
     history: History,
     config: Config<*>[],
     getContext: void | (() => any),
-    middleware: ?((evt: Event) => null | Event)
+    middleware: ?(evt: Event) => null | Event
   ) {
     this.disposers = []
 
@@ -105,7 +105,10 @@ class Router {
       when(() => {
         const { event } = this.scheduler
         const { location } = this.store
-        return event.type === EventTypes.NAVIGATION_END && typeof location.pathname === 'string'
+        return (
+          event.type === EventTypes.NAVIGATION_END &&
+          typeof location.pathname === 'string'
+        )
       }, res)
     })
   }

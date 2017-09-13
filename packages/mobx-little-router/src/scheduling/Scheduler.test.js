@@ -5,7 +5,7 @@ import delay from '../util/delay'
 import Scheduler from './Scheduler'
 import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
 import createRoute from '../model/createRoute'
-import { EventTypes } from './events'
+import { EventTypes } from '../events'
 import { scan } from 'ramda'
 
 const scanChildren = scan((curr, idx) => curr.children[idx])

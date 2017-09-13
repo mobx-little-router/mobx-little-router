@@ -1,6 +1,6 @@
 // @flow
 import Navigation from '../model/Navigation'
-import type { Config, PathElement, Route, RouteStateTreeNode } from '../model/types'
+import type { PathElement, Route } from '../model/types'
 
 /*
   * Sequence of events that occur from navigation start to end.

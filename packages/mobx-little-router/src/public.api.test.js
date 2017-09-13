@@ -2,7 +2,7 @@
 import { autorun } from 'mobx'
 import { createMemoryHistory } from 'history'
 import delay from './util/delay'
-import { EventTypes } from './scheduling/events'
+import { EventTypes } from './events'
 import { install } from './'
 
 describe('Public API', () => {
@@ -189,13 +189,15 @@ describe('Public API', () => {
     const router = install({
       history: createMemoryHistory({ initialEntries: ['/a/1'], initialIndex: 0 }),
       getContext: () => ({}),
-      routes: [{
-        path: 'a/:id',
-        query: ['q'],
-        willActivate: willActivateSpy,
-        willResolve: willResolveSpy,
-        willDeactivate: willDeactivateSpy
-      }]
+      routes: [
+        {
+          path: 'a/:id',
+          query: ['q'],
+          willActivate: willActivateSpy,
+          willResolve: willResolveSpy,
+          willDeactivate: willDeactivateSpy
+        }
+      ]
     })
 
     await router.start()
@@ -230,18 +232,25 @@ describe('Public API', () => {
       history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
       getContext: () => ({}),
       middleware,
-      routes: [{ path: 'a', loadChildren: () => {
-        return Promise.resolve({
-          routes: [ { path: 'b' }]
-        })
-      } }]
+      routes: [
+        {
+          path: 'a',
+          loadChildren: () => {
+            return Promise.resolve({
+              routes: [{ path: 'b' }]
+            })
+          }
+        }
+      ]
     })
 
     await router.start()
     await router.push('/a/b')
 
-    expect(router.store.location).toEqual(expect.objectContaining({
-      pathname: '/a/b/'
-    }))
+    expect(router.store.location).toEqual(
+      expect.objectContaining({
+        pathname: '/a/b/'
+      })
+    )
   })
 })

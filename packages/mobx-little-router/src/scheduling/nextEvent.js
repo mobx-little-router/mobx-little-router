@@ -7,8 +7,8 @@ import type { Route } from '../model/types'
 import differenceWith from '../util/differenceWith'
 import isUrlFullyMatched from './util/isUrlFullyMatched'
 import areRoutesEqual from '../model/util/areRoutesEqual'
-import { EventTypes } from './events'
-import type { Event } from './events'
+import { EventTypes } from '../events'
+import type { Event } from '../events'
 
 export default async function nextEvent(evt: Event, store: RouterStore): Promise<null | Event> {
   switch (evt.type) {

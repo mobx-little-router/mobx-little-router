@@ -1,7 +1,7 @@
 // @flow
 import Router from './Router'
 import type { Config } from './model/types'
-import type { Event } from './scheduling/events'
+import type { Event } from './events'
 import type { History } from 'history'
 
 type Options = {
@@ -34,8 +34,8 @@ export type {
   RouteValue
 } from './model/types'
 
-export { EventTypes } from './scheduling/events'
-export type { Event } from './scheduling/events'
+export { EventTypes } from './events'
+export type { Event } from './events'
 
 export { TransitionTypes } from './transition/types'
 export type { TransitionType, TransitionEvent, TransitionFn } from './transition/types'

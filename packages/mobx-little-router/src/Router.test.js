@@ -1,6 +1,6 @@
 // @flow
 import { createMemoryHistory } from 'history'
-import { EventTypes } from './scheduling/events'
+import { EventTypes } from './events'
 import Navigation from './model/Navigation'
 import Router from './Router'
 import delay from './util/delay'
