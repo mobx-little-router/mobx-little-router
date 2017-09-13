@@ -255,7 +255,7 @@ describe('Public API', () => {
   })
 
   test('getContext() is available on hooks', async () => {
-    let stores
+    let stores = {}
     const router = install({
       history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
       getContext: () => ({ stores: { a: false, b: 123 } }),
