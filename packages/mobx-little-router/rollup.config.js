@@ -12,9 +12,7 @@ const config = {
     mobx: 'mobx',
     qs: 'Qs'
   },
-  external: [
-    'mobx'
-  ],
+  external: ['mobx'],
   plugins: [
     babel({
       exclude: 'node_modules/**'
