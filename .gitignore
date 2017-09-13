@@ -6,6 +6,8 @@ node_modules/
 # testing
 coverage/
 
+stats.html
+
 # production
 es/
 lib/
