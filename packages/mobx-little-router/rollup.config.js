@@ -9,7 +9,8 @@ const config = {
   entry: 'src/index.js',
   moduleName: 'mobxLittleRouter',
   globals: {
-    mobx: 'mobx'
+    mobx: 'mobx',
+    qs: 'Qs'
   },
   external: [
     'mobx'
