@@ -21,7 +21,7 @@ export default class Scheduler {
   currentNavigation: Navigation
   event: Event
 
-  constructor(store: RouterStore, middleware: IMiddleware) {
+  constructor(store: RouterStore, middleware: IMiddleware, getContext: void | (() => any)) {
     extendObservable(this, {
       currentNavigation: new Navigation({
         type: 'POP',
@@ -37,7 +37,7 @@ export default class Scheduler {
     this.middleware = withQueryMiddleware
       // Run custom middleware first before handing off to our own.
       .concat(middleware)
-      .concat(handleChildrenLoad)
+      .concat(handleChildrenLoad(getContext))
       .concat(updateStore(store))
       .concat(handleTransitionFailure(store))
   }
@@ -84,10 +84,10 @@ export default class Scheduler {
   })
 }
 
-const handleChildrenLoad = transformEventType(EventTypes.CHILDREN_LOAD)(
+const handleChildrenLoad = (getContext: void | (() => any)) => transformEventType(EventTypes.CHILDREN_LOAD)(
   action(evt => {
     const { navigation, pathElements, leaf, children } = evt
-    leaf.node.children.replace(children.map(createRouteStateTreeNode))
+    leaf.node.children.replace(children.map(x => createRouteStateTreeNode(x, getContext)))
 
     if (navigation) {
       return {

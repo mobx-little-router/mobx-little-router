@@ -33,7 +33,6 @@ const router = install({
     const { component, outlet } = config
     delete config.component
     delete config.outlet
-    console.log(config.path, component,outlet)
     return {
       ...config,
       getData: () => ({
@@ -81,6 +80,7 @@ const router = install({
       canActivate: (route, navigation) => {
         const { stores: { SessionStore } } = route.context
 
+        console.log('navigation', navigation)
         if (SessionStore.isAuthenticated) {
           return true
         } else {
