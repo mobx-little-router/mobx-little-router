@@ -1,5 +1,4 @@
 // @flow
-import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
 import type RouterStore from '../model/RouterStore'
 import { NoMatch, TransitionFailure } from '../errors'
 import Navigation from '../model/Navigation'
@@ -58,7 +57,7 @@ export default async function nextEvent(evt: Event, store: RouterStore): Promise
           navigation,
           pathElements,
           leaf,
-          children: module.map(createRouteStateTreeNode)
+          children: module
         }
       } else {
         return {

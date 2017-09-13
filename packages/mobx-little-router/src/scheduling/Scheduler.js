@@ -1,6 +1,7 @@
 // @flow
 import type { Action } from 'history'
 import { TransitionFailure } from '../errors'
+import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
 import { action, autorun, extendObservable, reaction, runInAction, when } from 'mobx'
 import type RouterStore from '../model/RouterStore'
 import type { Definition } from '../model/Navigation'
@@ -35,6 +36,7 @@ export default class Scheduler {
     this.disposer = null
     this.store = store
     this.middleware = withQueryMiddleware
+      // Run custom middleware first before handing off to our own.
       .concat(mComputation ? Middleware(mComputation) : Middleware.EMPTY)
       .concat(handleChildrenLoad)
       .concat(updateStore(store))
@@ -86,12 +88,17 @@ export default class Scheduler {
 const handleChildrenLoad = transformEventType(EventTypes.CHILDREN_LOAD)(
   action(evt => {
     const { navigation, pathElements, leaf, children } = evt
-    leaf.node.children.replace(children.slice())
-    return {
-      type: EventTypes.NAVIGATION_RETRY,
-      navigation,
-      pathElements,
-      continueFrom: leaf
+    leaf.node.children.replace(children.map(createRouteStateTreeNode))
+
+    if (navigation) {
+      return {
+        type: EventTypes.NAVIGATION_RETRY,
+        navigation,
+        pathElements,
+        continueFrom: leaf
+      }
+    } else {
+      return null
     }
   })
 )

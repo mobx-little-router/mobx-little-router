@@ -1,31 +1,31 @@
 // @flow
 import { EventTypes } from '../events'
-import type { ChildrenLoad } from '../events'
-import transformConfig from './transformConfig'
+import type { ChildrenConfigLoad } from '../events'
+import transformConfigLoad from './transformConfigLoad'
 
-describe('transformConfig middleware', () => {
-  test('transforms config before passing them as children', () => {
+describe('transformConfigLoad middleware', () => {
+  test('transforms config load event', () => {
     const f = () => ({ x: 1 })
-    const g = transformConfig(config => {
+    const g = transformConfigLoad(config => {
       return {
         ...config,
         getData: f
       }
     })
 
-    const c: ChildrenLoad = {
-      type: EventTypes.CHILDREN_LOAD,
+    const c: ChildrenConfigLoad = {
+      type: EventTypes.CHILDREN_CONFIG_LOAD,
       leaf: createLeaf(),
       navigation: createNavigation(),
       pathElements: [],
-      children: [
+      module: [
         { path: 'b' },
         { path: 'c' }
       ]
     }
 
     expect(g.fold(c)).toEqual(expect.objectContaining({
-      children: [
+      module: [
         { path: 'b', getData: f },
         { path: 'c', getData: f }
         ]

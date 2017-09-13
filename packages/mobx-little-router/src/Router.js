@@ -1,5 +1,6 @@
 // @flow
 import { autorun, computed, extendObservable, when } from 'mobx'
+import delay from './util/delay'
 import type { Action, History } from 'history'
 import createRouteStateTreeNode from './model/createRouteStateTreeNode'
 import RouterStore from './model/RouterStore'
@@ -14,6 +15,7 @@ import * as QueryString from 'querystring'
 class Router {
   store: RouterStore
   scheduler: Scheduler
+  initialChildren: Config<*>[]
   history: History
   disposers: Function[]
   nextNavigation: * // This is computed from Scheduler event observable.
@@ -28,8 +30,8 @@ class Router {
 
     this.history = history
     const root = createRouteStateTreeNode({ path: '', match: 'partial' }, getContext) // Initial root.
-    const routes = config.map(x => createRouteStateTreeNode(x, getContext))
-    this.store = new RouterStore(root, routes)
+    this.initialChildren = config
+    this.store = new RouterStore(root)
     this.scheduler = new Scheduler(this.store, middleware)
 
     extendObservable(this, {
@@ -53,8 +55,20 @@ class Router {
         this.disposers.push(this.subscribeEvent(this.logErrors))
       }
 
-      this.disposers.push(autorun(this.handleNavigationEvents))
+      // Loads initial set of children (running through all middleware).
+      this.scheduler.dispatch({
+        type: EventTypes.CHILDREN_LOAD,
+        leaf: { node: this.store.state.root },
+        children: this.initialChildren
+      })
+
+      // Look for any next navigation from events and call corresponding method on history.
+      this.disposers.push(autorun(this.handleNextNavigation))
+
+      // Initial location.
       this.disposers.push(this.history.listen(this.handleLocationChange))
+
+      await delay(0)
 
       // Schedule initial nextNavigation.
       await this.scheduler.schedule(asNavigation(this.history.location))
@@ -114,7 +128,7 @@ class Router {
     })
   }
 
-  handleNavigationEvents = () => {
+  handleNextNavigation = () => {
     const { nextNavigation } = this
 
     if (!nextNavigation) {

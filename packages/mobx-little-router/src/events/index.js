@@ -63,8 +63,8 @@ export type ChildrenConfigLoad = {
 
 export type ChildrenLoad = {
   type: 'CHILDREN_LOAD',
-  navigation: Navigation,
-  pathElements: PathElement<*, *>[],
+  navigation: null | Navigation,
+  pathElements: null | PathElement<*, *>[],
   leaf: PathElement<*, *>,
   children: any,
   etc?: any

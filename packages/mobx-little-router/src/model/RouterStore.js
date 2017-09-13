@@ -32,11 +32,9 @@ class RouterStore {
   query: Query
 
   constructor(
-    root: RouteStateTreeNode<*, *>,
-    children: void | RouteStateTreeNode<*, *>[]
+    root: RouteStateTreeNode<*, *>
   ) {
     this.state = new RouterStateTree(root)
-
     extendObservable(this, {
       location: {},
       query: computed(() => this.getQueryParams(this.location)),
@@ -45,10 +43,6 @@ class RouterStore {
       routes: observable.array([]),
       prevRoutes: observable.array([])
     })
-
-    if (children) {
-      this.replaceChildren(root, children)
-    }
   }
 
   /* Queries */
