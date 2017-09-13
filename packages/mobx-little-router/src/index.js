@@ -40,4 +40,10 @@ export type { Event } from './events'
 export { TransitionTypes } from './transition/types'
 export type { TransitionType, TransitionEvent, TransitionFn } from './transition/types'
 
+export { default as Middleware } from './middleware/Middleware'
+export { default as transformConfigLoad } from './middleware/transformConfigLoad'
+export { default as transformConfig } from './middleware/transformConfig'
+export { default as transformEventType } from './middleware/transformEventType'
+export { default as transformNavigation } from './middleware/transformNavigation'
+
 export { default as areRoutesEqual } from './model/util/areRoutesEqual'
