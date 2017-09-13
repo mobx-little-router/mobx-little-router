@@ -253,4 +253,27 @@ describe('Public API', () => {
       })
     )
   })
+
+  test('getContext() is available on hooks', async () => {
+    let stores
+    const router = install({
+      history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
+      getContext: () => ({ stores: { a: false, b: 123 } }),
+      routes: [
+        {
+          path: 'a',
+          query: ['q'],
+          canActivate: (route) => {
+            stores = route.context.stores
+            return Promise.resolve()
+          }
+        }
+      ]
+    })
+
+    await router.start()
+
+    expect(stores.a).toEqual(false)
+    expect(stores.b).toEqual(123)
+  })
 })
