@@ -134,10 +134,6 @@ const handleTransitionFailure = store =>
   )
 
 function hasChanged(curr, next) {
-  // This could be a navigation that has no `to` prop. Usually a `GO_BACK`.
-  if (!next) {
-    return false
-  }
   // If location path and query has not changed, skip it.
   return !curr || curr.pathname !== next.pathname || curr.search !== next.search
 }

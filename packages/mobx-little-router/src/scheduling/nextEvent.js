@@ -15,11 +15,6 @@ export default async function nextEvent(evt: Event, store: RouterStore): Promise
     case EventTypes.NAVIGATION_START: {
       const { navigation } = evt
       const { to: nextLocation } = navigation
-      if (!nextLocation) {
-        return {
-          type: EventTypes.NAVIGATION_CANCELLED
-        }
-      }
       const nextPath = store.state.pathFromRoot(nextLocation.pathname)
       if (isUrlFullyMatched(nextLocation.pathname, nextPath)) {
         return {

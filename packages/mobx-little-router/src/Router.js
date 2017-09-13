@@ -16,7 +16,7 @@ class Router {
   scheduler: Scheduler
   history: History
   disposers: Function[]
-  navigationEvent: * // This is computed from Scheduler event observable.
+  nextNavigation: * // This is computed from Scheduler event observable.
 
   constructor(
     history: History,
@@ -33,7 +33,7 @@ class Router {
     this.scheduler = new Scheduler(this.store, middleware)
 
     extendObservable(this, {
-      navigationEvent: computed(() => {
+      nextNavigation: computed(() => {
         const { event } = this.scheduler
         return event !== null
           ? event.nextNavigation !== null ? event.nextNavigation : null
@@ -56,10 +56,10 @@ class Router {
       this.disposers.push(autorun(this.handleNavigationEvents))
       this.disposers.push(this.history.listen(this.handleLocationChange))
 
-      // Schedule initial navigation.
+      // Schedule initial nextNavigation.
       await this.scheduler.schedule(asNavigation(this.history.location))
 
-      // Wait until navigation is processed.
+      // Wait until nextNavigation is processed.
       await this.navigated()
 
       callback && callback(this)
@@ -115,21 +115,21 @@ class Router {
   }
 
   handleNavigationEvents = () => {
-    const { navigationEvent } = this
+    const { nextNavigation } = this
 
-    if (!navigationEvent) {
+    if (!nextNavigation) {
       return
     }
 
-    switch (navigationEvent.type) {
+    switch (nextNavigation.type) {
       case NavigationTypes.PUSH:
-        return this.push(navigationEvent.to)
+        return this.push(nextNavigation.to)
       case NavigationTypes.REPLACE:
-        return this.replace(navigationEvent.to)
+        return this.replace(nextNavigation.to)
       case NavigationTypes.GO_BACK:
         return this.goBack()
       default:
-        throw new InvalidNavigation(navigationEvent)
+        throw new InvalidNavigation(nextNavigation)
     }
   }
 

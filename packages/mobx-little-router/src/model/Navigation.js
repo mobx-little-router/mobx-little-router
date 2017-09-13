@@ -20,14 +20,14 @@ export type NavigationType = $Keys<typeof NavigationTypes>
 export type Definition = {
   type: NavigationType,
   sequence?: number,
-  to?: Location,
+  to: Location,
   from?: Location,
   shouldTransition?: boolean
 }
 
 export default class Navigation {
   type: NavigationType
-  to: null | Location
+  to: Location
   from: null | Location
   sequence: number
   shouldTransition: boolean
