@@ -8,6 +8,7 @@ import type { Route } from '../model/types'
 import differenceWith from '../util/differenceWith'
 import isUrlFullyMatched from './util/isUrlFullyMatched'
 import areRoutesEqual from '../model/util/areRoutesEqual'
+import TransitionManager from '../transition/TransitionManager'
 import type { Event } from '../events'
 import { EventTypes } from '../events'
 
@@ -15,7 +16,7 @@ import { EventTypes } from '../events'
  * This function maps an Event to a new Event. It is used by the Scheduler to manage data flow.
  */
 
-export default async function nextEvent(evt: Event, store: RouterStore): Promise<Event> {
+export default async function processEvent(evt: Event, store: RouterStore): Promise<Event> {
   try {
     switch (evt.type) {
       case EventTypes.NAVIGATION_START: {
@@ -102,6 +103,7 @@ export default async function nextEvent(evt: Event, store: RouterStore): Promise
           leaf.node.children.replace(
             children.map(x => createRouteStateTreeNode(x, leaf.node.value.getContext))
           )
+          leaf.node.value.loadChildren = null
         })
         if (navigation && partialPath) {
           return {
@@ -150,6 +152,20 @@ export default async function nextEvent(evt: Event, store: RouterStore): Promise
         }
       }
       case EventTypes.NAVIGATION_ACTIVATED:
+        const { navigation, routes, exiting, entering } = evt
+        runInAction(() => {
+          store.updateRoutes(routes)
+          store.updateLocation(navigation.to)
+        })
+        if (navigation.shouldTransition) {
+          // Run and wait on transition of exiting and newly entering nodes.
+          Promise.all([
+            TransitionManager.run('exiting', exiting),
+            TransitionManager.run('entering', entering)
+          ]).then(() => {
+            store.clearPrevRoutes()
+          })
+        }
         return {
           type: EventTypes.NAVIGATION_END,
           navigation: evt.navigation
@@ -163,6 +179,9 @@ export default async function nextEvent(evt: Event, store: RouterStore): Promise
             nextNavigation: error.navigation
           }
         } else {
+          runInAction(() => {
+            store.setError(error)
+          })
           return {
             type: EventTypes.NAVIGATION_END,
             navigation: evt.navigation

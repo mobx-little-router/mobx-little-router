@@ -33,7 +33,7 @@ class Router {
     const root = createRouteStateTreeNode({ path: '', match: 'partial' }, getContext) // Initial root.
     this.initialChildren = config
     this.store = new RouterStore(root)
-    this.scheduler = new Scheduler(this.store, middleware, getContext)
+    this.scheduler = new Scheduler(this.store, middleware)
 
     extendObservable(this, {
       nextNavigation: computed(() => {
