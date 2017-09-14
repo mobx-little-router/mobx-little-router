@@ -16,6 +16,6 @@
     "react-dom": "^15.6.1"
   },
   "scripts": {
-    "start": "node index"
+    "start": "./node_modules/.bin/babel-node index"
   }
 }
