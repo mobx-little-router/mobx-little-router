@@ -1,34 +1,25 @@
-const React = require('react')
-const RouterReact = require('mobx-little-router-react')
-const MobxReact = require('mobx-react')
+import React from 'react'
+import { RouterProvider, Link, Outlet } from 'mobx-little-router-react'
+import { Provider } from 'mobx-react'
 
-const h = React.createElement
+export default ({ router, dataStore }) => {
+  return (
+    <Provider dataStore={dataStore}>
+      <RouterProvider router={router}>
+        <div style={{ display: 'flex' }}>
+          <ul style={{ minWidth: '100px', maxWidth: '200px' }}>
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/about">About</Link></li>
+            <li><Link to="/gif/cat">Cat GIF</Link></li>
+            <li><Link to="/gif/dog">Dog GIF</Link></li>
+            <li><Link to="/404">404</Link></li>
+          </ul>
 
-module.exports = ({ router, dataStore }) => {
-  return h(
-    MobxReact.Provider,
-    { dataStore: dataStore },
-    h(
-      RouterReact.RouterProvider,
-      {
-        router: router
-      },
-      h('div', {
-        style: { display: 'flex' },
-        children: [
-          h('ul', {
-            style: { minWidth: '100px', maxWidth: '200px' },
-            children: [
-              h('li', {}, h(RouterReact.Link, { to: '/' }, 'Home')),
-              h('li', {}, h(RouterReact.Link, { to: '/about' }, 'About')),
-              h('li', {}, h(RouterReact.Link, { to: '/gif/cat' }, 'Cat GIF')),
-              h('li', {}, h(RouterReact.Link, { to: '/gif/dog' }, 'Dog GIF')),
-              h('li', {}, h(RouterReact.Link, { to: '/404' }, '404'))
-            ]
-          }),
-          h('div', { style: { flex: 1 } }, h(RouterReact.Outlet))
-        ]
-      })
-    )
+          <div style={{ flex: 1 }}>
+            <Outlet />
+          </div>
+        </div>
+      </RouterProvider>
+    </Provider>
   )
 }

@@ -1,16 +1,12 @@
-const React = require('react')
-const Link = require('mobx-little-router-react').Link
+import React from 'react'
+import { Link } from 'mobx-little-router-react'
 
-const h = React.createElement
-
-module.exports = () => {
-  return h('div', {
-    children: [
-      h('p', { children: [
-        'Hmm, this section does not exist... go back to ',
-        h(Link, { to: '/about' }, 'about'),
-        ' page?'
-      ] })
-    ]
-  })
+export default () => {
+  return (
+    <div>
+      <p>
+        'Hmm, this section does not exist... go back to ' <Link to="/about">about</Link> ' page?'
+      </p>
+    </div>
+  )
 }

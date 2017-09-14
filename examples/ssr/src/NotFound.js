@@ -1,12 +1,10 @@
-const React = require('react')
+import React from 'react'
 
-const h = React.createElement
-
-module.exports = () => {
-  return h('div', {
-    children: [
-      h('h1', {}, 'Not Found'),
-      h('p', {}, "This is not the page you're looking for")
-    ]
-  })
+export default () => {
+  return (
+    <div>
+      <h1>Not Found</h1>
+      <p>{"This is not the page you're looking for"}</p>
+    </div>
+  )
 }
