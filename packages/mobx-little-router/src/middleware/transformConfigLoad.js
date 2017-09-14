@@ -8,10 +8,10 @@ import transformEventType from './transformEventType'
 export default (f: (x: any) => any) =>
   transformEventType(EventTypes.CHILDREN_CONFIG_LOAD)(evt => {
     const { module } = evt
-    if (module && module.length) {
+    if (module) {
       return {
         ...evt,
-        module: module.map(f)
+        module: f(module)
       }
     } else {
       return evt

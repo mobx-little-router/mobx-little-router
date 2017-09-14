@@ -6,11 +6,11 @@ import transformConfigLoad from './transformConfigLoad'
 describe('transformConfigLoad middleware', () => {
   test('transforms config load event', () => {
     const f = () => ({ x: 1 })
-    const g = transformConfigLoad(config => {
-      return {
+    const g = transformConfigLoad(module => {
+      return module.map(config => ({
         ...config,
         getData: f
-      }
+      }))
     })
 
     const c: ChildrenConfigLoad = {
