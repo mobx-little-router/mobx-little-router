@@ -61,8 +61,8 @@ describe('processEvent', () => {
 
     expect(events).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ type: EventTypes.NAVIGATION_MATCH_RESULT }),
         expect.objectContaining({ type: EventTypes.CHILDREN_CONFIG_REQUEST }),
+        expect.objectContaining({ type: EventTypes.NAVIGATION_MATCH_RESULT }),
         expect.objectContaining({ type: EventTypes.CHILDREN_CONFIG_LOAD }),
         expect.objectContaining({ type: EventTypes.CHILDREN_LOAD }),
         expect.objectContaining({
