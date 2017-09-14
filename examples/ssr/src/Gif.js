@@ -8,7 +8,7 @@ export default withRouter(inject('dataStore')(observer(({ dataStore, params, rou
       <h1>{`Random GIF for "${params.topic}"`}</h1>
       <img src={dataStore.randomGifs.get(params.topic)} />
       <p>
-        <a href="/gif/${params.topic">{'Another?'}</a>
+        <a href={`/gif/${params.topic}`}>{'Another?'}</a>
       </p>
     </div>
   )
