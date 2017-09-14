@@ -17,7 +17,7 @@ describe('transformConfigLoad middleware', () => {
       type: EventTypes.CHILDREN_CONFIG_LOAD,
       leaf: createLeaf(),
       navigation: createNavigation(),
-      pathElements: [],
+      partialPath: [],
       module: [
         { path: 'b' },
         { path: 'c' }

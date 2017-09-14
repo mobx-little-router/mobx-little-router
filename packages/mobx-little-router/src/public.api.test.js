@@ -276,4 +276,26 @@ describe('Public API', () => {
     expect(stores.a).toEqual(false)
     expect(stores.b).toEqual(123)
   })
+
+  test('dynamic children', async () => {
+    const spy = jest.fn(() => Promise.resolve([
+      { path: '' }
+    ]))
+    const router = install({
+      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+      getContext: () => ({ stores: { a: false, b: 123 } }),
+      routes: [
+        {
+          path: '',
+          loadChildren: spy
+        }
+      ]
+    })
+
+    await router.start()
+
+    expect(router.store.location.pathname).toEqual('/')
+
+    expect(spy).toHaveBeenCalled()
+  })
 })

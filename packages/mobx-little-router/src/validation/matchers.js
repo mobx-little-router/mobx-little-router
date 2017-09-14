@@ -32,6 +32,6 @@ export function func(x: any) {
 export function array(x: any) {
   return {
     type: 'array',
-    pass: Array.isArray(x)
+    pass: typeof x.length === 'number'
   }
 }

@@ -1,5 +1,6 @@
 // @flow
 import React from 'react'
+import { autorun } from 'mobx'
 import { createRouter, delay, mountInProvider } from '../testUtil'
 import Outlet from './Outlet'
 
@@ -39,8 +40,9 @@ describe('Outlet', () => {
     router.stop()
   })
 
-  test('Renders', () => {
+  test('Renders', async () => {
     const wrapper = mountInProvider(router)(<Outlet />)
+    await delay(0)
     expect(wrapper.html()).toMatch(/RootPage/)
     expect(wrapper.html()).toMatch(/HomePage/)
   })
