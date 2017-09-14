@@ -36,7 +36,7 @@ describe('Middleware', () => {
     )
   })
 
-  test('forms a semigroup over navigation manipulation', () => {
+  test('forms a semigroup under navigation manipulation', () => {
     const a = createNavigationStartMiddleware(evt => ({
       type: EventTypes.NAVIGATION_START,
       navigation: new Navigation({
