@@ -49,3 +49,6 @@ export { default as transformEventType } from './middleware/transformEventType'
 export { default as transformNavigation } from './middleware/transformNavigation'
 
 export { default as areRoutesEqual } from './model/util/areRoutesEqual'
+
+export { default as compose } from './middleware/compose'
+export { default as pipe } from './middleware/pipe'
