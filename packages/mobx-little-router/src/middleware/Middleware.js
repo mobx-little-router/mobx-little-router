@@ -1,4 +1,5 @@
 // @flow
+import { EventTypes } from '../events'
 export type Computation = (evt: *) => *
 
 export type IMiddleware = {
@@ -8,7 +9,13 @@ export type IMiddleware = {
 
 export default function Middleware(f: Computation): IMiddleware {
   return {
-    fold: (evt: *) => (evt ? f(evt) : evt),
+    fold: (evt: *) => {
+      try {
+        return evt ? f(evt) : evt
+      } catch (error) {
+        return { type: EventTypes.NAVIGATION_ERROR, error, navigation: evt.navigation }
+      }
+    },
     concat: other => Middleware(evt => other.fold(f(evt)))
   }
 }

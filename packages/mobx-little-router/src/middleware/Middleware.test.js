@@ -2,6 +2,7 @@
 import { EventTypes } from '../events'
 import Navigation from '../model/Navigation'
 import type { Computation } from './Middleware'
+import Middleware from './Middleware'
 import transformEventType from './transformEventType'
 
 describe('Middleware', () => {
@@ -32,6 +33,19 @@ describe('Middleware', () => {
             search: '?hello'
           }
         })
+      })
+    )
+  })
+
+  test('captures errors from middleware', () => {
+    class CustomError {}
+    const m = Middleware(() => {
+      throw new CustomError()
+    })
+    expect(m.fold({ type: EventTypes.EMPTY })).toEqual(
+      expect.objectContaining({
+        type: EventTypes.NAVIGATION_ERROR,
+        error: expect.any(CustomError)
       })
     )
   })
