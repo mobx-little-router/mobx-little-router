@@ -1,7 +1,7 @@
-const mobx = require('mobx')
+import { observable } from 'mobx'
 
-module.exports = class DataStore {
+export default class DataStore {
   constructor() {
-    this.randomGifs = mobx.observable.map()
+    this.randomGifs = observable.map()
   }
 }

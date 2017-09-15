@@ -1,14 +1,11 @@
-const React = require('react')
-const Outlet = require('mobx-little-router-react').Outlet
+import React from 'react'
+import { Outlet } from 'mobx-little-router-react'
 
-const h = React.createElement
-
-module.exports = () => {
-  return h('div', {
-    children: [
-      h('h1', {}, 'About'),
-      h('p', {}, 'This is the about page...'),
-      h(Outlet)
-    ]
-  })
+export default () => {
+  return (
+    <div>
+      <h1>About</h1>
+      <p>This is the about page...</p>
+    </div>
+  )
 }

@@ -1,12 +1,13 @@
-const Home = require('./Home')
-const About = require('./About')
-const AboutNotFound = require('./AboutNotFound')
-const Gif = require('./Gif')
-const NotFound = require('./NotFound')
-const mobx = require('mobx')
-const fetch = require('node-fetch')
+import { action } from 'mobx'
+import fetch from 'node-fetch'
 
-module.exports = [
+import Home from './Home'
+import About from './About'
+import AboutNotFound from './AboutNotFound'
+import Gif from './Gif'
+import NotFound from './NotFound'
+
+export default [
   {
     path: '',
     match: 'full',
@@ -64,7 +65,7 @@ module.exports = [
   },
   {
     path: '**',
-    willActivate: mobx.action((route) => {
+    willActivate: action((route) => {
       route.context.status = 404
       return Promise.resolve()
     }),

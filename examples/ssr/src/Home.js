@@ -1,26 +1,14 @@
-const React = require('react')
+import React from 'react'
 
-const h = React.createElement
-
-module.exports = () => {
-  return h('div', {
-    children: [
-      h('h1', {}, 'Home'),
-      h('p', {}, 'Welcome to the SSR, example!'),
-      h('p', {
-        children: [
-          'If you want to see the source code, please check out the project ',
-          h(
-            'a',
-            {
-              href:
-                'https://github.com/mobx-little-router/mobx-little-router/examples/ssr'
-            },
-            'repository'
-          ),
-          '.'
-        ]
-      })
-    ]
-  })
+export default () => {
+  return (
+    <div>
+      <h1>Home</h1>
+      <p>Welcome to the SSR example!</p>
+      <p>
+        <span>{'If you want to see the source code, please check out the project '}</span>
+        <a href="https://github.com/mobx-little-router/mobx-little-router/examples/ssr">repository</a>
+      </p>
+    </div>
+  )
 }
