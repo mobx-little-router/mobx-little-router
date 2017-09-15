@@ -13,7 +13,7 @@ export default function Middleware(f: Computation): IMiddleware {
       try {
         return evt ? f(evt) : evt
       } catch (error) {
-        return { type: EventTypes.NAVIGATION_ERROR, error, navigation: evt.navigation }
+        return {  ...evt, type: EventTypes.NAVIGATION_ERROR, error }
       }
     },
     concat: other => Middleware(evt => other.fold(f(evt)))
