@@ -1,5 +1,6 @@
 // @flow
 import { runInAction } from 'mobx'
+import type { PathElement } from '../model/types'
 import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
 import type RouterStore from '../model/RouterStore'
 import { NoMatch, TransitionFailure } from '../errors'
@@ -16,7 +17,10 @@ import { EventTypes } from '../events'
  * This function maps an Event to a new Event. It is used by the Scheduler to manage data flow.
  */
 
-export default async function processEvent(evt: Event, store: RouterStore): Promise<Event> {
+export default async function processEvent(
+  evt: Event,
+  store: RouterStore
+): Promise<Event> {
   try {
     switch (evt.type) {
       case EventTypes.NAVIGATION_START: {
@@ -47,6 +51,15 @@ export default async function processEvent(evt: Event, store: RouterStore): Prom
         const isFullyMatched = isUrlFullyMatched(navigation.to.pathname, matchedPath)
         const loader = leaf && leaf.node.value.loadChildren
         if (!isFullyMatched && typeof loader !== 'function') {
+          const caughtPath = findCatchAllPath(matchedPath, leaf.remaining)
+          if (caughtPath.length > 0) {
+            return {
+              type: EventTypes.NAVIGATION_ACTIVATING,
+              navigation: evt.navigation,
+              partialPath: caughtPath,
+              routes: store.getNextRoutes(caughtPath, navigation.to)
+            }
+          }
           return {
             type: EventTypes.NAVIGATION_ERROR,
             navigation,
@@ -266,4 +279,24 @@ async function assertTransitionOk(
       throw new TransitionFailure(route, e instanceof Navigation ? e : null)
     }
   }
+}
+
+// TODO: Take a look at doing this in a better way. Might be able to do it in the path finder?
+function findCatchAllPath(matchedPath, remaining) {
+  let idx = matchedPath.length - 1
+  let catchAll
+  while (idx >= 0) {
+    const element = matchedPath[idx]
+    catchAll = element.node.children.find(x => x.value.path === '**')
+    if (catchAll) {
+      break
+    }
+    idx--
+  }
+  if (catchAll) {
+    return matchedPath
+      .slice(0, idx)
+      .concat([{ node: catchAll, segment: remaining, remaining: '', params: {} }])
+  }
+  return []
 }

@@ -1,5 +1,4 @@
 // @flow
-import { NoMatch } from '../errors'
 import { EventTypes } from '../events'
 import RouterStore from '../model/RouterStore'
 import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
@@ -17,7 +16,8 @@ describe('processEvent', () => {
         {
           path: '',
           loadChildren: () => Promise.resolve([{ path: 'a' }, { path: 'b' }])
-        }
+        },
+        { path: '**' }
       ]
     })
     store = new RouterStore(root)
@@ -47,7 +47,7 @@ describe('processEvent', () => {
     )
   })
 
-  test('navigation ends in error when dynamic children cannot match pathname', async () => {
+  test('navigation results in catch-all when no match found', async () => {
     const events = await takeWhileIncomplete(
       {
         type: EventTypes.NAVIGATION_START,
@@ -61,13 +61,16 @@ describe('processEvent', () => {
 
     expect(events).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ type: EventTypes.CHILDREN_CONFIG_REQUEST }),
-        expect.objectContaining({ type: EventTypes.NAVIGATION_MATCH_RESULT }),
-        expect.objectContaining({ type: EventTypes.CHILDREN_CONFIG_LOAD }),
-        expect.objectContaining({ type: EventTypes.CHILDREN_LOAD }),
         expect.objectContaining({
-          type: EventTypes.NAVIGATION_ERROR,
-          error: expect.any(NoMatch)
+          type: EventTypes.NAVIGATION_ACTIVATED,
+          routes: expect.arrayContaining([
+            expect.objectContaining({
+              node: expect.objectContaining({
+                value: expect.objectContaining({ path: '**' })
+              }),
+              segment: '/c'
+            })
+          ])
         })
       ])
     )

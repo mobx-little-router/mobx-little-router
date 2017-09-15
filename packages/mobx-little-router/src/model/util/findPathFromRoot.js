@@ -2,8 +2,6 @@
 import { findPath } from '../../util/tree'
 import type { PathElement, Params, RouteStateTreeNode } from '../types'
 
-type ShouldContinue = boolean
-
 export default function findPathFromRoot(
   node: RouteStateTreeNode<*, *>,
   url: string
