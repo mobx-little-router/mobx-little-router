@@ -9,10 +9,10 @@ const transitioningClassName = 'transitioning'
 
 const classNames = {
   transitioning: 'transitioning',
-  entering: 'entering',
-  leaving: 'leaving',
   enter: 'enter',
-  leave: 'leave'
+  enterActive: 'enter-active',
+  exit: 'exit',
+  exitActive: 'exit-active',
 }
 
 class TransitionGroup extends Component {
@@ -42,13 +42,13 @@ class TransitionGroup extends Component {
       const el = findDOMNode(this.innerRefs[key])
       const route = routes.find(route => route && route.key === key)
 
-      if (el instanceof HTMLElement && route) {
+      if (el instanceof window.HTMLElement && route) {
         // Find element with data-transition-ref attribute to add transitionend event listener
         const target = el.hasAttribute('data-transition-ref')
           ? el
           : el.querySelector('[data-transition-ref]')
     
-        if (target) {  
+        if (target) { 
           const handleTransitionEnd = (ev) => {            
             runInAction(() => {
               route.data.transitionState = route === to ? 'entered' : 'exited'
@@ -61,11 +61,12 @@ class TransitionGroup extends Component {
         
           runInAction(() => {
             route.data.transitionState = route === to ? 'entering' : 'exiting'
-            this.transitionState = 'started'
           })
         }
       }
     })
+
+    this.transitionState = 'started'
   })
 
   stop = action(() => {
@@ -91,15 +92,15 @@ class TransitionGroup extends Component {
 
     if (isTransitioning) {
       if (from) {
-        fromClassName = `${classNames.transitioning} ${classNames.leaving}`
+        fromClassName = `${classNames.transitioning} ${classNames.exit}`
       }
       if (to) {
-        toClassName = `${classNames.transitioning} ${classNames.entering}`
+        toClassName = `${classNames.transitioning} ${classNames.enter}`
       }
 
       if (this.transitionState === 'started') {
-        from && (fromClassName += ` ${classNames.leave}`)
-        to && (toClassName += ` ${classNames.enter}`)
+        from && (fromClassName += ` ${classNames.exitActive}`)
+        to && (toClassName += ` ${classNames.enterActive}`)
       }
     }
 

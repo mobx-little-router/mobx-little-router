@@ -76,7 +76,7 @@ const Container = styled.div`
       transition: all 200ms ease-out;
     }
 
-    &.leaving {
+    &.exit {
       ${ModalOverlay} {
         opacity: 1;
       }
@@ -86,7 +86,7 @@ const Container = styled.div`
         transform: translateY(0%);
       }
 
-      &.leave {
+      &.exit-active {
         ${ModalOverlay} {
           opacity: 0;
         }
@@ -98,7 +98,7 @@ const Container = styled.div`
       }
     }
 
-    &.entering {
+    &.enter {
       ${ModalOverlay} {
         opacity: 0;
       }
@@ -108,7 +108,7 @@ const Container = styled.div`
         transform: translateY(100%);
       }
 
-      &.enter {
+      &.enter-active {
         ${ModalOverlay} {
           opacity: 1;
         }

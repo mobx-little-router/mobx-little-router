@@ -34,20 +34,20 @@ const Container = styled.div`
   z-index: 1;
   top: 90px;
 
-  &.entering {
+  &.enter {
     transition: transform 400ms ease-out;
     transform: translateX(100%);
 
-    &.enter {
+    &.enter-active {
       transform: translateX(0);
     }
   }
 
-  &.leaving {
+  &.exit {
     transition: transform 400ms ease-out;
     transform: translateX(0);
 
-    &.leave {
+    &.exit-active {
       transform: translateX(-100%);
     }
   }
