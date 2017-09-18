@@ -23,7 +23,7 @@ class ActorRoute extends Component {
   }
 
   fetchModel = async (props) => {
-    const { params } = props
+    const { params } = props.route
 
     const actorRes = await fetch(`https://api.tvmaze.com/people/${params.id}`)
     const actorData = await actorRes.json()

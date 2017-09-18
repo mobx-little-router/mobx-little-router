@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 
 class TagRoute extends Component {
   render() {
-    const { params } = this.props
+    const { params } = this.props.route
     return (
       <div>
         <h1>{params.tag}</h1>

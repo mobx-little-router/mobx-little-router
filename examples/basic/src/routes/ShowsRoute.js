@@ -14,7 +14,7 @@ class ShowsRoute extends Component {
   }
 
   componentDidMount() {
-    const { query } = this.props
+    const { query } = this.props.route
     this.onSearch(query.q || 'gundam')
   }
 
