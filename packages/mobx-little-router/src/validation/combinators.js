@@ -2,9 +2,11 @@
 import type { TypeResult } from './types'
 
 export function and(...fs: TypeResult[]) {
+  if (fs.length === 0)
+    throw new Error('Combinator `and` expects one or more matchers but found none.')
   return (x: any) => {
     let _pass = true
-    let _type = 'and(...)'
+    let _type = 'unknown'
 
     for (let i = 0; i < fs.length; i++) {
       const f = fs[i]
@@ -24,6 +26,8 @@ export function and(...fs: TypeResult[]) {
 }
 
 export function or(...fs: TypeResult[]) {
+  if (fs.length === 0)
+    throw new Error('Combinator `or` expects one or more matchers but found none.')
   return (x: any) => {
     let _pass = false
     let types = []
@@ -41,7 +45,7 @@ export function or(...fs: TypeResult[]) {
     }
 
     return {
-      type: `or(${types.join(' ')})`,
+      type: `${types.join(' | ')}`,
       pass: _pass
     }
   }

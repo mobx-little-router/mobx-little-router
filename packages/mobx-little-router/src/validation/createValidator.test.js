@@ -45,13 +45,13 @@ describe('createValidator', () => {
       x: 'hello',
       y: () => {},
       z: () => {}
-    })).toThrow(/Expected `z` to be of type `or\(empty or\(string number\)\)`/)
+    })).toThrow(/Expected `z` to be of type `empty | string | number`/)
 
     expect(() => validate({
       w: 1,
       x: 'hello',
       y: () => {},
       z: () => {}
-    })).toThrow(/Expected `w` to be of type `or\(empty array\)`/)
+    })).toThrow(/Expected `w` to be of type `empty | array`/)
   })
 })
