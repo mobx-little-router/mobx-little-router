@@ -4,6 +4,8 @@
   "license": "MIT",
   "scripts": {
     "publish": "yarn build umd && lerna publish --silent --registry=https://registry.npmjs.org/",
+    "publish:canary": "lerna publish --npm-tag=canary --silent --registry=https://registry.npmjs.org/",
+    "publish:latest": "lerna publish --npm-tag=latest --silent --registry=https://registry.npmjs.org/",
     "updated": "lerna updated",
     "clean": "lerna run clean",
     "build": "yarn run clean && node scripts/build.js",
