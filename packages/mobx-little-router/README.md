@@ -13,7 +13,7 @@ import { createMemoryHistory } from 'history'
 const ROUTES = [{ path: ':whatever' }]
 
 const router = install({
-  createHistory: createMemoryHistory,
+  history: createMemoryHistory(),
   routes: ROUTES
 })
 ```
