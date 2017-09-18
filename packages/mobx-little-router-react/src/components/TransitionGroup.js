@@ -42,26 +42,28 @@ class TransitionGroup extends Component {
       const el = findDOMNode(this.innerRefs[key])
       const route = routes.find(route => route && route.key === key)
 
-      if (el instanceof window.HTMLElement && route) {
-        // Find element with data-transition-ref attribute to add transitionend event listener
-        const target = el.hasAttribute('data-transition-ref')
-          ? el
-          : el.querySelector('[data-transition-ref]')
-    
-        if (target) { 
-          const handleTransitionEnd = (ev) => {            
-            runInAction(() => {
-              route.data.transitionState = route === to ? 'entered' : 'exited'
-            })
+      if (route) {
+        runInAction(() => {
+          route.data.transitionState = route === to ? 'entering' : 'exiting'
+        })
 
-            target.removeEventListener('transitionend', handleTransitionEnd)
+        if (el instanceof window.HTMLElement) {
+          // Find element with data-transition-ref attribute to add transitionend event listener
+          const target = el.hasAttribute('data-transition-ref')
+            ? el
+            : el.querySelector('[data-transition-ref]')
+
+          if (target) {
+            const handleTransitionEnd = (ev) => {
+              runInAction(() => {
+                route.data.transitionState = route === to ? 'entered' : 'exited'
+              })
+
+              target.removeEventListener('transitionend', handleTransitionEnd)
+            }
+
+            target.addEventListener('transitionend', handleTransitionEnd, false)
           }
-
-          target.addEventListener('transitionend', handleTransitionEnd, false)
-        
-          runInAction(() => {
-            route.data.transitionState = route === to ? 'entering' : 'exiting'
-          })
         }
       }
     })
@@ -70,6 +72,12 @@ class TransitionGroup extends Component {
   })
 
   stop = action(() => {
+    const { to } = this.props
+
+    if (to) {
+      to.data.transitionState = 'entered'
+    }
+
     this.transitionState = 'stopped'
   })
 

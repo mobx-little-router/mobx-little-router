@@ -7,6 +7,16 @@ import { areRoutesEqual } from 'mobx-little-router'
 
 describe('TransitionGroup', () => {
   let router
+  
+  const updateRoutes = (wrapper) => {
+    let to, from
+    if (router.store.routes.length > 1) { to = router.store.routes[1] }
+    if (router.store.prevRoutes.length > 1) { from = router.store.prevRoutes[1] }
+
+    const isTransitioning = !!router.store.prevRoutes.length && !areRoutesEqual(to, from)
+
+    wrapper.setProps({ to, from, isTransitioning })
+  }
 
   beforeEach(() => {
     router = createRouter(
@@ -35,24 +45,14 @@ describe('TransitionGroup', () => {
     router.stop()
   })
 
-  test('Renders', async () => {
+  test('TransitionGroup handles transitioning in and out of routes', async () => {
     const wrapper = mount(<TransitionGroup isTransitioning={false} />)
-    
-    const updateRoutes = () => {
-      let to, from
-      if (router.store.routes.length > 1) { to = router.store.routes[1] }
-      if (router.store.prevRoutes.length > 1) { from = router.store.prevRoutes[1] }
-      
-      const isTransitioning = !!router.store.prevRoutes.length && !areRoutesEqual(to, from)
-      
-      wrapper.setProps({ to, from, isTransitioning })
-    }
     
     expect(wrapper.children().length).toBe(0)
 
     router.push('/about')
     await delay(0)
-    updateRoutes()
+    updateRoutes(wrapper)
 
     // Initially we should be transitioning and have the enter class
     expect(wrapper.children().length).toBe(1)
@@ -63,18 +63,20 @@ describe('TransitionGroup', () => {
 
     // Then the animation is initialized with the active class
     expect(wrapper.childAt(0).hasClass('enter-active')).toBe(true)
+    expect(router.store.routes[1].data.transitionState).toBe('entering')
 
     // Wait for transition to complete
     await delay(150)
-    updateRoutes()
+    updateRoutes(wrapper)
 
     // Our transition has settled and transitioning class removed 
     expect(wrapper.childAt(0).hasClass('transitioning')).toBe(false)
     expect(wrapper.childAt(0).hasClass('enter-active')).toBe(false)
+    expect(router.store.routes[1].data.transitionState).toBe('entered')
 
     router.push('/contact')
     await delay(0)
-    updateRoutes()
+    updateRoutes(wrapper)
 
     // Now we will have two transitioning elements
     expect(wrapper.children().length).toBe(2)
@@ -88,10 +90,12 @@ describe('TransitionGroup', () => {
     // Then the animation is initialized with the active class
     expect(wrapper.childAt(0).hasClass('exit-active')).toBe(true)
     expect(wrapper.childAt(1).hasClass('enter-active')).toBe(true)
+    expect(router.store.routes[1].data.transitionState).toBe('entering')
+    expect(router.store.prevRoutes[1].data.transitionState).toBe('exiting')
 
     // Wait for the transition to complete
     await delay(150)
-    updateRoutes()
+    updateRoutes(wrapper)
 
     // Our transition has settled and transitioning class removed 
     expect(wrapper.children().length).toBe(1)
