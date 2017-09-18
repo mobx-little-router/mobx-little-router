@@ -78,6 +78,9 @@ class TransitionGroup extends Component {
       to.data.transitionState = 'entered'
     }
 
+    // Clear out refs
+    this.innerRefs = {}
+
     this.transitionState = 'stopped'
   })
 
@@ -127,7 +130,9 @@ class TransitionGroup extends Component {
             route,
             className,
             ...additionalProps,
-            ref: (ref) => { this.innerRefs[route.key] = ref }
+            ref: (ref) => {
+              this.innerRefs[route.key] = ref
+            }
           })
         )}
       </div>
