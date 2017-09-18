@@ -14,12 +14,12 @@
   },
   "main": "lib/index.js",
   "module": "es/index.js",
+  "peerDependencies": {
+    "mobx": "~3.2.2"
+  },
   "dependencies": {
     "history": "^4.6.3",
     "qs": "^6.5.0",
     "url-pattern": "^1.0.3"
-  },
-  "peerDependencies": {
-    "mobx": "^3.2.2"
   }
 }
