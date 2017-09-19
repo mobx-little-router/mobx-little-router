@@ -26,7 +26,7 @@ describe('Public API', () => {
 
     autorun(() => changes.push(router.store.location.pathname))
 
-    router.push('/foo')
+    await router.push('/foo')
     await router.push('/bar')
 
     expect(router.store.location.pathname).toEqual('/bar/')
@@ -35,7 +35,7 @@ describe('Public API', () => {
 
     expect(router.store.location.pathname).toEqual('/foo/')
 
-    router.push('/bar')
+    await router.push('/bar')
     await router.replace('/quux')
 
     expect(router.store.location.pathname).toEqual('/quux/')
@@ -67,17 +67,10 @@ describe('Public API', () => {
     router.push('/9')
     await router.push('/10')
 
+
+    // Only the last navigation is processed.
     expect(changes).toEqual([
       '/initial/',
-      '/1/',
-      '/2/',
-      '/3/',
-      '/4/',
-      '/5/',
-      '/6/',
-      '/7/',
-      '/8/',
-      '/9/',
       '/10/'
     ])
 
@@ -125,7 +118,7 @@ describe('Public API', () => {
       )
 
       expect(
-        spy.mock.calls.map(x => x[0].navigation && x[0].navigation.to.pathname)
+        spy.mock.calls.map(x => x[0].navigation && x[0].navigation.to && x[0].navigation.to.pathname)
       ).toEqual(expect.arrayContaining(['/initial/', '/bar/']))
 
       dispose()
@@ -149,10 +142,10 @@ describe('Public API', () => {
 
       autorun(() => changes.push(router.store.location.pathname))
 
-      router.push('/a')
-      router.push('/b')
-      router.push('/c')
-      router.push('/d')
+      await router.push('/a')
+      await router.push('/b')
+      await router.push('/c')
+      await router.push('/d')
 
       await delay(MAX_DURATION * 4)
 

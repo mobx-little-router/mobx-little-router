@@ -7,6 +7,7 @@ import delay from '../util/delay'
 import Scheduler from './Scheduler'
 import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
 import createRoute from '../model/createRoute'
+import { EventTypes } from '../events'
 
 const scanChildren = scan((curr, idx) => curr.children[idx])
 
@@ -23,7 +24,25 @@ describe('Scheduler', () => {
     scheduler.stop()
   })
 
-  describe('Activation and deactivation guards', () => {
+  describe('multiple navigation', () => {
+    test('cancels previous navigation', async () => {
+      const events = []
+      autorun(() => {
+        events.push(scheduler.event)
+      })
+
+      scheduler.schedule({ type: 'PUSH', to: { pathname: '/todos' } })
+      scheduler.schedule({ type: 'PUSH', to: { pathname: '/todos/123' } })
+      scheduler.schedule({ type: 'PUSH', to: { pathname: '/' } })
+      await delay(0)
+
+      expectEventTimes(EventTypes.NAVIGATION_START, 3, events)
+      expectEventTimes(EventTypes.NAVIGATION_CANCELLED, 2, events)
+      expectEventTimes(EventTypes.NAVIGATION_END, 1, events)
+    })
+  })
+
+  describe('activation and deactivation guards', () => {
     test('Activation fails', async () => {
       const spy = jest.fn(() => false)
       const [_, __, todosRoot] = scanChildren(store.state.root, [0, 0])
@@ -257,7 +276,7 @@ describe('Scheduler', () => {
     })
   })
 
-  describe('Before hooks during activation/deactivation', () => {
+  describe('before hooks during activation/deactivation', () => {
     let spy
     let events
     let dispose
@@ -321,19 +340,7 @@ describe('Scheduler', () => {
     })
   })
 
-  describe('Errors', () => {
-    test('Handling unmatched segments', async () => {
-      scheduler.schedule({ type: 'PUSH', to: { pathname: '/nope/nope/nope' } })
-
-      await delay(0)
-
-      expect(store.location.pathname).toBe(undefined)
-      expect(store.error).toBeDefined()
-      expect(store.error && store.error.toString()).toMatch(/No match/)
-    })
-  })
-
-  describe('Transitions', () => {
+  describe('transitions', () => {
     test('Nodes are called in order or deactivation and activation path', async () => {
       // Setup
       const spy = jest.fn(() => true)
@@ -524,4 +531,8 @@ function createStore() {
 
 function createScheduler(store) {
   return new Scheduler(store, Middleware.EMPTY)
+}
+
+function expectEventTimes(type, times, events) {
+  expect(events.filter(e => e.type === type).length).toEqual(times)
 }

@@ -38,6 +38,7 @@ export type Event =
 
 export type Empty = {
   type: 'EMPTY',
+  navigation: null | Navigation,
   etc?: any
 }
 
@@ -107,7 +108,8 @@ export type NavigationActivated = {
 
 export type NavigationCancelled = {
   type: 'NAVIGATION_CANCELLED',
-  nextNavigation?: Navigation,
+  navigation: null | Navigation,
+  nextNavigation: null | Navigation,
   etc?: any
 }
 

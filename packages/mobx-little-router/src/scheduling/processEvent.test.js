@@ -4,6 +4,7 @@ import RouterStore from '../model/RouterStore'
 import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
 import Navigation from '../model/Navigation'
 import processEvent from './processEvent'
+import { NoMatch } from '../errors'
 
 describe('processEvent', () => {
   let store
@@ -71,6 +72,29 @@ describe('processEvent', () => {
               segment: '/c'
             })
           ])
+        })
+      ])
+    )
+  })
+
+  test('unmatched navigation', async () => {
+    const store = new RouterStore(createRouteStateTreeNode({ path: '' }))
+
+    const events = await takeWhileIncomplete(
+      {
+        type: EventTypes.NAVIGATION_START,
+        navigation: new Navigation({
+          type: 'PUSH',
+          to: { pathname: '/nope/nope/nope' }
+        })
+      },
+      store
+    )
+    expect(events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: EventTypes.NAVIGATION_ERROR,
+          error: expect.any(NoMatch)
         })
       ])
     )

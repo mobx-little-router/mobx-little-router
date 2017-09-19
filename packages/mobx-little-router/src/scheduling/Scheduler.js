@@ -18,14 +18,15 @@ export default class Scheduler {
   event: Event
 
   constructor(store: RouterStore, middleware: IMiddleware) {
+    const initialNavigation = new Navigation({
+      type: 'POP',
+      sequence: -1,
+      to: null,
+      from: null
+    })
     extendObservable(this, {
-      currentNavigation: new Navigation({
-        type: 'POP',
-        sequence: -1,
-        to: null,
-        from: null
-      }),
-      event: { type: EventTypes.EMPTY }
+      currentNavigation: initialNavigation,
+      event: { type: EventTypes.EMPTY, navigation: initialNavigation }
     })
     this.disposer = null
     this.store = store
@@ -44,7 +45,18 @@ export default class Scheduler {
           return
         }
         processEvent(evt, this.store).then(next => {
-          next && this.dispatch(next)
+          // If there are no navigation to go to, ignore.
+          if (!next || !(next.navigation instanceof Navigation)) return
+
+          // Check that the sequence is same or incremented, otherwise it's a stale navigation and should be ignored.
+          if (next.navigation.sequence >= this.currentNavigation.sequence) {
+            this.dispatch(next)
+          } else {
+            this.dispatch({
+              type: EventTypes.NAVIGATION_CANCELLED,
+              navigation: next.navigation
+            })
+          }
         })
       }
     )
