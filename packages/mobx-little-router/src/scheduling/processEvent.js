@@ -179,7 +179,7 @@ export async function processEvent(evt: Event, store: RouterStore): Promise<Even
       })
       if (navigation.shouldTransition) {
         // Run and wait on transition of exiting and newly entering nodes.
-        Promise.all([
+        await Promise.all([
           TransitionManager.run('exiting', exiting),
           TransitionManager.run('entering', entering)
         ]).then(() => {
