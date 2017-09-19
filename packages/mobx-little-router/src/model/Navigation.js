@@ -46,7 +46,7 @@ export default class Navigation {
       sequence: this.sequence + 1,
       from: this.to,
       to: next.to,
-      shouldTransition: true
+      shouldTransition: this.sequence + 1 > 0
     })
   }
 
