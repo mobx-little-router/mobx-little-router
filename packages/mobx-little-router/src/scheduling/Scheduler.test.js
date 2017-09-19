@@ -7,7 +7,6 @@ import delay from '../util/delay'
 import Scheduler from './Scheduler'
 import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
 import createRoute from '../model/createRoute'
-import { EventTypes } from '../events'
 
 const scanChildren = scan((curr, idx) => curr.children[idx])
 
@@ -331,66 +330,6 @@ describe('Scheduler', () => {
       expect(store.location.pathname).toBe(undefined)
       expect(store.error).toBeDefined()
       expect(store.error && store.error.toString()).toMatch(/No match/)
-    })
-  })
-
-  describe('Dynamic children', () => {
-    test('Expansion of nested dynamic children during location', async () => {
-      const [_, __, ___, todosView] = scanChildren(store.state.root, [0, 0, 1])
-      updateNode(todosView, {
-        loadChildren: () =>
-          Promise.resolve([
-            {
-              path: 'edit',
-              loadChildren: () => Promise.resolve([{ path: 'preview' }])
-            }
-          ])
-      })
-
-      scheduler.schedule({
-        type: 'PUSH',
-        to: { pathname: '/todos/123/edit/preview' }
-      })
-
-      await delay(0)
-
-      expect(store.location.pathname).toEqual('/todos/123/edit/preview')
-    })
-  })
-
-  describe('Events', () => {
-    test('Navigation start, error, end', async () => {
-      const spy = jest.fn()
-      autorun(() => spy(scheduler.event))
-
-      scheduler.schedule({ type: 'PUSH', to: { pathname: '/' } })
-      await delay(0)
-
-      expect(spy).toHaveBeenCalled()
-
-      let eventTypes = spy.mock.calls.map(x => x[0] && x[0].type)
-      expect(eventTypes).toEqual(
-        expect.arrayContaining([EventTypes.NAVIGATION_START, EventTypes.NAVIGATION_END])
-      )
-      expect(eventTypes).not.toEqual(
-        expect.arrayContaining([EventTypes.NAVIGATION_ERROR])
-      )
-
-      spy.mockClear()
-
-      scheduler.schedule({ type: 'PUSH', to: { pathname: '/nope' } })
-      await delay(0)
-
-      expect(spy).toHaveBeenCalled()
-
-      eventTypes = spy.mock.calls.map(x => x[0] && x[0].type)
-      expect(eventTypes).toEqual(
-        expect.arrayContaining([
-          EventTypes.NAVIGATION_START,
-          EventTypes.NAVIGATION_ERROR,
-          EventTypes.NAVIGATION_END
-        ])
-      )
     })
   })
 
