@@ -6,7 +6,7 @@ import { install, transformConfig } from 'mobx-little-router'
 import { RouterProvider } from 'mobx-little-router-react'
 import stores from './stores'
 
-import { IndexRoute, LoginRoute, ShowsRoute, AboutRoute, ContactRoute, ShowRoute, TagRoute, ActorRoute, AdminRoute } from './routes'
+import { HomeRoute, LoginRoute, ShowsRoute, AboutRoute, ContactRoute, ShowRoute, TagRoute, ActorRoute, AdminRoute } from './routes'
 import App from './App'
 
 const onTransition = ({ type, target }) => {
@@ -23,6 +23,8 @@ const onTransition = ({ type, target }) => {
     )
   })
 }
+
+const delay = (ms) => new Promise((resolve) => { setTimeout(resolve, ms) })
 
 const router = install({
   history: createHashHistory(),
@@ -43,7 +45,7 @@ const router = install({
     }
   }),
   routes: [
-    { path: '', match: 'full', component: IndexRoute },
+    { path: '', match: 'full', component: HomeRoute },
     { path: 'redirect', match: 'full', redirectTo: '/shows' },
     { path: 'login', component: LoginRoute },
     { path: 'about', component: AboutRoute, onTransition },
@@ -95,7 +97,7 @@ router.subscribeEvent((ev) => {
     console.group(`Navigation (${ev.navigation.sequence})`)
   }
   console.log(ev.type, ev.navigation || ev.nextNavigation)
-  if (ev.type === 'NAVIGATION_END') {
+  if (ev.type === 'NAVIGATION_END' || ev.type === 'NAVIGATION_CANCELLED') {
     console.groupEnd()
   }
 })

@@ -2,13 +2,14 @@ import React, { Component } from 'react'
 import { observer } from 'mobx-react'
 import styled from 'styled-components'
 
-class TagRoute extends Component {
+class HomeRoute extends Component {
   render() {
-    const { route: { params }, className } = this.props
-    
+    const { className } = this.props
+
     return (
       <Container className={className}>
-        <h1>{params.tag}</h1>
+        <h1>Home</h1>
+        <p>Navigate to some other other sections</p>
       </Container>
     )
   }
@@ -17,4 +18,4 @@ class TagRoute extends Component {
 const Container = styled.div`
 `
 
-export default observer(TagRoute)
+export default observer(HomeRoute)

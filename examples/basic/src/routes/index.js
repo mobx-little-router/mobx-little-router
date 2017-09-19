@@ -1,4 +1,4 @@
-export { default as IndexRoute } from './IndexRoute'
+export { default as HomeRoute } from './HomeRoute'
 export { default as AboutRoute } from './AboutRoute'
 export { default as ContactRoute } from './ContactRoute'
 export { default as ShowsRoute } from './ShowsRoute'

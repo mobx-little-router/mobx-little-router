@@ -30,10 +30,10 @@ class ShowsRoute extends Component {
   }
 
   render() {
-    const { ShowsStore } = this.props
+    const { ShowsStore, className } = this.props
 
     return (
-      <Container>
+      <Container className={className}>
         <SearchHeader>
           <SearchInput onChange={ev => this.onSearch(ev.target.value)} value={this.query} />
         </SearchHeader>
