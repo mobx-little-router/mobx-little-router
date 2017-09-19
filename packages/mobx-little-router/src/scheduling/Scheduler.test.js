@@ -1,5 +1,5 @@
 // @flow
-import { autorun, toJS } from 'mobx'
+import { runInAction, autorun, toJS } from 'mobx'
 import { scan } from 'ramda'
 import Middleware from '../middleware/Middleware'
 import RouterStore from '../model/RouterStore'
@@ -24,7 +24,7 @@ describe('Scheduler', () => {
     scheduler.stop()
   })
 
-  describe('multiple navigation', () => {
+  describe.only('multiple navigation', () => {
     test('cancels previous navigation', async () => {
       const events = []
       autorun(() => {
@@ -35,6 +35,8 @@ describe('Scheduler', () => {
       scheduler.schedule({ type: 'PUSH', to: { pathname: '/todos/123' } })
       scheduler.schedule({ type: 'PUSH', to: { pathname: '/' } })
       await delay(0)
+
+      console.log(events.map(x => x.type))
 
       expectEventTimes(EventTypes.NAVIGATION_START, 3, events)
       expectEventTimes(EventTypes.NAVIGATION_CANCELLED, 2, events)
@@ -341,6 +343,12 @@ describe('Scheduler', () => {
   })
 
   describe('transitions', () => {
+    beforeEach(() => {
+      runInAction(() => {
+        scheduler.currentNavigation.sequence = 0
+      })
+    })
+
     test('Nodes are called in order or deactivation and activation path', async () => {
       // Setup
       const spy = jest.fn(() => true)
