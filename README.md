@@ -2,6 +2,7 @@
 
 [![](https://codecov.io/gh/mobx-little-router/mobx-little-router/branch/master/graph/badge.svg)](https://codecov.io/gh/mobx-little-router/mobx-little-router)
 [![](https://api.travis-ci.org/mobx-little-router/mobx-little-router.svg?branch=master)](https://travis-ci.org/mobx-little-router/mobx-little-router)
+[![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lernajs.io/)
 
 A view-agnostic router that uses [MobX](https://mobx.js.org/) to manage its internal state. Built
 to handle the complex requirements of modern-day, universal web applications.
