@@ -220,7 +220,7 @@ describe('Public API', () => {
 
   test('middleware', async () => {
     const middleware = (evt): any => {
-      if (evt.type === 'CHILDREN_CONFIG_LOAD') {
+      if (evt.type === 'CHILDREN_CONFIG_LOADED') {
         return {
           ...evt,
           module: evt.module.routes

@@ -1,9 +1,10 @@
 // @flow
 import { EventTypes } from '../events'
+import type RouterStore from '../model/RouterStore'
 export type Computation = (evt: *) => *
 
 export type IMiddleware = {
-  fold: (evt: *) => *,
+  fold: (evt: *, store: ?RouterStore) => *,
   concat: (other: IMiddleware) => IMiddleware
 }
 

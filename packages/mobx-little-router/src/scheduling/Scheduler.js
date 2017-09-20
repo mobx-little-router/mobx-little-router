@@ -54,7 +54,7 @@ export default class Scheduler {
 
   dispatch = action((evt: null | Event) => {
     if (evt) {
-      evt = this.middleware.fold(evt)
+      evt = this.middleware.fold(evt, this.store)
       if (evt) {
         this.event = evt
       }

@@ -9,7 +9,7 @@ describe('transformReactConfig middleware', () => {
     const D = () => {}
 
     const c = {
-      type: EventTypes.CHILDREN_LOAD,
+      type: EventTypes.CHILDREN_LOADING,
       leaf: createLeaf(),
       navigation: createNavigation(),
       partialPath: [],

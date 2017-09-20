@@ -1,6 +1,6 @@
 // @flow
 import Navigation from '../model/Navigation'
-import type { PathElement, Route } from '../model/types'
+import type { PathElement, Route, RouteStateTreeNode } from '../model/types'
 
 /*
   * Sequence of events that occur from navigation start to end.
@@ -9,10 +9,11 @@ import type { PathElement, Route } from '../model/types'
 export const EventTypes = {
   EMPTY: 'EMPTY',
   NAVIGATION_START: 'NAVIGATION_START',
-  NAVIGATION_MATCH_RESULT: 'NAVIGATION_MATCH_RESULT',
-  CHILDREN_CONFIG_REQUEST: 'CHILDREN_CONFIG_REQUEST',
-  CHILDREN_CONFIG_LOAD: 'CHILDREN_CONFIG_LOAD',
-  CHILDREN_LOAD: 'CHILDREN_LOAD',
+  NAVIGATION_RESULT_MATCHED: 'NAVIGATION_RESULT_MATCHED',
+  CHILDREN_CONFIG_REQUESTED: 'CHILDREN_CONFIG_REQUESTED',
+  CHILDREN_CONFIG_LOADED: 'CHILDREN_CONFIG_LOADED',
+  CHILDREN_LOADING: 'CHILDREN_LOADING',
+  CHILDREN_LOADED: 'CHILDREN_LOADED',
   NAVIGATION_RETRY: 'NAVIGATION_RETRY',
   NAVIGATION_ACTIVATING: 'NAVIGATION_ACTIVATING',
   NAVIGATION_ACTIVATED: 'NAVIGATION_ACTIVATED',
@@ -27,10 +28,11 @@ export const EventTypes = {
 export type Event =
   | Empty
   | NavigationStart
-  | NavigationMatchResult
-  | ChildrenConfigRequest
-  | ChildrenConfigLoad
-  | ChildrenLoad
+  | NavigationResultMatched
+  | ChildrenConfigRequested
+  | ChildrenConfigLoaded
+  | ChildrenLoading
+  | ChildrenLoaded
   | NavigationRetry
   | NavigationActivating
   | NavigationActivated
@@ -52,15 +54,15 @@ export type NavigationStart = {
   etc?: any
 }
 
-export type NavigationMatchResult = {
-  type: 'NAVIGATION_MATCH_RESULT',
+export type NavigationResultMatched = {
+  type: 'NAVIGATION_RESULT_MATCHED',
   navigation: Navigation,
   matchedPath: PathElement<*, *>[],
   etc?: any
 }
 
-export type ChildrenConfigRequest = {
-  type: 'CHILDREN_CONFIG_REQUEST',
+export type ChildrenConfigRequested = {
+  type: 'CHILDREN_CONFIG_REQUESTED',
   navigation: Navigation,
   partialPath: PathElement<*, *>[],
   leaf: PathElement<*, *>,
@@ -68,8 +70,8 @@ export type ChildrenConfigRequest = {
   etc?: any
 }
 
-export type ChildrenConfigLoad = {
-  type: 'CHILDREN_CONFIG_LOAD',
+export type ChildrenConfigLoaded = {
+  type: 'CHILDREN_CONFIG_LOADED',
   navigation: Navigation,
   partialPath: PathElement<*, *>[],
   leaf: PathElement<*, *>,
@@ -77,13 +79,21 @@ export type ChildrenConfigLoad = {
   etc?: any
 }
 
-export type ChildrenLoad = {
-  type: 'CHILDREN_LOAD',
+export type ChildrenLoading = {
+  type: 'CHILDREN_LOADING',
   navigation: null | Navigation,
   partialPath: null | PathElement<*, *>[],
   leaf: PathElement<*, *>,
   children: any,
   etc?: any
+}
+
+export type ChildrenLoaded = {
+  type: 'CHILDREN_LOADED',
+  navigation: null | Navigation,
+  partialPath: null | PathElement<*, *>[],
+  root: RouteStateTreeNode<*, *>,
+  leaf: PathElement<*, *>
 }
 
 export type NavigationRetry = {
