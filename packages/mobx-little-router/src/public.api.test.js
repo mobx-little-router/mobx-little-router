@@ -68,9 +68,17 @@ describe('Public API', () => {
     await router.push('/10')
 
 
-    // Only the last navigation is processed.
     expect(changes).toEqual([
       '/initial/',
+      '/1/',
+      '/2/',
+      '/3/',
+      '/4/',
+      '/5/',
+      '/6/',
+      '/7/',
+      '/8/',
+      '/9/',
       '/10/'
     ])
 

@@ -17,7 +17,7 @@ export const NavigationTypes = {
 
 export type NavigationType = $Keys<typeof NavigationTypes>
 
-export type Definition = {
+export type NavigationDescriptor = {
   type: NavigationType,
   sequence?: number,
   to: Location,
@@ -34,16 +34,16 @@ export default class Navigation {
   shouldTransition: boolean
   cancelled: boolean
 
-  constructor(x: Definition) {
+  constructor(x: NavigationDescriptor) {
     this.type = x.type
     this.sequence = x.sequence || 0
     this.to = x.to || null
     this.from = x.from || null
-    this.shouldTransition = typeof x.shouldTransition === 'boolean' ? x.shouldTransition : this.sequence > 0,
+    this.shouldTransition = typeof x.shouldTransition === 'boolean' ? x.shouldTransition : this.sequence > 0
     this.cancelled = false
   }
 
-  next(next: Definition) {
+  next(next: NavigationDescriptor) {
     return new Navigation({
       type: next.type,
       sequence: this.sequence + 1,
