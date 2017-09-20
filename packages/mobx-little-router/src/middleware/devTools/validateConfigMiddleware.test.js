@@ -17,7 +17,7 @@ describe('validateConfigMiddleware', () => {
 
     assertValidRoot({
       path: '',
-      children: [{ path: '' }, { path: '', children: [{ path: ':whatever' }] }]
+      children: [{ path: '' }, { path: 'foo/:bar' }]
     })
   })
 
