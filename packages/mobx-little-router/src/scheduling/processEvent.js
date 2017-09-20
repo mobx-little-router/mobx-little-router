@@ -16,7 +16,10 @@ import { EventTypes } from '../events'
  * This function maps an Event to a new Event. It is used by the Scheduler to manage data flow.
  */
 
-export default async function maybeProcessEvent(evt: Event, store: RouterStore): Promise<Event> {
+export default async function maybeProcessEvent(
+  evt: Event,
+  store: RouterStore
+): Promise<null | Event> {
   try {
     return await processEvent(evt, store)
   } catch (err) {
@@ -28,7 +31,10 @@ export default async function maybeProcessEvent(evt: Event, store: RouterStore):
   }
 }
 
-export async function processEvent(evt: Event, store: RouterStore): Promise<Event> {
+export async function processEvent(
+  evt: Event,
+  store: RouterStore
+): Promise<null | Event> {
   switch (evt.type) {
     case EventTypes.NAVIGATION_START: {
       const { navigation } = evt
@@ -177,20 +183,24 @@ export async function processEvent(evt: Event, store: RouterStore): Promise<Even
         store.updateRoutes(routes)
         store.updateLocation(navigation.to)
       })
+
       if (navigation.shouldTransition) {
         // Run and wait on transition of exiting and newly entering nodes.
         await Promise.all([
           TransitionManager.run('exiting', exiting),
           TransitionManager.run('entering', entering)
-        ]).then(() => {
-          store.clearPrevRoutes()
-        })
+        ])
       }
-      return {
-        type: EventTypes.NAVIGATION_END,
-        navigation: evt.navigation
+
+      if (!navigation.cancelled) {
+        return {
+          type: EventTypes.NAVIGATION_END,
+          navigation: evt.navigation
+        }
+      } else {
+        return null
       }
-    case EventTypes.NAVIGATION_ERROR:
+    case EventTypes.NAVIGATION_ERROR: {
       const { error } = evt
       if (error instanceof TransitionFailure) {
         // Navigation error may be thrown by a guard or lifecycle hook.
@@ -208,6 +218,20 @@ export async function processEvent(evt: Event, store: RouterStore): Promise<Even
           navigation: evt.navigation
         }
       }
+    }
+    case EventTypes.NAVIGATION_CANCELLED: {
+      if (evt.type === EventTypes.NAVIGATION_CANCELLED) {
+        const { navigation } = evt
+        navigation && navigation.cancel()
+      }
+      return null
+    }
+    case EventTypes.NAVIGATION_END: {
+      runInAction(() => {
+        store.clearPrevRoutes()
+      })
+      return null
+    }
     default:
       return evt
   }

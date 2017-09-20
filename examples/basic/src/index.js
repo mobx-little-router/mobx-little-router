@@ -10,14 +10,13 @@ import { HomeRoute, LoginRoute, ShowsRoute, AboutRoute, ContactRoute, ShowRoute,
 import App from './App'
 
 const onTransition = ({ type, target }) => {
-  console.log("onTransition", type, target.key)
   return new Promise((resolve, reject) => {
     mobx.when(
       () => {
         return target.data.transitionState === (type === 'entering' ? 'entered' : 'exited')
       },
       () => {
-        console.log(`------------ onTransition(): ${target.key} resolved`)
+        console.log("RESOLVING_TRANSITION", target.key)
         resolve()
       }
     )
@@ -48,8 +47,8 @@ const router = install({
     { path: '', match: 'full', component: HomeRoute },
     { path: 'redirect', match: 'full', redirectTo: '/shows' },
     { path: 'login', component: LoginRoute },
-    { path: 'about', component: AboutRoute, onTransition },
-    { path: 'contact', component: ContactRoute, onTransition },
+    { path: 'about', component: AboutRoute, onTransition: () => delay(400) },
+    { path: 'contact', component: ContactRoute, onTransition: () => delay(400) },
     {
       path: 'shows',
       query: ['q'],

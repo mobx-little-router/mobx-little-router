@@ -102,12 +102,19 @@ describe('processEvent', () => {
 })
 
 async function takeWhileIncomplete(curr, store) {
+  if (curr === null) {
+    return []
+  }
+
   const events = []
   let count = 0
 
   // Try to resolve the navigation within a limited number of steps.
   while (count < 20) {
     curr = await processEvent(curr, store)
+    if (curr === null) {
+      break
+    }
     events.push(curr)
     if (
       curr.type === EventTypes.NAVIGATION_END ||

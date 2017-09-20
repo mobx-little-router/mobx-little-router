@@ -34,13 +34,13 @@ describe('Scheduler', () => {
       scheduler.schedule({ type: 'PUSH', to: { pathname: '/todos' } })
       scheduler.schedule({ type: 'PUSH', to: { pathname: '/todos/123' } })
       scheduler.schedule({ type: 'PUSH', to: { pathname: '/' } })
-      await delay(0)
+      scheduler.schedule({ type: 'PUSH', to: { pathname: '/todos' } })
 
-      console.log(events.map(x => x.type))
+      await nextTick()
 
-      expectEventTimes(EventTypes.NAVIGATION_START, 3, events)
+      expectEventTimes(EventTypes.NAVIGATION_START, 4, events)
       expectEventTimes(EventTypes.NAVIGATION_CANCELLED, 2, events)
-      expectEventTimes(EventTypes.NAVIGATION_END, 1, events)
+      expectEventTimes(EventTypes.NAVIGATION_END, 2, events)
     })
   })
 
@@ -52,7 +52,7 @@ describe('Scheduler', () => {
       updateNode(todosRoot, { canActivate: spy })
       scheduler.schedule({ type: 'PUSH', to: { pathname: '/todos' } })
 
-      await delay(0)
+      await nextTick()
 
       // Navigation should be blocked.
       expect(store.location.pathname).toBe(undefined)
@@ -75,7 +75,7 @@ describe('Scheduler', () => {
       updateNode(todosView, { canActivate: spy })
       scheduler.schedule({ type: 'PUSH', to: { pathname: '/todos/123' } })
 
-      await delay(0)
+      await nextTick()
 
       // Navigation should be processed.
       expect(toJS(store.location)).toEqual({ pathname: '/todos/123' })
@@ -113,7 +113,7 @@ describe('Scheduler', () => {
       store.location.pathname = '/todos/123'
       scheduler.schedule({ type: 'PUSH', to: { pathname: '/' } })
 
-      await delay(0)
+      await nextTick()
 
       // Navigation should be processed.
       expect(toJS(store.location.pathname)).toEqual('/todos/123')
@@ -133,7 +133,7 @@ describe('Scheduler', () => {
       store.updateRoutes([root, todosRoot, todosView].map(x => createRoute(x, '', {}, {})))
       scheduler.schedule({ type: 'PUSH', to: { pathname: '/' } })
 
-      await delay(0)
+      await nextTick()
 
       // Navigation should be processed.
       expect(toJS(store.location)).toEqual({ pathname: '/' })
@@ -157,7 +157,7 @@ describe('Scheduler', () => {
         updateNode(todosRoot, { canActivate: spy })
         scheduler.schedule({ type: 'PUSH', to: { pathname: '/todos' } })
 
-        await delay(0)
+        await nextTick()
 
         expect(store.location.pathname).toBe(undefined)
       })
@@ -170,7 +170,7 @@ describe('Scheduler', () => {
         scheduler.start()
         scheduler.schedule({ type: 'PUSH', to: { pathname: '/todos' } })
 
-        await delay(0)
+        await nextTick()
 
         expect(store.location.pathname).toBe('/todos')
 
@@ -187,7 +187,7 @@ describe('Scheduler', () => {
         )
         scheduler.schedule({ type: 'PUSH', to: { pathname: '/' } })
 
-        await delay(0)
+        await nextTick()
 
         expect(store.location.pathname).toBe('/todos/')
       })
@@ -202,7 +202,7 @@ describe('Scheduler', () => {
         )
         scheduler.schedule({ type: 'PUSH', to: { pathname: '/' } })
 
-        await delay(0)
+        await nextTick()
 
         expect(store.location.pathname).toBe('/')
       })
@@ -226,7 +226,7 @@ describe('Scheduler', () => {
         to: { pathname: '/todos' }
       })
 
-      await delay(0)
+      await nextTick()
 
       expect(events).toEqual(
         expect.arrayContaining([
@@ -249,10 +249,10 @@ describe('Scheduler', () => {
       const canDeactivate = jest.fn(() => true)
       const [_, __, todosRoot] = scanChildren(store.state.root, [0, 0])
       updateNode(todosRoot, { canActivate, canDeactivate })
-      await delay(0)
+      await nextTick()
 
       scheduler.schedule({ type: 'PUSH', to: { pathname: '/todos' } })
-      await delay(0)
+      await nextTick()
 
       expect(canActivate).toHaveBeenCalled()
 
@@ -265,7 +265,7 @@ describe('Scheduler', () => {
       )
 
       scheduler.schedule({ type: 'PUSH', to: { pathname: '/' } })
-      await delay(0)
+      await nextTick()
 
       expect(canDeactivate).toHaveBeenCalled()
       expect(canDeactivate.mock.calls[0]).toEqual(
@@ -303,7 +303,7 @@ describe('Scheduler', () => {
         to: { pathname: '/todos' }
       })
 
-      await delay(0)
+      await nextTick()
 
       expect(events).toEqual(
         expect.arrayContaining([
@@ -325,7 +325,7 @@ describe('Scheduler', () => {
 
       scheduler.schedule({ type: 'PUSH', sequence: 0, to: { pathname: '/' } })
 
-      await delay(0)
+      await nextTick()
 
       expect(events).toEqual(
         expect.arrayContaining([
@@ -344,6 +344,7 @@ describe('Scheduler', () => {
 
   describe('transitions', () => {
     beforeEach(() => {
+      // Set sequence number to 0 or greater, otherwise transitions won't run.
       runInAction(() => {
         scheduler.currentNavigation.sequence = 0
       })
@@ -373,7 +374,7 @@ describe('Scheduler', () => {
         to: { pathname: '/projects/2' }
       })
 
-      await delay(0)
+      await nextTick()
 
       expect(store.location.pathname).toEqual('/projects/2')
 
@@ -409,7 +410,7 @@ describe('Scheduler', () => {
 
       spy.mockClear()
       scheduler.schedule({ type: 'PUSH', to: { pathname: '/projects' } })
-      await delay(0)
+      await nextTick()
 
       expect(store.location.pathname).toEqual('/projects')
 
@@ -473,7 +474,7 @@ describe('Scheduler', () => {
         to: { pathname: '/todos/1' }
       })
 
-      await delay(0)
+      await nextTick()
 
       expect(nodesDuringListTransition.length).toBe(4)
       expect(nodesDuringViewTransition.length).toBe(4)
@@ -543,4 +544,8 @@ function createScheduler(store) {
 
 function expectEventTimes(type, times, events) {
   expect(events.filter(e => e.type === type).length).toEqual(times)
+}
+
+function nextTick() {
+  return delay(0)
 }

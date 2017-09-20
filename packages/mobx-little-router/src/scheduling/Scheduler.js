@@ -2,7 +2,7 @@
 import type { Action } from 'history'
 import { action, autorun, extendObservable, reaction, runInAction, when } from 'mobx'
 import type RouterStore from '../model/RouterStore'
-import type { Definition } from '../model/Navigation'
+import type { NavigationDescriptor } from '../model/Navigation'
 import Navigation from '../model/Navigation'
 import type { Event } from '../events'
 import { EventTypes } from '../events'
@@ -20,9 +20,8 @@ export default class Scheduler {
   constructor(store: RouterStore, middleware: IMiddleware) {
     const initialNavigation = new Navigation({
       type: 'POP',
-      sequence: -1,
-      to: null,
-      from: null
+      sequence: -1, // this makes the first actual navigation sequence 0
+      to: null
     })
     extendObservable(this, {
       currentNavigation: initialNavigation,
@@ -38,26 +37,12 @@ export default class Scheduler {
     this.disposer = reaction(
       () => this.event,
       evt => {
-        if (
-          evt.type === EventTypes.NAVIGATION_CANCELLED ||
-          evt.type === EventTypes.NAVIGATION_END
-        ) {
-          return
-        }
-        processEvent(evt, this.store).then(next => {
-          // If there are no navigation to go to, ignore.
-          if (!next || !(next.navigation instanceof Navigation)) return
-
-          // Check that the sequence is same or incremented, otherwise it's a stale navigation and should be ignored.
-          if (next.navigation.sequence >= this.currentNavigation.sequence) {
-            this.dispatch(next)
-          } else {
-            this.dispatch({
-              type: EventTypes.NAVIGATION_CANCELLED,
-              navigation: next.navigation
-            })
-          }
-        })
+        processEvent(evt, this.store)
+          .then(next => {
+            if (next !== null && next.type !== EventTypes.EMPTY) {
+              this.dispatch(next)
+            }
+          })
       }
     )
   }
@@ -76,14 +61,30 @@ export default class Scheduler {
     }
   })
 
-  schedule = action((next: Definition) => {
+  schedule(next: NavigationDescriptor) {
     if (!hasChanged(this.store.location, next.to)) return
-    this.currentNavigation = this.currentNavigation.next(next)
-    this.dispatch({
-      type: EventTypes.NAVIGATION_START,
-      navigation: this.currentNavigation
+
+    // If there is an existing navigation in transition, then cancel it.
+    if (
+      this.currentNavigation &&
+      this.currentNavigation.shouldTransition &&
+      this.event.type !== EventTypes.NAVIGATION_END
+    ) {
+      this.dispatch({
+        type: EventTypes.NAVIGATION_CANCELLED,
+        navigation: this.currentNavigation,
+        nextNavigation: null
+      })
+    }
+
+    runInAction(() => {
+      this.currentNavigation = this.currentNavigation.next(next)
+      this.dispatch({
+        type: EventTypes.NAVIGATION_START,
+        navigation: this.currentNavigation
+      })
     })
-  })
+  }
 }
 
 function hasChanged(curr, next) {
