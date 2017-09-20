@@ -123,7 +123,11 @@ describe('processEvent', () => {
 
     await processEvent({
       type: EventTypes.NAVIGATION_END,
-      navigation: new Navigation({})
+      navigation: new Navigation({
+        type: 'POP',
+        to: null,
+        from: null
+      })
     }, store)
 
     expect(store.prevRoutes.length).toEqual(0)
