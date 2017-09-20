@@ -68,7 +68,10 @@ router.subscribeEvent((ev) => {
   if (ev.type === 'NAVIGATION_START') {
     console.group(`Navigation (${ev.navigation.sequence})`)
   }
-  console.log(ev.type, ev.navigation || ev.nextNavigation)
+  console.group(ev.type)
+  console.log(`Elapsed = ${ev.elapsed}`)
+  console.log(`Navigation`, ev.navigation)
+  console.groupEnd(ev.type)
   if (ev.type === 'NAVIGATION_END' || ev.type === 'NAVIGATION_CANCELLED') {
     console.groupEnd()
   }

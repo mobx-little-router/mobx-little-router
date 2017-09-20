@@ -17,7 +17,12 @@ export default function Middleware(f: Computation): IMiddleware {
         return {  ...evt, type: EventTypes.NAVIGATION_ERROR, error }
       }
     },
-    concat: other => Middleware(evt => other.fold(f(evt)))
+    concat: other => Middleware(evt => {
+      if (typeof other.fold === 'function') {
+        return other.fold(f(evt))
+      }
+      return evt
+    })
   }
 }
 
