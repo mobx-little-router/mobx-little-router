@@ -70,7 +70,7 @@ function walk(parent, children, visitor) {
 }
 
 function toStub(node): string {
-  let segment = node.value.path.replace('any', /:.+?/g)
+  let segment = node.value.path.replace(/(:.+?)/g, 'any')
   segment = segment.startsWith('/') ? segment : `/${segment}`
   let result = node.value.matcher(segment)
   if (result.matched) {

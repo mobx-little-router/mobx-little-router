@@ -19,6 +19,11 @@ describe('validateConfigMiddleware', () => {
       path: '',
       children: [{ path: '' }, { path: 'foo/:bar' }]
     })
+
+    assertValidRoot({
+      path: '',
+      children: [{ path: 'foo/:bar' }, { path: 'quux/:bar' }]
+    })
   })
 
   test('handles invalid config', () => {
