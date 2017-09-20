@@ -224,12 +224,11 @@ export async function processEvent(
         const { navigation } = evt
         navigation && navigation.cancel()
       }
+      store.clearPrevRoutes()
       return null
     }
     case EventTypes.NAVIGATION_END: {
-      runInAction(() => {
-        store.clearPrevRoutes()
-      })
+      store.clearPrevRoutes()
       return null
     }
     default:
