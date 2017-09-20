@@ -109,6 +109,7 @@ describe('processEvent', () => {
 
     await processEvent({
       type: EventTypes.NAVIGATION_CANCELLED,
+      done: true,
       navigation: null,
       nextNavigation: null
     }, store)
@@ -123,6 +124,7 @@ describe('processEvent', () => {
 
     await processEvent({
       type: EventTypes.NAVIGATION_END,
+      done: true,
       navigation: new Navigation({
         type: 'POP',
         to: null,

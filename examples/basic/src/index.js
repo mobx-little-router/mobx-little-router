@@ -70,7 +70,8 @@ router.subscribeEvent((ev) => {
   }
 
   console.log(`%c${ev.type}`, `color:${getGroupColor(ev)}`, `(${ev.elapsed}ms)`, ev.navigation)
-  if (['NAVIGATION_END', 'NAVIGATION_CANCELLED', 'NAVIGATION_ERROR'].includes(ev.type)) {
+
+  if (ev.done) {
     console.groupEnd()
   }
 })

@@ -122,8 +122,7 @@ class Router {
         const { event } = this.scheduler
         const { location } = this.store
         return (
-          event.type === EventTypes.NAVIGATION_END &&
-          typeof location.pathname === 'string'
+          event.done === true && typeof location.pathname === 'string'
         )
       }, res)
     })

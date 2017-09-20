@@ -73,7 +73,8 @@ export default class Scheduler {
       this.dispatch({
         type: EventTypes.NAVIGATION_CANCELLED,
         navigation: this.currentNavigation,
-        nextNavigation: null
+        nextNavigation: null,
+        done: true
       })
     }
 

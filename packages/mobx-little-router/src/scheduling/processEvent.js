@@ -26,7 +26,8 @@ export default async function maybeProcessEvent(
     return {
       type: EventTypes.NAVIGATION_ERROR,
       navigation: (evt: any).navigation,
-      error: err
+      error: err,
+      done: true
     }
   }
 }
@@ -76,7 +77,8 @@ export async function processEvent(
         return {
           type: EventTypes.NAVIGATION_ERROR,
           navigation,
-          error: new NoMatch(navigation.to ? navigation.to.pathname : 'UNKNOWN_URL')
+          error: new NoMatch(navigation.to ? navigation.to.pathname : 'UNKNOWN_URL'),
+          done: true
         }
       }
       if (typeof loader === 'function' && leaf.node.children.length === 0) {
@@ -120,7 +122,8 @@ export async function processEvent(
         return {
           type: EventTypes.NAVIGATION_ERROR,
           navigation,
-          error: new Error('Dynamic children function must resolve to an array.')
+          error: new Error('Dynamic children function must resolve to an array.'),
+          done: true
         }
       }
     }
@@ -184,7 +187,8 @@ export async function processEvent(
         return {
           type: EventTypes.NAVIGATION_ERROR,
           navigation,
-          error: err
+          error: err,
+          done: true
         }
       }
     }
@@ -228,7 +232,8 @@ export async function processEvent(
     case EventTypes.NAVIGATION_TRANSITION_END: {
       return {
         type: EventTypes.NAVIGATION_END,
-        navigation: evt.navigation
+        navigation: evt.navigation,
+        done: true
       }
     }
     case EventTypes.NAVIGATION_ERROR: {
@@ -238,16 +243,14 @@ export async function processEvent(
         return {
           type: EventTypes.NAVIGATION_CANCELLED,
           navigation: evt.navigation,
-          nextNavigation: error.navigation
+          nextNavigation: error.navigation,
+          done: true
         }
       } else {
         runInAction(() => {
           store.setError(error)
         })
-        return {
-          type: EventTypes.NAVIGATION_END,
-          navigation: evt.navigation
-        }
+        return evt
       }
     }
     case EventTypes.NAVIGATION_CANCELLED: {

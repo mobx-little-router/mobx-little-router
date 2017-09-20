@@ -45,12 +45,14 @@ export type Event =
 export type Empty = {
   type: 'EMPTY',
   navigation: null | Navigation,
+  done?: false,
   [other: string]: any
 }
 
 export type NavigationStart = {
   type: 'NAVIGATION_START',
   navigation: Navigation,
+  done?: false,
   [other: string]: any
 }
 
@@ -58,6 +60,7 @@ export type NavigationResultMatched = {
   type: 'NAVIGATION_RESULT_MATCHED',
   navigation: Navigation,
   matchedPath: PathElement<*, *>[],
+  done?: false,
   [other: string]: any
 }
 
@@ -67,6 +70,7 @@ export type ChildrenConfigRequested = {
   partialPath: PathElement<*, *>[],
   leaf: PathElement<*, *>,
   loader: () => Promise<any>,
+  done?: false,
   [other: string]: any
 }
 
@@ -76,6 +80,7 @@ export type ChildrenConfigLoaded = {
   partialPath: PathElement<*, *>[],
   leaf: PathElement<*, *>,
   module: any,
+  done?: false,
   [other: string]: any
 }
 
@@ -85,6 +90,7 @@ export type ChildrenLoading = {
   partialPath: null | PathElement<*, *>[],
   leaf: PathElement<*, *>,
   children: any,
+  done?: false,
   [other: string]: any
 }
 
@@ -94,6 +100,7 @@ export type ChildrenLoaded = {
   partialPath: null | PathElement<*, *>[],
   root: RouteStateTreeNode<*, *>,
   leaf: PathElement<*, *>,
+  done?: false,
   [other: string]: any
 }
 
@@ -102,6 +109,7 @@ export type NavigationRetry = {
   navigation: Navigation,
   partialPath: PathElement<*, *>[],
   leaf: PathElement<*, *>,
+  done?: false,
   [other: string]: any
 }
 
@@ -109,6 +117,7 @@ export type NavigationActivating = {
   type: 'NAVIGATION_ACTIVATING',
   navigation: Navigation,
   routes: Route<*, *>[],
+  done?: false,
   [other: string]: any
 }
 
@@ -118,6 +127,7 @@ export type NavigationActivated = {
   routes: Route<*, *>[],
   entering: Route<*, *>[],
   exiting: Route<*, *>[],
+  done?: false,
   [other: string]: any
 }
 
@@ -127,6 +137,7 @@ export type NavigationTransitionStart = {
   routes: Route<*, *>[],
   entering: Route <*, *>[],
   exiting: Route <*, *>[],
+  done?: false,
   [other: string]: any
 }
 
@@ -136,6 +147,7 @@ export type NavigationTransitionEnd = {
   routes: Route<*, *>[],
   entering: Route <*, *>[],
   exiting: Route <*, *>[],
+  done?: false,
   [other: string]: any
 }
 
@@ -143,6 +155,7 @@ export type NavigationCancelled = {
   type: 'NAVIGATION_CANCELLED',
   navigation: null | Navigation,
   nextNavigation: null | Navigation,
+  done: true,
   [other: string]: any
 }
 
@@ -150,11 +163,13 @@ export type NavigationError = {
   type: 'NAVIGATION_ERROR',
   navigation: Navigation,
   error: any,
+  done: true,
   [other: string]: any
 }
 
 export type NavigationEnd = {
   type: 'NAVIGATION_END',
   navigation: Navigation,
+  done: true,
   [other: string]: any
 }
