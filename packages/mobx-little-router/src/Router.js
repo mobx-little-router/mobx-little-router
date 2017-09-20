@@ -10,7 +10,7 @@ import Scheduler from './scheduling/Scheduler'
 import type { Event } from './events'
 import { EventTypes } from './events'
 import { NavigationTypes } from './model/Navigation'
-import { InvalidNavigation } from './errors'
+import { TransitionFailure, InvalidNavigation } from './errors'
 import type { IMiddleware } from './middleware/Middleware'
 
 class Router {
@@ -154,7 +154,10 @@ class Router {
 
   logErrors = (evt: Event) => {
     if (evt.type === EventTypes.NAVIGATION_ERROR) {
-      console.error(evt.error)
+      const { error } = evt
+      if (error && !(error instanceof TransitionFailure)) {
+        console.error(evt.error)
+      }
     }
   }
 }

@@ -66,9 +66,10 @@ window.mobx = mobx
 
 router.subscribeEvent((ev) => {
   if (ev.type === 'NAVIGATION_START') {
-    console.group(`Navigation (${ev.navigation.sequence})`)
+    console.group(`%cNavigation (${ev.navigation.sequence})`, 'color: black')
   }
-  console.group(ev.type)
+  const groupColor = getGroupColor(ev)
+  console.group(`%c${ev.type}`, `font-weight: normal; color: ${groupColor}`)
   console.log(`Elapsed = ${ev.elapsed}`)
   console.log(`Navigation`, ev.navigation)
   console.groupEnd(ev.type)
@@ -76,6 +77,21 @@ router.subscribeEvent((ev) => {
     console.groupEnd()
   }
 })
+
+function getGroupColor(ev) {
+  switch (ev.type) {
+    case 'NAVIGATION_START':
+      return 'black'
+    case 'NAVIGATION_CANCELLED':
+      return 'red'
+    case 'NAVIGATION_ERROR':
+      return 'red'
+    case 'NAVIGATION_END':
+      return 'green'
+    default:
+      return '#999'
+  }
+}
 
 router.start(() => {
   ReactDOM.render(
