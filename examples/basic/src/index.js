@@ -2,8 +2,7 @@ import React from 'react'
 import * as mobx from 'mobx'
 import ReactDOM from 'react-dom'
 import { createHashHistory } from 'history'
-import { install, transformConfig } from 'mobx-little-router'
-import { RouterProvider } from 'mobx-little-router-react'
+import { install, RouterProvider } from 'mobx-little-router-react'
 import stores from './stores'
 
 import { HomeRoute, LoginRoute, ShowsRoute, AboutRoute, ContactRoute, ShowRoute, TagRoute, ActorRoute, AdminRoute } from './routes'
@@ -29,19 +28,6 @@ const router = install({
   history: createHashHistory(),
   getContext: () => ({
     stores
-  }),
-  middleware: transformConfig(config => {
-    const { component, outlet } = config
-    delete config.component
-    delete config.outlet
-    return {
-      ...config,
-      getData: () => ({
-        ...(config.getData ? config.getData(): {}),
-        component,
-        outlet
-      })
-    }
   }),
   routes: [
     { path: '', match: 'full', component: HomeRoute },

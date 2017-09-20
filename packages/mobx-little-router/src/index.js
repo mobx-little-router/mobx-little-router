@@ -6,14 +6,14 @@ import type { History } from 'history'
 import Middleware from './middleware/Middleware'
 import type { IMiddleware } from './middleware/Middleware'
 
-type Options = {
+export type InstallOptions = {
   history: History,
   routes: Config<*>[],
   getContext: () => any,
   middleware?: IMiddleware
 }
 
-export function install(opts: Options): Router {
+export function install(opts: InstallOptions): Router {
   return new Router(
     opts.history,
     opts.routes,
@@ -27,6 +27,7 @@ export { default as RouterStore } from './model/RouterStore'
 export { default as Router } from './Router'
 
 export type {
+  Config,
   Route,
   Href,
   Location,
@@ -52,3 +53,4 @@ export { default as areRoutesEqual } from './model/util/areRoutesEqual'
 
 export { default as compose } from './middleware/compose'
 export { default as pipe } from './middleware/pipe'
+export type { IMiddleware } from './middleware/Middleware'
