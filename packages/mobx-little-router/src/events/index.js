@@ -16,6 +16,8 @@ export const EventTypes = {
   NAVIGATION_RETRY: 'NAVIGATION_RETRY',
   NAVIGATION_ACTIVATING: 'NAVIGATION_ACTIVATING',
   NAVIGATION_ACTIVATED: 'NAVIGATION_ACTIVATED',
+  NAVIGATION_TRANSITION_START: 'NAVIGATION_TRANSITION_START',
+  NAVIGATION_TRANSITION_END: 'NAVIGATION_TRANSITION_END',
   NAVIGATION_CANCELLED: 'NAVIGATION_CANCELLED',
   NAVIGATION_ERROR: 'NAVIGATION_ERROR',
   NAVIGATION_SUCCESS: 'NAVIGATION_SUCCESS',
@@ -32,6 +34,8 @@ export type Event =
   | NavigationRetry
   | NavigationActivating
   | NavigationActivated
+  | NavigationTransitionStart
+  | NavigationTransitionEnd
   | NavigationError
   | NavigationCancelled
   | NavigationEnd
@@ -104,6 +108,24 @@ export type NavigationActivated = {
   entering: Route<*, *>[],
   exiting: Route<*, *>[],
   etc?: any
+}
+
+export type NavigationTransitionStart = {
+  type: 'NAVIGATION_TRANSITION_START',
+  navigation: Navigation,
+  routes: Route<*, *>[],
+  entering: Route <*, *>[],
+  exiting: Route <*, *>[],
+  etc ?: any
+}
+
+export type NavigationTransitionEnd = {
+  type: 'NAVIGATION_TRANSITION_END',
+  navigation: Navigation,
+  routes: Route<*, *>[],
+  entering: Route <*, *>[],
+  exiting: Route <*, *>[],
+  etc ?: any
 }
 
 export type NavigationCancelled = {

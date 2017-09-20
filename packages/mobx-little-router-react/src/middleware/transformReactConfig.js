@@ -8,7 +8,6 @@ const onTransition = ({ type, target }) => {
         return target.data.transitionState === (type === 'entering' ? 'entered' : 'exited')
       },
       () => {
-        console.log("RESOLVING_TRANSITION", target.key)
         resolve()
       }
     )

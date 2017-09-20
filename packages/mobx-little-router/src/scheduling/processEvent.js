@@ -177,13 +177,23 @@ export async function processEvent(
         }
       }
     }
-    case EventTypes.NAVIGATION_ACTIVATED:
+    case EventTypes.NAVIGATION_ACTIVATED: {
       const { navigation, routes, exiting, entering } = evt
       runInAction(() => {
         store.updateRoutes(routes)
         store.updateLocation(navigation.to)
       })
 
+      return {
+        type: EventTypes.NAVIGATION_TRANSITION_START,
+        navigation: evt.navigation,
+        routes,
+        entering,
+        exiting
+      }
+    }
+    case EventTypes.NAVIGATION_TRANSITION_START: {
+      const { navigation, routes, exiting, entering } = evt
       if (navigation.shouldTransition) {
         // Run and wait on transition of exiting and newly entering nodes.
         await Promise.all([
@@ -194,12 +204,22 @@ export async function processEvent(
 
       if (!navigation.cancelled) {
         return {
-          type: EventTypes.NAVIGATION_END,
-          navigation: evt.navigation
+          type: EventTypes.NAVIGATION_TRANSITION_END,
+          navigation: evt.navigation,
+          routes,
+          entering,
+          exiting
         }
       } else {
         return null
       }
+    }
+    case EventTypes.NAVIGATION_TRANSITION_END: {
+      return {
+        type: EventTypes.NAVIGATION_END,
+        navigation: evt.navigation
+      }
+    }
     case EventTypes.NAVIGATION_ERROR: {
       const { error } = evt
       if (error instanceof TransitionFailure) {
