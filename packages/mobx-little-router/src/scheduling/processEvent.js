@@ -236,6 +236,10 @@ export async function processEvent(
   }
 }
 
+/*
+ * Private helpers.
+ */
+
 function diffRoutes(currRoutes: Route<*, *>[], nextRoutes: Route<*, *>[]) {
   try {
     // Deactivating this route state tree node
@@ -271,10 +275,6 @@ function diffRoutes(currRoutes: Route<*, *>[], nextRoutes: Route<*, *>[]) {
   }
 }
 
-/*
- * Private helpers.
- */
-
 // Runs guards (if they exist) on each node until they all pass.
 // If one guard fails, then the entire function rejects.
 async function assertTransitionOk(
@@ -305,7 +305,6 @@ async function assertTransitionOk(
   }
 }
 
-// TODO: Take a look at doing this in a better way. Might be able to do it in the path finder?
 function findCatchAllPath(matchedPath, leaf) {
   if (!leaf) {
     return []

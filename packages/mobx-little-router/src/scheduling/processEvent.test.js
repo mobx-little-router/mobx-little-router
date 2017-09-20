@@ -1,7 +1,9 @@
 // @flow
+import { runInAction } from 'mobx'
 import { EventTypes } from '../events'
 import RouterStore from '../model/RouterStore'
 import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
+import createRoute from '../model/createRoute'
 import Navigation from '../model/Navigation'
 import processEvent from './processEvent'
 import { NoMatch } from '../errors'
@@ -98,6 +100,33 @@ describe('processEvent', () => {
         })
       ])
     )
+  })
+
+  test('cancel event clears previous routes on store', async () => {
+    runInAction(() => {
+      store.prevRoutes.replace([createRoute(store.state.root, '/', {}, {})])
+    })
+
+    await processEvent({
+      type: EventTypes.NAVIGATION_CANCELLED,
+      navigation: null,
+      nextNavigation: null
+    }, store)
+
+    expect(store.prevRoutes.length).toEqual(0)
+  })
+
+  test('cancel event clears previous routes on store', async () => {
+    runInAction(() => {
+      store.prevRoutes.replace([createRoute(store.state.root, '/', {}, {})])
+    })
+
+    await processEvent({
+      type: EventTypes.NAVIGATION_END,
+      navigation: new Navigation({})
+    }, store)
+
+    expect(store.prevRoutes.length).toEqual(0)
   })
 })
 
