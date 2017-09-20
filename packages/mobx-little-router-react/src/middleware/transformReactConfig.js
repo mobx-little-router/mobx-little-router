@@ -1,7 +1,7 @@
 import { transformConfig } from 'mobx-little-router'
 import { when } from 'mobx'
 
-const onTransition = ({ type, target }) => {
+const handleAnimatedTransition = ({ type, target }) => {
   return new Promise((resolve, reject) => {
     when(
       () => {
@@ -17,12 +17,13 @@ const onTransition = ({ type, target }) => {
 // Allow component and outlet to be specified within the config and automatically gets added to getData
 // for a cleaner look and feel
 export default transformConfig(config => {
-  const { component, outlet } = config
+  const { component, outlet, animate } = config
   delete config.component
   delete config.outlet
+  delete config.animate
   return {
-    onTransition,
     ...config,
+    onTransition: animate ? handleAnimatedTransition : config.onTransition,
     getData: () => ({
       component,
       outlet,

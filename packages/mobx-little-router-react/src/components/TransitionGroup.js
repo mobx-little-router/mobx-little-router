@@ -53,11 +53,15 @@ class TransitionGroup extends Component {
             ? el
             : el.querySelector('[data-transition-ref]')
 
+          const finishTransition = () => {
+            runInAction(() => {
+              route.data.transitionState = route === to ? 'entered' : 'exited'
+            })
+          }
+
           if (target) {
             const handleTransitionEnd = (ev) => {
-              runInAction(() => {
-                route.data.transitionState = route === to ? 'entered' : 'exited'
-              })
+              finishTransition()
 
               target.removeEventListener('transitionend', handleTransitionEnd)
             }

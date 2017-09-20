@@ -19,8 +19,8 @@ const router = install({
     { path: '', match: 'full', component: HomeRoute },
     { path: 'redirect', match: 'full', redirectTo: '/shows' },
     { path: 'login', component: LoginRoute },
-    { path: 'about', component: AboutRoute, onTransition: () => delay(400) },
-    { path: 'contact', component: ContactRoute, onTransition: () => delay(400) },
+    { path: 'about', component: AboutRoute, animate: true },
+    { path: 'contact', component: ContactRoute, animate: true },
     {
       path: 'shows',
       query: ['q'],
@@ -28,13 +28,15 @@ const router = install({
       children: [{
         path: ':id',
         component: ShowRoute,
-        outlet: 'modal'
+        outlet: 'modal',
+        animate: true
       }]
     },
     {
       path: 'actors/:id',
       component: ActorRoute,
-      outlet: 'modal'
+      outlet: 'modal',
+      animate: true
     },
     {
       path: 'tags/:tag',
@@ -52,7 +54,8 @@ const router = install({
           SessionStore.unauthorizedNavigation = navigation
           return navigation.redirectTo('/login')
         }
-      }
+      },
+      willResolve: () => delay(1000)
     }
   ]
 })
