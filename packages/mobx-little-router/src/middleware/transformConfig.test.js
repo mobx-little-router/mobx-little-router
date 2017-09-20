@@ -1,7 +1,8 @@
 // @flow
 import { EventTypes } from '../events'
-import type { ChildrenLoad } from '../events'
+import type { ChildrenLoading } from '../events'
 import transformConfig from './transformConfig'
+import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
 
 describe('transformConfig middleware', () => {
   test('transforms config before passing them as children', () => {
@@ -13,8 +14,11 @@ describe('transformConfig middleware', () => {
       }
     })
 
-    const c: ChildrenLoad = {
-      type: EventTypes.CHILDREN_LOAD,
+    const c: ChildrenLoading = {
+      type: EventTypes.CHILDREN_LOADING,
+      root: createRouteStateTreeNode({
+        path: ''
+      }),
       leaf: createLeaf(),
       navigation: createNavigation(),
       partialPath: [],

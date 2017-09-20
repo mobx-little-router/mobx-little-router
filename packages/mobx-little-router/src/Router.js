@@ -58,7 +58,7 @@ class Router {
 
       // Loads initial set of children (running through all middleware).
       this.scheduler.dispatch({
-        type: EventTypes.CHILDREN_LOAD,
+        type: EventTypes.CHILDREN_LOADING,
         leaf: { node: this.store.state.root },
         children: this.initialChildren
       })

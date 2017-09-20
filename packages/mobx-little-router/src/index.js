@@ -5,6 +5,7 @@ import type { Event } from './events'
 import type { History } from 'history'
 import Middleware from './middleware/Middleware'
 import type { IMiddleware } from './middleware/Middleware'
+import devTools from './middleware/devTools'
 
 export type InstallOptions = {
   history: History,
@@ -18,7 +19,7 @@ export function install(opts: InstallOptions): Router {
     opts.history,
     opts.routes,
     opts.getContext || (() => ({})),
-    opts.middleware || Middleware.EMPTY
+    devTools.concat(opts.middleware || Middleware.EMPTY)
   )
 }
 
@@ -48,6 +49,7 @@ export { default as transformConfigLoad } from './middleware/transformConfigLoad
 export { default as transformConfig } from './middleware/transformConfig'
 export { default as transformEventType } from './middleware/transformEventType'
 export { default as transformNavigation } from './middleware/transformNavigation'
+export { default as devTools } from './middleware/devTools'
 
 export { default as areRoutesEqual } from './model/util/areRoutesEqual'
 

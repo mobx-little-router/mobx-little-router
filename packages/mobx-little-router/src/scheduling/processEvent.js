@@ -40,7 +40,7 @@ export async function processEvent(
       const { navigation } = evt
       const matchedPath = store.state.pathFromRoot(navigation.to.pathname)
       return {
-        type: EventTypes.NAVIGATION_MATCH_RESULT,
+        type: EventTypes.NAVIGATION_RESULT_MATCHED,
         navigation,
         matchedPath
       }
@@ -53,12 +53,12 @@ export async function processEvent(
       )
       const matchedPath = partialPath.slice().concat(restOfPathElements.slice(1))
       return {
-        type: EventTypes.NAVIGATION_MATCH_RESULT,
+        type: EventTypes.NAVIGATION_RESULT_MATCHED,
         navigation: evt.navigation,
         matchedPath
       }
     }
-    case EventTypes.NAVIGATION_MATCH_RESULT: {
+    case EventTypes.NAVIGATION_RESULT_MATCHED: {
       const { matchedPath, navigation } = evt
       const leaf = matchedPath[matchedPath.length - 1]
       const isFullyMatched = isUrlFullyMatched(navigation.to.pathname, matchedPath)
@@ -81,7 +81,7 @@ export async function processEvent(
       }
       if (typeof loader === 'function' && leaf.node.children.length === 0) {
         return {
-          type: EventTypes.CHILDREN_CONFIG_REQUEST,
+          type: EventTypes.CHILDREN_CONFIG_REQUESTED,
           navigation: evt.navigation,
           partialPath: matchedPath,
           leaf,
@@ -95,23 +95,24 @@ export async function processEvent(
         routes: store.getNextRoutes(matchedPath, navigation.to)
       }
     }
-    case EventTypes.CHILDREN_CONFIG_REQUEST: {
+    case EventTypes.CHILDREN_CONFIG_REQUESTED: {
       const { navigation, leaf, partialPath, loader } = evt
       return {
-        type: EventTypes.CHILDREN_CONFIG_LOAD,
+        type: EventTypes.CHILDREN_CONFIG_LOADED,
         navigation,
         partialPath,
         leaf,
         module: await loader()
       }
     }
-    case EventTypes.CHILDREN_CONFIG_LOAD: {
+    case EventTypes.CHILDREN_CONFIG_LOADED: {
       const { navigation, partialPath, leaf, module } = evt
       if (module.length) {
         return {
-          type: EventTypes.CHILDREN_LOAD,
+          type: EventTypes.CHILDREN_LOADING,
           navigation,
           partialPath,
+          root: store.state.root,
           leaf,
           children: module
         }
@@ -123,14 +124,24 @@ export async function processEvent(
         }
       }
     }
-    case EventTypes.CHILDREN_LOAD: {
-      const { navigation, partialPath, leaf, children } = evt
+    case EventTypes.CHILDREN_LOADING: {
+      const {navigation, partialPath, leaf, children} = evt
       runInAction(() => {
         leaf.node.children.replace(
           children.map(x => createRouteStateTreeNode(x, leaf.node.value.getContext))
         )
         leaf.node.value.loadChildren = null
       })
+      return {
+        type: EventTypes.CHILDREN_LOADED,
+        navigation,
+        partialPath,
+        leaf,
+        root: store.state.root
+      }
+    }
+    case EventTypes.CHILDREN_LOADED: {
+      const {navigation, partialPath, leaf } = evt
       if (navigation && partialPath) {
         return {
           type: EventTypes.NAVIGATION_RETRY,

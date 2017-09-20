@@ -1,11 +1,6 @@
 // @flow
-import type {
-  Config,
-  Route,
-  RouteStateTreeNode,
-  LoadChildrenConfigFn,
-  LoadChildrenRouteStateTreeNode
-} from './types'
+import { observable } from 'mobx'
+import type { Config, Route, RouteStateTreeNode } from './types'
 import type Navigation from './Navigation'
 import { TreeNode } from '../util/tree'
 import createKey from '../util/createKey'
@@ -49,7 +44,7 @@ export default function createRouteStateTreeNode(
     : []
 
   return TreeNode(
-    {
+    observable({
       key: typeof config.key === 'string' ? config.key : createKey(6),
       path: config.path,
       matcher: matcher(config.path),
@@ -68,16 +63,15 @@ export default function createRouteStateTreeNode(
         ? config.willDeactivate
         : nop,
       // Lifecycle callback
-      willResolve: typeof config.willResolve === 'function'
-        ? config.willResolve
-        : nop,
+      willResolve: typeof config.willResolve === 'function' ? config.willResolve : nop,
       onError: typeof config.onError === 'function' ? config.onError : null,
       onTransition: typeof config.onTransition === 'function'
         ? config.onTransition
         : null,
       getContext,
-      getData: typeof config.getData === 'function' ? config.getData : () => ({})
-    },
+      getData: typeof config.getData === 'function' ? config.getData : () => ({}),
+      etc: observable.ref(config.etc)
+    }),
     children
   )
 }
@@ -108,7 +102,7 @@ export function getWillActivate(config: Config<*>) {
   let f = typeof config.willActivate === 'function' ? config.willActivate : nop
   if (typeof config.redirectTo === 'string') {
     const pattern = new UrlPattern(config.redirectTo)
-    return (route: Route<*, *>, navigation: Navigation) =>{
+    return (route: Route<*, *>, navigation: Navigation) => {
       f(route, navigation)
       return navigation.redirectTo(pattern.stringify(route.params))
     }

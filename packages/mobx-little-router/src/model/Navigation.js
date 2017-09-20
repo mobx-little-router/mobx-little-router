@@ -34,6 +34,11 @@ export default class Navigation {
   shouldTransition: boolean
   cancelled: boolean
 
+  static EMPTY = new Navigation({
+    type: NavigationTypes.POP,
+    to: null
+  })
+
   constructor(x: NavigationDescriptor) {
     this.type = x.type
     this.sequence = x.sequence || 0

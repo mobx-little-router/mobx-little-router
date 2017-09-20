@@ -3,7 +3,7 @@ import type { History, Location as HistoryLocation } from 'history'
 import type { ITreeNode } from '../util/tree'
 import type { TransitionFn } from '../transition/types'
 import type { MatchFn } from './matchers'
-import Navigation from './Navigation'
+import type Navigation from './Navigation'
 
 export type { MatchFn }
 
@@ -35,7 +35,8 @@ export type BasicConfig<D: Object> = {
   willDeactivate?: LifecycleFn,
   willResolve?: LifecycleFn,
   onError?: ErrorHandler,
-  onTransition?: TransitionFn
+  onTransition?: TransitionFn,
+  etc?: any
 }
 
 export type RedirectConfig<D: Object> = {
@@ -45,7 +46,8 @@ export type RedirectConfig<D: Object> = {
   getData?: () => D,
   key?: string,
   match?: 'full' | 'partial',
-  children?: empty
+  children?: empty,
+  etc?: any
 }
 
 export type LoadChildrenConfigFn<D> = () => Promise<any>
@@ -79,7 +81,8 @@ export type RouteValue<C: Object, D: Object> = {
   onError: null | ErrorHandler,
   onTransition: null | TransitionFn,
   getContext: () => C,
-  getData: () => D
+  getData: () => D,
+  etc?: any
 }
 
 export type RouteStateTreeNode<C, D> = ITreeNode<RouteValue<C, D>>
