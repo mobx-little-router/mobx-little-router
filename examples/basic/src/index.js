@@ -68,12 +68,9 @@ router.subscribeEvent((ev) => {
   if (ev.type === 'NAVIGATION_START') {
     console.group(`%cNavigation (${ev.navigation.sequence})`, 'color: black')
   }
-  const groupColor = getGroupColor(ev)
-  console.group(`%c${ev.type}`, `font-weight: normal; color: ${groupColor}`)
-  console.log(`Elapsed = ${ev.elapsed}`)
-  console.log(`Navigation`, ev.navigation)
-  console.groupEnd(ev.type)
-  if (ev.type === 'NAVIGATION_END' || ev.type === 'NAVIGATION_CANCELLED') {
+
+  console.log(`%c${ev.type}`, `color:${getGroupColor(ev)}`, `(${ev.elapsed}ms)`, ev.navigation)
+  if (['NAVIGATION_END', 'NAVIGATION_CANCELLED', 'NAVIGATION_ERROR'].includes(ev.type)) {
     console.groupEnd()
   }
 })
