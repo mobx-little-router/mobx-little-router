@@ -8,20 +8,6 @@ import stores from './stores'
 import { HomeRoute, LoginRoute, ShowsRoute, AboutRoute, ContactRoute, ShowRoute, TagRoute, ActorRoute, AdminRoute } from './routes'
 import App from './App'
 
-const onTransition = ({ type, target }) => {
-  return new Promise((resolve, reject) => {
-    mobx.when(
-      () => {
-        return target.data.transitionState === (type === 'entering' ? 'entered' : 'exited')
-      },
-      () => {
-        console.log("RESOLVING_TRANSITION", target.key)
-        resolve()
-      }
-    )
-  })
-}
-
 const delay = (ms) => new Promise((resolve) => { setTimeout(resolve, ms) })
 
 const router = install({
@@ -42,15 +28,13 @@ const router = install({
       children: [{
         path: ':id',
         component: ShowRoute,
-        outlet: 'modal',
-        onTransition
+        outlet: 'modal'
       }]
     },
     {
       path: 'actors/:id',
       component: ActorRoute,
-      outlet: 'modal',
-      onTransition
+      outlet: 'modal'
     },
     {
       path: 'tags/:tag',
