@@ -8,7 +8,8 @@ describe('timerMiddleware', () => {
     const m = timerMiddleware(inc10ms)
     const a = new Navigation({
       type: 'POP',
-      sequence: 1
+      sequence: 1,
+      to: null
     })
 
     expect(
