@@ -22,7 +22,8 @@ export type Definition = {
   sequence?: number,
   to: Location,
   from?: Location,
-  shouldTransition?: boolean
+  shouldTransition?: boolean,
+  cancelled?: boolean
 }
 
 export default class Navigation {
@@ -31,13 +32,15 @@ export default class Navigation {
   from: null | Location
   sequence: number
   shouldTransition: boolean
+  cancelled: boolean
 
   constructor(x: Definition) {
     this.type = x.type
     this.sequence = x.sequence || 0
     this.to = x.to || null
     this.from = x.from || null
-    this.shouldTransition = typeof x.shouldTransition === 'boolean' ? x.shouldTransition : false
+    this.shouldTransition = typeof x.shouldTransition === 'boolean' ? x.shouldTransition : this.sequence > 0,
+    this.cancelled = false
   }
 
   next(next: Definition) {
@@ -45,8 +48,7 @@ export default class Navigation {
       type: next.type,
       sequence: this.sequence + 1,
       from: this.to,
-      to: next.to,
-      shouldTransition: this.sequence + 1 > 0
+      to: next.to
     })
   }
 
@@ -55,8 +57,7 @@ export default class Navigation {
       type: NavigationTypes.GO_BACK,
       sequence: this.sequence + 1,
       from: this.to,
-      to: null,
-      shouldTransition: true
+      to: null
     })
   }
 
@@ -69,6 +70,10 @@ export default class Navigation {
 
   goBack() {
     return Promise.reject(this.prev())
+  }
+
+  cancel() {
+    this.cancelled = true
   }
 }
 

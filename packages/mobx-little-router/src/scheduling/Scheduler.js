@@ -16,6 +16,9 @@ export default class Scheduler {
   middleware: IMiddleware
   currentNavigation: Navigation
   event: Event
+  cancelled: Navigation
+
+  isNavigating = false
 
   constructor(store: RouterStore, middleware: IMiddleware) {
     const initialNavigation = new Navigation({
@@ -25,6 +28,7 @@ export default class Scheduler {
       from: null
     })
     extendObservable(this, {
+      cancelled: null,
       currentNavigation: initialNavigation,
       event: { type: EventTypes.EMPTY, navigation: initialNavigation }
     })
@@ -36,27 +40,36 @@ export default class Scheduler {
   start() {
     // Watch for event changes, and dispatches the next event in the chain if it is not cancelled or ended.
     this.disposer = reaction(
-      () => this.event,
+      () => this.cancelled || this.event,
       evt => {
+        if (evt instanceof Navigation) {
+          evt.cancel()
+          
+          this.dispatch({
+            type: EventTypes.NAVIGATION_CANCELLED,
+            navigation: evt,
+            nextNavigation: null
+          })
+          this.cancelled = null
+          return
+        }
+
         if (
           evt.type === EventTypes.NAVIGATION_CANCELLED ||
           evt.type === EventTypes.NAVIGATION_END
         ) {
+          runInAction(() => {
+            this.store.clearPrevRoutes()
+          })
           return
         }
+
         processEvent(evt, this.store).then(next => {
           // If there are no navigation to go to, ignore.
           if (!next || !(next.navigation instanceof Navigation)) return
 
           // Check that the sequence is same or incremented, otherwise it's a stale navigation and should be ignored.
-          if (next.navigation.sequence >= this.currentNavigation.sequence) {
-            this.dispatch(next)
-          } else {
-            this.dispatch({
-              type: EventTypes.NAVIGATION_CANCELLED,
-              navigation: next.navigation
-            })
-          }
+          this.dispatch(next)
         })
       }
     )
@@ -76,14 +89,27 @@ export default class Scheduler {
     }
   })
 
-  schedule = action((next: Definition) => {
+  schedule(next: Definition) {
     if (!hasChanged(this.store.location, next.to)) return
-    this.currentNavigation = this.currentNavigation.next(next)
-    this.dispatch({
-      type: EventTypes.NAVIGATION_START,
-      navigation: this.currentNavigation
+
+    if (
+      this.currentNavigation &&
+      this.currentNavigation.shouldTransition &&
+      this.event.type !== EventTypes.NAVIGATION_END
+    ) {
+      runInAction(() => {
+        this.cancelled = this.currentNavigation
+      })
+    }
+
+    runInAction(() => {
+      this.currentNavigation = this.currentNavigation.next(next)
+      this.dispatch({
+        type: EventTypes.NAVIGATION_START,
+        navigation: this.currentNavigation
+      })
     })
-  })
+  }
 }
 
 function hasChanged(curr, next) {

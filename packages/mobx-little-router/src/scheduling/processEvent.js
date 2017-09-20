@@ -16,7 +16,7 @@ import { EventTypes } from '../events'
  * This function maps an Event to a new Event. It is used by the Scheduler to manage data flow.
  */
 
-export default async function maybeProcessEvent(evt: Event, store: RouterStore): Promise<Event> {
+export default async function maybeProcessEvent(evt: Event, store: RouterStore): Promise<null | Event> {
   try {
     return await processEvent(evt, store)
   } catch (err) {
@@ -28,7 +28,7 @@ export default async function maybeProcessEvent(evt: Event, store: RouterStore):
   }
 }
 
-export async function processEvent(evt: Event, store: RouterStore): Promise<Event> {
+export async function processEvent(evt: Event, store: RouterStore): Promise<null | Event> {
   switch (evt.type) {
     case EventTypes.NAVIGATION_START: {
       const { navigation } = evt
@@ -182,13 +182,16 @@ export async function processEvent(evt: Event, store: RouterStore): Promise<Even
         await Promise.all([
           TransitionManager.run('exiting', exiting),
           TransitionManager.run('entering', entering)
-        ]).then(() => {
-          store.clearPrevRoutes()
-        })
+        ])
       }
-      return {
-        type: EventTypes.NAVIGATION_END,
-        navigation: evt.navigation
+
+      if (!navigation.cancelled) {
+        return {
+          type: EventTypes.NAVIGATION_END,
+          navigation: evt.navigation
+        }
+      } else {
+        return null
       }
     case EventTypes.NAVIGATION_ERROR:
       const { error } = evt
