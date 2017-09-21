@@ -161,7 +161,7 @@ export type NavigationCancelled = {
 
 export type NavigationError = {
   type: 'NAVIGATION_ERROR',
-  navigation: Navigation,
+  navigation: null | Navigation,
   error: any,
   done: true,
   [other: string]: any

@@ -1,7 +1,7 @@
 // @flow
 import { EventTypes } from '../events'
 import Navigation from '../model/Navigation'
-import type { NavigationStart } from '../events'
+import type { Empty, NavigationStart } from '../events'
 import transformNavigation from './transformNavigation'
 
 describe('transformNavigation middleware', () => {
@@ -33,6 +33,18 @@ describe('transformNavigation middleware', () => {
           search: '?hello'
         }
       })
+    }))
+  })
+
+  test('handles null navigation', () => {
+    const spy = jest.fn(x => x)
+    const c: Empty = {
+      type: EventTypes.EMPTY,
+      navigation: null
+    }
+
+    expect(transformNavigation(spy).fold(c)).toEqual(expect.objectContaining({
+      navigation: null
     }))
   })
 })

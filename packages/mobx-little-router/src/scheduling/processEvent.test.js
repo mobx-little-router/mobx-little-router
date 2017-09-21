@@ -134,6 +134,21 @@ describe('processEvent', () => {
 
     expect(store.prevRoutes.length).toEqual(0)
   })
+
+  test.only('handles errors', async () => {
+    const x: any = null
+
+    let result = await processEvent(x, x)
+    expect(result).toEqual(expect.objectContaining({
+      type: EventTypes.NAVIGATION_ERROR
+    }))
+
+    const y: any ={ type: EventTypes.NAVIGATION_ACTIVATED }
+    result = await processEvent(y, x)
+    expect(result).toEqual(expect.objectContaining({
+      type: EventTypes.NAVIGATION_ERROR
+    }))
+  })
 })
 
 async function takeWhileIncomplete(curr, store) {

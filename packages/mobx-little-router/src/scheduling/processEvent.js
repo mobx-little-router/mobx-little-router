@@ -25,7 +25,7 @@ export default async function maybeProcessEvent(
   } catch (err) {
     return {
       type: EventTypes.NAVIGATION_ERROR,
-      navigation: (evt: any).navigation,
+      navigation: evt && evt.navigation,
       error: err,
       done: true
     }

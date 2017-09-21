@@ -96,6 +96,13 @@ describe('Middleware', () => {
       })
     )
   })
+
+  test('handles concat with bad middleware', () => {
+    const bad1: any = null
+    const bad2: any = {}
+    const m = Middleware.EMPTY.concat(bad1).concat(bad2)
+    expect(m.fold({ type: EventTypes.EMPTY })).toEqual({ type: EventTypes.EMPTY })
+  })
 })
 
 function createNavigationStartMiddleware(f: Computation) {

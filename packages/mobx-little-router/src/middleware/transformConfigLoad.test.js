@@ -31,6 +31,21 @@ describe('transformConfigLoad middleware', () => {
         ]
     }))
   })
+
+  test('handles null module', () => {
+    const spy = jest.fn(x => x)
+    const c: ChildrenConfigLoaded = {
+      type: EventTypes.CHILDREN_CONFIG_LOADED,
+      leaf: createLeaf(),
+      navigation: createNavigation(),
+      partialPath: [],
+      module: null
+    }
+
+    expect(transformConfigLoad(spy).fold(c)).toEqual(expect.objectContaining({
+      module: null
+    }))
+  })
 })
 
 function createNavigation(): any {
