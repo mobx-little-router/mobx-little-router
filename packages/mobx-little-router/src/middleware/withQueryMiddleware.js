@@ -1,7 +1,7 @@
 // @flow
-import Navigation from '../../model/Navigation'
+import Navigation from '../model/Navigation'
 import QueryString from 'qs'
-import transformNavigation from '../../middleware/transformNavigation'
+import transformNavigation from './transformNavigation'
 
 export default transformNavigation(navigation => {
   const { to } = navigation

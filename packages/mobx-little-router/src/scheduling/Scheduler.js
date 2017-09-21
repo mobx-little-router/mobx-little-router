@@ -8,7 +8,6 @@ import type { Event } from '../events'
 import { EventTypes } from '../events'
 import type { IMiddleware } from '../middleware/Middleware'
 import processEvent from './processEvent'
-import withQueryMiddleware from './util/withQueryMiddleware'
 
 export default class Scheduler {
   disposer: null | Function
@@ -29,7 +28,7 @@ export default class Scheduler {
     })
     this.disposer = null
     this.store = store
-    this.middleware = withQueryMiddleware.concat(middleware)
+    this.middleware = middleware
   }
 
   start() {

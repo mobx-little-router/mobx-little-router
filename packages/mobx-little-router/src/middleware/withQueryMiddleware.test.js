@@ -1,7 +1,7 @@
 // @flow
-import { EventTypes } from '../../events'
-import Navigation from '../../model/Navigation'
-import type { NavigationStart } from '../../events'
+import { EventTypes } from '../events/index'
+import Navigation from '../model/Navigation'
+import type { NavigationStart } from '../events/index'
 import withQueryMiddleware from './withQueryMiddleware'
 
 describe('withQueryMiddleware middleware', () => {

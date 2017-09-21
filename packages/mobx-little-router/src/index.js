@@ -5,6 +5,7 @@ import type { Event } from './events'
 import type { History } from 'history'
 import Middleware from './middleware/Middleware'
 import type { IMiddleware } from './middleware/Middleware'
+import withQueryMiddleware from './middleware/withQueryMiddleware'
 import devTools from './middleware/devTools'
 
 export type InstallOptions = {
@@ -19,7 +20,9 @@ export function install(opts: InstallOptions): Router {
     opts.history,
     opts.routes,
     opts.getContext || (() => ({})),
-    devTools.concat(opts.middleware || Middleware.EMPTY)
+    withQueryMiddleware
+      .concat(devTools)
+      .concat(opts.middleware || Middleware.EMPTY)
   )
 }
 
