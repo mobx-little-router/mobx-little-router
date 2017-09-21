@@ -28,6 +28,9 @@ function mark(root, children) {
     [__NODE_CHILD_URLS__]: urls
   }
   walk(root, children, (parent, child) => {
+    if (child.value.matcher.type === 'any') {
+      return
+    }
     const parentPath = parent == null ? '' : parent.value.path
     const segment = normalize(parentPath === '/' ? toStub(child) : `${parentPath}${toStub(child)}`)
     urls.push(segment)
