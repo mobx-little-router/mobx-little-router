@@ -5,6 +5,7 @@
   "scripts": {
     "publish": "yarn build umd && lerna publish --silent --registry=https://registry.npmjs.org/",
     "publish:canary": "yarn build umd && lerna publish --npm-tag=canary --silent --registry=https://registry.npmjs.org/",
+    "publish:latest": "yarn run publish",
     "updated": "lerna updated",
     "clean": "lerna run clean",
     "build": "yarn run clean && node scripts/build.js",

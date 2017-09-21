@@ -64,10 +64,32 @@ cd mobx-router
 yarn install
 ```
 
+### Running tests
+
+To run tests, run `yarn test` from either the root or a package directory.
+
+If you want to get the coverage report locally, you can run `yarn test --coverage` which will
+generate report files under the `coverage/` folder.
+
 ### Building
 
 To build packages, run `yarn build` from either the root, or a package directory.
 
-### Running tests
+### Publishing
 
-To run tests, run `yarn test` from either the root or a package directory.
+Make sure you have publishing rights for all the packages before continuing.
+
+To publish to latest tag:
+
+```
+yarn publish:latest
+```
+
+To publish a canary tag:
+
+```
+yarn publish:canary
+```
+
+Lerna will prompt you for the next version as well as show you which packages/examples will be updated.
+All inter-package dependencies will be updated by Lerna so you should *never* update package.json versions by hand.
