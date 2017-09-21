@@ -43,6 +43,46 @@ describe('validateConfigMiddleware', () => {
       ]
     })
   })
+
+  test('detects unreachable nodes', () => {
+    assertInvalidRoot({
+      path: '',
+      children: [
+        { path: '', match: 'partial' },
+        { path: 'unreachable' }
+      ]
+    })
+
+    assertInvalidRoot({
+      path: '',
+      children: [
+        { path: ':a' },
+        { path: ':b' },
+        { path: ':c' }
+      ]
+    })
+
+    assertInvalidRoot({
+      path: '',
+      children: [
+        { path: '' },
+        { path: 'a/b/:c' },
+        { path: 'a/b/d' }
+      ]
+    })
+
+    assertValidRoot({
+      path: '',
+      children: [
+        { path: '' },
+        { path: 'a/b' },
+        { path: 'a/b/d' },
+        { path: 'a/b/c/d/e/f/g/h/i/j' },
+        { path: 'a/b/:c' },
+        { path: 'a/b/:c/d/e' },
+      ]
+    })
+  })
 })
 
 function assertInvalidRoot(root: any) {
