@@ -8,21 +8,23 @@ import * as m from './matchers'
 import { array, string, optional, func, createValidator } from '../validation'
 import UrlPattern from 'url-pattern'
 
-async function nop(a: *, b: *) {}
+async function NOP(a: *, b: *) {}
 
 // Don't run validators in production bundle
-const validate = createValidator({
-  path: string,
-  children: optional(array),
-  loadChildren: optional(func),
-  onError: optional(func),
-  canActivate: optional(func),
-  canDeactivate: optional(func),
-  onTransition: optional(func),
-  willActivate: optional(func),
-  willDeactivate: optional(func),
-  willResolve: optional(func)
-})
+const validate = process.env.NODE_ENV === 'production'
+  ? createValidator({})
+  : createValidator({
+      path: string,
+      children: optional(array),
+      loadChildren: optional(func),
+      onError: optional(func),
+      canActivate: optional(func),
+      canDeactivate: optional(func),
+      onTransition: optional(func),
+      willActivate: optional(func),
+      willDeactivate: optional(func),
+      willResolve: optional(func)
+    })
 
 type GetContext = () => *
 
@@ -53,44 +55,32 @@ export default function createRouteStateTreeNode(
       loadChildren: typeof config.loadChildren === 'function'
         ? config.loadChildren
         : null,
-      // Guards
-      canActivate: typeof config.canActivate === 'function' ? config.canActivate : nop,
-      canDeactivate: typeof config.canDeactivate === 'function'
-        ? config.canDeactivate
-        : nop,
+      canActivate: config.canActivate || NOP,
+      canDeactivate: config.canDeactivate || NOP,
       willActivate: getWillActivate(config),
-      willDeactivate: typeof config.willDeactivate === 'function'
-        ? config.willDeactivate
-        : nop,
-      // Lifecycle callback
-      willResolve: typeof config.willResolve === 'function' ? config.willResolve : nop,
-      onError: typeof config.onError === 'function' ? config.onError : null,
-      onTransition: typeof config.onTransition === 'function'
-        ? config.onTransition
-        : null,
+      willDeactivate: config.willDeactivate || NOP,
+      willResolve: config.willResolve || NOP,
+      onError: config.onError ||  null,
+      onTransition: config.onTransition || null,
       getContext,
-      getData: typeof config.getData === 'function' ? config.getData : () => ({}),
-      etc: observable.ref(config.etc)
+      getData: config.getData || (() => ({})),
+      // This prop is meant for middleware to add annotations that it may need to perform its task.
+      // e.g. validate config needs to add some hash for equality checks between tree nodes.
+      etc: observable.ref(config.etc || {})
     }),
     children
   )
 }
 
 export function getMatcher(config: Config<*>) {
-  if (config.path === '**') {
-    // Catch-all matcher for handling "Not Found", etc.
-    return m.any
-  }
+  // Catch-all matcher for handling "Not Found", etc.
+  if (config.path === '**') return m.any
 
-  if (config.match) {
-    // Match was specified.
-    return m[config.match]
-  }
+  // Match was specified.
+  if (config.match) return m[config.match]
 
-  if (!config.children && typeof config.loadChildren !== 'function') {
-    // If we are in a leaf node, then match must be full.
-    return m.full
-  }
+  // If we are in a leaf node, then match must be full.
+  if (!config.children && typeof config.loadChildren !== 'function') return m.full
 
   // Otherwise we default to partial.
   return m.partial
@@ -99,14 +89,13 @@ export function getMatcher(config: Config<*>) {
 // If a `redirectTo` has been specified on this route config, then the `willActivate`
 // callback will redirect throw with a redirect.
 export function getWillActivate(config: Config<*>) {
-  let f = typeof config.willActivate === 'function' ? config.willActivate : nop
+  let f = typeof config.willActivate === 'function' ? config.willActivate : NOP
   if (typeof config.redirectTo === 'string') {
     const pattern = new UrlPattern(config.redirectTo)
     return (route: Route<*, *>, navigation: Navigation) => {
       f(route, navigation)
       return navigation.redirectTo(pattern.stringify(route.params))
     }
-  } else {
-    return f
   }
+  return f
 }

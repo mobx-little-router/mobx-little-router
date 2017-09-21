@@ -67,7 +67,7 @@ export default class Scheduler {
     if (
       this.currentNavigation &&
       this.currentNavigation.shouldTransition &&
-      !this.event.done
+      this.event.done !== true
     ) {
       this.dispatch({
         type: EventTypes.NAVIGATION_CANCELLED,

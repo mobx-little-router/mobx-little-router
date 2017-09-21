@@ -45,8 +45,15 @@ export type RedirectConfig<D: Object> = {
   redirectTo: Href,
   getData?: () => D,
   key?: string,
-  match?: 'full' | 'partial',
   children?: empty,
+  match?: 'full' | 'partial',
+  canActivate?: empty,
+  canDeactivate?: empty,
+  willActivate?: empty,
+  willDeactivate?: empty,
+  willResolve?: empty,
+  onError?: empty,
+  onTransition?: empty,
   etc?: any
 }
 
@@ -82,7 +89,7 @@ export type RouteValue<C: Object, D: Object> = {
   onTransition: null | TransitionFn,
   getContext: () => C,
   getData: () => D,
-  etc?: any
+  etc: Object
 }
 
 export type RouteStateTreeNode<C, D> = ITreeNode<RouteValue<C, D>>
