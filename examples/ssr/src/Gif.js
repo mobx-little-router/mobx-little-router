@@ -2,13 +2,13 @@ import React from 'react'
 import { observer, inject } from 'mobx-react'
 import { withRouter } from 'mobx-little-router-react'
 
-export default withRouter(inject('dataStore')(observer(({ dataStore, params, router }) => {
+export default withRouter(inject('dataStore')(observer(({ dataStore, route, router }) => {
   return (
     <div>
-      <h1>{`Random GIF for "${params.topic}"`}</h1>
-      <img src={dataStore.randomGifs.get(params.topic)} />
+      <h1>{`Random GIF for "${route.params.topic}"`}</h1>
+      <img src={dataStore.randomGifs.get(route.params.topic)} />
       <p>
-        <a href={`/gif/${params.topic}`}>{'Another?'}</a>
+        <a href={`/gif/${route.params.topic}`}>{'Another?'}</a>
       </p>
     </div>
   )
