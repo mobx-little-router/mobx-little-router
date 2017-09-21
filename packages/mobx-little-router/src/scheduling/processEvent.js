@@ -272,38 +272,33 @@ export async function processEvent(
  */
 
 function diffRoutes(currRoutes: Route<*, *>[], nextRoutes: Route<*, *>[]) {
-  try {
-    // Deactivating this route state tree node
-    const deactivating = differenceWith(
-      (a, b) => {
-        return a.node === b.node
-      },
-      currRoutes,
-      nextRoutes
-    ).reverse()
+  // Deactivating this route state tree node
+  const deactivating = differenceWith(
+    (a, b) => {
+      return a.node === b.node
+    },
+    currRoutes,
+    nextRoutes
+  ).reverse()
 
-    // Activating this route state tree node
-    const activating = nextRoutes.filter(x => {
-      return !currRoutes.some(y => {
-        return x.node === y.node
-      })
+  // Activating this route state tree node
+  const activating = nextRoutes.filter(x => {
+    return !currRoutes.some(y => {
+      return x.node === y.node
     })
+  })
 
-    // Exiting this specific route instance
-    const exiting = differenceWith(areRoutesEqual, currRoutes, nextRoutes).reverse()
+  // Exiting this specific route instance
+  const exiting = differenceWith(areRoutesEqual, currRoutes, nextRoutes).reverse()
 
-    // Entering this specific route instance
-    const entering = nextRoutes.filter(x => {
-      return !currRoutes.some(y => {
-        return areRoutesEqual(x, y)
-      })
+  // Entering this specific route instance
+  const entering = nextRoutes.filter(x => {
+    return !currRoutes.some(y => {
+      return areRoutesEqual(x, y)
     })
+  })
 
-    return { activating, deactivating, entering, exiting }
-  } catch (err) {
-    // Make sure we chain errors back up!
-    throw err
-  }
+  return { activating, deactivating, entering, exiting }
 }
 
 // Runs guards (if they exist) on each node until they all pass.
@@ -324,6 +319,7 @@ async function assertTransitionOk(
       ? value[type](route, navigation)
       : true
 
+    // If the guard results in `false` or a rejected promise then mark transition as failed.
     try {
       if (false === result) {
         await navigation.goBack()
