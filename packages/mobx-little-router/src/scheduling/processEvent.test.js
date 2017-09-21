@@ -135,7 +135,7 @@ describe('processEvent', () => {
     expect(store.prevRoutes.length).toEqual(0)
   })
 
-  test.only('handles errors', async () => {
+  test('handles errors', async () => {
     const x: any = null
 
     let result = await processEvent(x, x)
