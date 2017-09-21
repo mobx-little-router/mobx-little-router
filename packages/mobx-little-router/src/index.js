@@ -21,8 +21,8 @@ export function install(opts: InstallOptions): Router {
     opts.routes,
     opts.getContext || (() => ({})),
     withQueryMiddleware
-      .concat(devTools)
       .concat(opts.middleware || Middleware.EMPTY)
+      .concat(devTools) // devTools always has to be the last in case there are any config/node transforms
   )
 }
 
