@@ -10,7 +10,7 @@ import Scheduler from './scheduling/Scheduler'
 import type { Event } from './events'
 import { EventTypes } from './events'
 import { NavigationTypes } from './model/Navigation'
-import { TransitionFailure, InvalidNavigation } from './errors'
+import { TransitionFailure } from './errors'
 import type { IMiddleware } from './middleware/Middleware'
 
 class Router {
@@ -143,7 +143,7 @@ class Router {
       case NavigationTypes.GO_BACK:
         return this.goBack()
       default:
-        throw new InvalidNavigation(nextNavigation)
+        throw new TypeError(`Invalid navigation returned (${nextNavigation.type})`)
     }
   }
 

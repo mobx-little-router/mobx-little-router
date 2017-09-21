@@ -20,10 +20,3 @@ export class NoMatch  {
     return `No match for ${this.url}`
   }
 }
-
-export class InvalidNavigation {
-  transition: *
-  constructor(transition: *) {
-    this.transition = transition
-  }
-}
