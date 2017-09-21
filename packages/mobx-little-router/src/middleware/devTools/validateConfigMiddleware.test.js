@@ -1,5 +1,5 @@
 // @flow
-import validateConfigMiddleware, { ConfigurationError } from './validateConfigMiddleware'
+import validateConfigMiddleware from './validateConfigMiddleware'
 import { EventTypes } from '../../events/index'
 import createRouteStateTreeNode from '../../model/createRouteStateTreeNode'
 
@@ -65,7 +65,6 @@ describe('validateConfigMiddleware', () => {
     assertInvalidRoot({
       path: '',
       children: [
-        { path: '' },
         { path: 'a/b/:c' },
         { path: 'a/b/d' }
       ]
@@ -75,11 +74,9 @@ describe('validateConfigMiddleware', () => {
       path: '',
       children: [
         { path: '' },
-        { path: 'a/b' },
-        { path: 'a/b/d' },
-        { path: 'a/b/c/d/e/f/g/h/i/j' },
         { path: 'a/b/:c' },
-        { path: 'a/b/:c/d/e' },
+        { path: 'a/:b' },
+        { path: 'a' }
       ]
     })
   })
@@ -97,7 +94,7 @@ function assertInvalidRoot(root: any) {
   expect(result).toEqual(
     expect.objectContaining({
       type: EventTypes.NAVIGATION_ERROR,
-      error: expect.any(ConfigurationError)
+      error: expect.any(Error)
     })
   )
 }

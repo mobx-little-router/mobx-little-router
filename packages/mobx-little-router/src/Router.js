@@ -155,7 +155,7 @@ class Router {
     if (evt.type === EventTypes.NAVIGATION_ERROR) {
       const { error } = evt
       if (error && !(error instanceof TransitionFailure)) {
-        console.error(evt.error)
+        console.error('[router] Uncaught exception encountered during router event.', error)
       }
     }
   }

@@ -12,10 +12,9 @@ describe('Outlet', () => {
       [
         {
           path: '',
-          match: 'partial',
           getData: () => ({ component: RootPage }),
           children: [
-            { path: '', match: 'full', getData: () => ({ component: HomePage }) },
+            { path: '', getData: () => ({ component: HomePage }) },
             {
               path: 'about',
               getData: () => ({ component: AboutPage }),
@@ -24,7 +23,7 @@ describe('Outlet', () => {
             {
               path: 'posts',
               children: [
-                { path: '', match: 'partial', getData: () => ({ component: PostListPage }) },
+                { path: '', getData: () => ({ component: PostListPage }) },
                 { path: ':id', getData: () => ({ component: PostViewPage }) }
               ]
             }
