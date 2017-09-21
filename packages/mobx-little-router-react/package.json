@@ -21,6 +21,6 @@
   },
   "dependencies": {
     "classnames": "^2.2.5",
-    "mobx-little-router": "^1.0.0-rc27.0"
+    "mobx-little-router": "1.0.0-rc27.0"
   }
 }
