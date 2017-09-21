@@ -45,7 +45,7 @@ function validate(root, children) {
     })
   )
   walk(root, children, (parent, child) => {
-    if (!seen.has(child)) {
+    if (child.children.length === 0 && !seen.has(child)) {
       throw new ConfigurationError(
         `Unreachable route paths detected at "${parent.value
           .path}". Please check your children configuration [${children
