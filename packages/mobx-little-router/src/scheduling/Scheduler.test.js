@@ -24,7 +24,7 @@ describe('Scheduler', () => {
     scheduler.stop()
   })
 
-  describe.only('multiple navigation', () => {
+  describe('multiple navigation', () => {
     test('cancels previous navigation', async () => {
       const events = []
       autorun(() => {
@@ -109,7 +109,9 @@ describe('Scheduler', () => {
       const [root, _, todosRoot, todosView] = scanChildren(store.state.root, [0, 1, 1])
       updateNode(todosRoot, { canDeactivate: rootSpy })
       updateNode(todosView, { canDeactivate: viewSpy })
-      store.updateRoutes([root, todosRoot, todosView].map(x => createRoute(x, '', {}, {})))
+      store.updateRoutes(
+        [root, todosRoot, todosView].map(x => createRoute(x, '', {}, {}))
+      )
       store.location.pathname = '/todos/123'
       scheduler.schedule({ type: 'PUSH', to: { pathname: '/' } })
 
@@ -130,7 +132,9 @@ describe('Scheduler', () => {
       updateNode(todosRoot, { canDeactivate: spy })
       updateNode(todosView, { canDeactivate: spy })
       store.location.pathname = '/todos/123'
-      store.updateRoutes([root, todosRoot, todosView].map(x => createRoute(x, '', {}, {})))
+      store.updateRoutes(
+        [root, todosRoot, todosView].map(x => createRoute(x, '', {}, {}))
+      )
       scheduler.schedule({ type: 'PUSH', to: { pathname: '/' } })
 
       await nextTick()
@@ -177,7 +181,24 @@ describe('Scheduler', () => {
         scheduler.stop()
       })
 
-      test('Deactivation fails', async () => {
+      test('Deactivation throws', async () => {
+        const spy = jest.fn(() => {
+          throw new Error('Oops')
+        })
+        const [_, appRootNode, todosRoot] = scanChildren(store.state.root, [0, 0])
+        updateNode(todosRoot, { canDeactivate: spy })
+        store.location.pathname = '/todos/'
+        store.updateRoutes(
+          [store.state.root, appRootNode, todosRoot].map(x => createRoute(x, '', {}, {}))
+        )
+        scheduler.schedule({ type: 'PUSH', to: { pathname: '/' } })
+
+        await nextTick()
+
+        expect(store.location.pathname).toBe('/todos/')
+      })
+
+      test('Deactivation rejects', async () => {
         const spy = jest.fn(() => Promise.reject())
         const [_, appRootNode, todosRoot] = scanChildren(store.state.root, [0, 0])
         updateNode(todosRoot, { canDeactivate: spy })
@@ -321,7 +342,9 @@ describe('Scheduler', () => {
 
     test('Can cancel navigation from willDeactivate', async () => {
       store.location.pathname = '/todos/'
-      store.updateRoutes([store.state.root, todosRoot].map(x => createRoute(x, '', {}, {})))
+      store.updateRoutes(
+        [store.state.root, todosRoot].map(x => createRoute(x, '', {}, {}))
+      )
 
       scheduler.schedule({ type: 'PUSH', sequence: 0, to: { pathname: '/' } })
 
@@ -516,17 +539,11 @@ function createStore() {
       children: [
         {
           path: 'todos',
-          children: [
-            { path: '' },
-            { path: ':id', match: 'partial' }
-          ]
+          children: [{ path: '' }, { path: ':id', match: 'partial' }]
         },
         {
           path: 'projects',
-          children: [
-            { path: '', match: 'full' },
-            { path: ':id', match: 'partial' }
-          ]
+          children: [{ path: '', match: 'full' }, { path: ':id', match: 'partial' }]
         },
         {
           path: 'sign-in',
