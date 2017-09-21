@@ -184,14 +184,6 @@ describe('RouterStore', () => {
     expect(nextRoutes[2]).toBeDefined() // Newly created route.
   })
 
-  test('Query params', () => {
-    const query = store.getQueryParams({ search: '?a=1&b=2' })
-    expect(query).toEqual({ a: '1', b: '2' })
-
-    store.location = { pathname: '/', search: '?q=Hello' }
-    expect(store.query).toEqual({ q: 'Hello' })
-  })
-
   test('Routes with query params', () => {
     const a = createRouteStateTreeNode({
       path: 'a',

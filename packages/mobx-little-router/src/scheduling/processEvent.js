@@ -19,9 +19,9 @@ import { EventTypes } from '../events'
 export default async function maybeProcessEvent(
   evt: Event,
   store: RouterStore
-): Promise<null | Event> {
+): Promise<Event> {
   try {
-    return await processEvent(evt, store)
+    return (await processEvent(evt, store)) || { type: EventTypes.EMPTY, navigation: null }
   } catch (err) {
     return {
       type: EventTypes.NAVIGATION_ERROR,
@@ -247,10 +247,7 @@ export async function processEvent(
           done: true
         }
       } else {
-        runInAction(() => {
-          store.setError(error)
-        })
-        return evt
+        return null
       }
     }
     case EventTypes.NAVIGATION_CANCELLED: {

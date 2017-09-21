@@ -20,7 +20,6 @@ type RouteValueChange = $Shape<RouteValue<*, *>>
 
 class RouterStore {
   location: Location
-  error: null | Object
   state: RouterStateTree
 
   // Create a map of all nodes in tree so we can perform faster lookup.
@@ -29,7 +28,6 @@ class RouterStore {
   // Keep a list of activated nodes so we can track differences when transitioning to a new state.
   routes: IObservableArray<Route<*, *>>
   prevRoutes: IObservableArray<Route<*, *>>
-  query: Query
 
   constructor(
     root: RouteStateTreeNode<*, *>
@@ -37,8 +35,6 @@ class RouterStore {
     this.state = new RouterStateTree(root)
     extendObservable(this, {
       location: {},
-      query: computed(() => this.getQueryParams(this.location)),
-      error: null,
       cache: observable.map({ [root.value.key]: root }),
       routes: observable.array([]),
       prevRoutes: observable.array([])
@@ -60,7 +56,7 @@ class RouterStore {
   // Returns a list of the next routes from the matched path.
   // If the route is not currently active or has changed, then it will be created from factory function.
   getNextRoutes(path: PathElement<*, *>[], location: Location): Route<*, *>[] {
-    const queryParams = this.getQueryParams(location)
+    const queryParams = getQueryParams(location)
     
     return path.map(element => {
       const matchedQueryParams = this.getMatchedQueryParams(element.node, queryParams)
@@ -117,18 +113,6 @@ class RouterStore {
     })
   }
 
-  setError(err: null | Object) {
-    runInAction(() => {
-      this.error = err
-    })
-  }
-
-  getQueryParams(location: Location): Query {
-    return location.search != null
-      ? QueryString.parse(location.search.substr(1))
-      : {}
-  }
-
   getMatchedQueryParams(node: RouteStateTreeNode<*, *>, query: Query): Query {
     return Object.keys(query)
       .filter(key => node.value.query.includes(key))
@@ -137,6 +121,12 @@ class RouterStore {
         return acc
       }, {})
   }
+}
+
+function getQueryParams(location: Location): Query {
+  return location.search != null
+    ? QueryString.parse(location.search.substr(1))
+    : {}
 }
 
 export default RouterStore
