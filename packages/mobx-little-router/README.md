@@ -69,25 +69,6 @@ The `install` function takes the following options:
   For more type information, check out the [`routing/types.js`](./src/model/types.js)
   file.
 
-### Dynamic children
-
-Dynamically loaded children is useful when combined with lazy loading.
-
-```js
-const ROUTES = [
-  { path: 'todos', loadChildren: () => import('./todos/routes') }
-]
-
-// ./todos/routes.js
-export default [
- { path: ':id',
-  children: [
-   { path: 'edit' }
-  ]
- },
-]
-```
-
 ## Documentation
 
 - [Introduction](./docs/intro/README.md)
