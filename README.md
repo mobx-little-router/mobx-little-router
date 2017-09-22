@@ -20,28 +20,34 @@ Here are what you get from `mobx-little-router` out of the box.
 
 - Static type support for Flow.
 
-- **State management** and **change detection* that lives completely within MobX. This means you have a single source of
+- *State management* and *change detection* that lives completely within MobX. This means you have a single source of
   truth and a single place to change *all* data in your application.
 
 - View-agnostic routing capabilities. This means adapters other than React can be created by hooking
   into the router state.
 
-- Support for **dynamically** loaded routes on both client and server environments. This is key for
+- Support for *dynamically* loaded routes on both client and server environments. This is key for
   building modern-day [progressive web apps](https://developers.google.com/web/progressive-web-apps/).
 
-- Custom **middleware** support for adding custom logic to how router events are handled.
+- Custom *middleware* support for adding custom logic to how router events are handled.
+
+- Server-side rendering support (SSR) and integration with express server.
 
 ## Quick start
 
-If you are using React, then you'll need to install two modules.
+If you are using React, then you'll need to install three modules.
 
 ```
-npm i --save mobx-little-router mobx-little-router-react
+npm i --save history@4.x.x mobx-little-router mobx-little-router-react
 
 # Or with yarn
+yarn add history@4.x.x
 yarn add mobx-little-router
 yarn add mobx-little-router-react
 ```
+
+**Note:** `history` is a third-party peer dependency of the Router. It abstracts away history management
+between different JavaScript environments. Learn more [here](https://github.com/ReactTraining/history/).
 
 Then you can create a *Hello World* app as follows.
 

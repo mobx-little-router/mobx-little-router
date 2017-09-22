@@ -1,5 +1,5 @@
 {
-  "name": "ssr",
+  "name": "react-server-side-rendering",
   "private": true,
   "version": "1.0.0-rc.9.1.0",
   "main": "index.js",
