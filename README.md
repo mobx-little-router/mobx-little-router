@@ -76,6 +76,9 @@ router.start(() => {
 })
 ```
 
+For a more comprehensive React example, you can explore the [client](https://github.com/mobx-little-router/mobx-little-router/blob/master/examples/react-client/src/index.js)
+and [server](https://github.com/mobx-little-router/mobx-little-router/blob/master/examples/react-server-side-rendering/index.js) examples.
+
 ## Learn more
 
 For more information, you may refer to the README files for each of the packages under MobX Little Router.
