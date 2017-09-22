@@ -44,7 +44,7 @@ The `install` function takes the following options:
 - `middleware` - Custom router middleware for your application.
 - `routes` - A list of initial route configuration of type `Config[]`, where
 
-  ```
+  ```js
   type Config = {
     path: string,
 
