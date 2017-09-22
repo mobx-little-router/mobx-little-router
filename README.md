@@ -18,19 +18,57 @@ none has met our requirements or functioned exactly the way we want it to. And s
 
 Here are what you get from `mobx-little-router` out of the box.
 
-- State management and change detection that lives completely within MobX, so you have one source of
-  truth for all data in your application, and one way for data to change.
+- Static type support for Flow.
 
-- Support for dynamically loaded routes on both client and server environments. This is key for
-  building modern-day [progressive web apps](https://developers.google.com/web/progressive-web-apps/).
+- **State management** and **change detection* that lives completely within MobX. This means you have a single source of
+  truth and a single place to change *all* data in your application.
 
 - View-agnostic routing capabilities. This means adapters other than React can be created by hooking
   into the router state.
 
-- Extensible `data` objects that is provided on each route node. This allows additional data and
-  behaviour to be created for future use cases.
+- Support for **dynamically** loaded routes on both client and server environments. This is key for
+  building modern-day [progressive web apps](https://developers.google.com/web/progressive-web-apps/).
 
-- Static type support for Flow.
+- Custom **middleware** support for adding custom logic to how router events are handled.
+
+## Quick start
+
+If you are using React, then you'll need to install two modules.
+
+```
+npm i --save mobx-little-router mobx-little-router-react
+
+# Or with yarn
+yarn add mobx-little-router
+yarn add mobx-little-router-react
+```
+
+Then you can create a *Hello World* app as follows.
+
+```js
+import React from 'react'
+import ReactDOM from 'react-dom'
+import { createBrowserHistory } from 'history'
+import { install, Outlet, RouterProvider } from 'mobx-little-router-react'
+
+const Home = () => <h1>Hello, World!</h1>
+
+const router = install({
+  history: createBrowserHistory(),
+  routes: [
+   { path: '', component: Home }
+  ]
+})
+
+router.start(() => {
+  ReactDOM.render(
+    <RouterProvider router={router}>
+      <Outlet />
+    </RouterProvider>,
+    document.getElementById('root')
+  )
+})
+```
 
 ## Learn more
 
