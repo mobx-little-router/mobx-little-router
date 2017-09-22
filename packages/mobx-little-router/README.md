@@ -38,26 +38,35 @@ router.start(() => {
 
 The `install` function takes the following options:
 
-- `createHistory` - The history creator function from `history` (e.g. `createBrowserHistory`,
-  `createHashHistory`, `createMemoryHistory`).
+- `history` - The history object created from [`history`](https://github.com/ReactTraining/history/).
+- `getContext` - A function that returns a context object that is accessible from each route. This is useful for
+  sharing MobX stores or other injectable objects.
+- `middleware` - Custom router middleware for your application.
 - `routes` - A list of initial route configuration of type `Config[]`, where
 
   ```
   type Config = {
     path: string,
-    data?: Object,
+
+    // Static child routes.
     children?: Config[],
+
+    // Dynamic child routes
     loadChildren?: () => Promise<Config[]>,
-    canActivate?: (node, params) => Promise<void>,
-    canDeactivate?: (node, params) => Promise<void>,
-    willActivate?: (node, params) => Promise<void>,
-    willDeactivate?: (node, params) => Promise<void>,
-    onTransition?: (evt: TransitionEvent) => Promise<void>,
-    onError?: (node, params) => Promise<void>
+
+    // Guard functions that can block a route from activating or deactivating.
+    canActivate?: (route: Route<*, *>) => boolean | Promise<void>,
+    canDeactivate?: (route: Route<*, *>) => boolean | Promise<void>,
+
+    // Called for each activation or query/param changes to the route.
+    // Used for resolving effects.
+    willResolve?: (route: Route<*, *>) => Promise<void>,
+
+    onTransition?: (evt: TransitionEvent) => Promise<void>
   }
   ```
 
-  For more type information, check out the [`routing/types.js`](./src/routing/types.js)
+  For more type information, check out the [`routing/types.js`](./src/model/types.js)
   file.
 
 ### Dynamic children
