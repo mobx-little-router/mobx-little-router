@@ -90,6 +90,6 @@ export default [
 
 ## Documentation
 
-- [Introduction](./docs/intro/README.md
-- [Basics](./docs/basics/README.md
-- [Advanced](./docs/advanced/README.md
+- [Introduction](./docs/intro/README.md)
+- [Basics](./docs/basics/README.md)
+- [Advanced](./docs/advanced/README.md)
