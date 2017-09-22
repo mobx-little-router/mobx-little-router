@@ -28,9 +28,7 @@ function mark(root, children) {
     [__NODE_CHILD_URLS__]: urls
   }
   walk(root, children, (parent, child) => {
-    if (child.value.matcher.type === 'any') {
-      return
-    }
+    if (child.value.matcher.type === 'any') return
     const parentPath = parent == null ? '' : parent.value.path
     const segment = normalize(parentPath === '/' ? toStub(child) : `${parentPath}${toStub(child)}`)
     urls.push(segment)
@@ -48,6 +46,7 @@ function validate(root, children) {
     })
   )
   walk(root, children, (parent, child) => {
+    if (child.value.matcher.type === 'any') return
     if (child.children.length === 0 && !seen.has(child)) {
       throw new ConfigurationError(
         `Unreachable route paths detected at "${parent.value

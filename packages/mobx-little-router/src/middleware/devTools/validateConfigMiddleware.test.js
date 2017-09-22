@@ -4,46 +4,6 @@ import { EventTypes } from '../../events/index'
 import createRouteStateTreeNode from '../../model/createRouteStateTreeNode'
 
 describe('validateConfigMiddleware', () => {
-  test('handles valid config', () => {
-    assertValidRoot({
-      path: '',
-      children: [{ path: 'a' }, { path: 'b' }, { path: 'c' }]
-    })
-
-    assertValidRoot({
-      path: '',
-      children: [{ path: '' }, { path: ':whatever' }]
-    })
-
-    assertValidRoot({
-      path: '',
-      children: [{ path: '' }, { path: 'foo/:bar' }]
-    })
-
-    assertValidRoot({
-      path: '',
-      children: [{ path: 'foo/:bar' }, { path: 'quux/:bar' }]
-    })
-  })
-
-  test('handles invalid config', () => {
-    assertInvalidRoot({
-      path: '',
-      children: [{ path: ':duplicate' }, { path: ':duplicate' }]
-    })
-
-    assertInvalidRoot({
-      path: '',
-      children: [
-        { path: ':whatever' },
-        {
-          path: '',
-          children: [{ path: ':whatever' }]
-        }
-      ]
-    })
-  })
-
   test('detects unreachable nodes', () => {
     assertInvalidRoot({
       path: '',
@@ -70,13 +30,30 @@ describe('validateConfigMiddleware', () => {
       ]
     })
 
+    assertInvalidRoot({
+      path: '',
+      children: [{
+        path: '',
+        children: [{
+          path: '',
+          children: [
+            { path: 'a/b/:c' },
+            { path: 'a/b/d' }
+          ]
+        }
+        ]
+      }
+      ]
+    })
+
     assertValidRoot({
       path: '',
       children: [
         { path: '' },
         { path: 'a/b/:c' },
         { path: 'a/:b' },
-        { path: 'a' }
+        { path: 'a' },
+        { path: '**' }
       ]
     })
   })
