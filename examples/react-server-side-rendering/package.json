@@ -1,15 +1,15 @@
 {
   "name": "react-server-side-rendering",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
     "express": "^4.15.4",
     "history": "^4.7.2",
     "mobx": "^3.2.2",
-    "mobx-little-router": "^1.0.0",
-    "mobx-little-router-react": "^1.0.0",
+    "mobx-little-router": "^1.0.1",
+    "mobx-little-router-react": "^1.0.1",
     "mobx-react": "^4.2.2",
     "node-fetch": "^1.7.2",
     "react": "^15.6.1",
