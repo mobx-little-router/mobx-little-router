@@ -10,11 +10,13 @@ export default function findPathFromRoot(
   const matchedRemaining: { [string]: string } = {}
   const matchedSegment: { [string]: string } = {}
   let _remaining = url
+  let _params = {}
 
   const path = findPath(
     (node: RouteStateTreeNode<*, *>) => {
       const { matched, params, remaining, segment } = node.value.matcher(_remaining)
-      matchedParams[node.value.key] = params
+      _params = { ..._params, ...params }
+      matchedParams[node.value.key] = _params
       matchedRemaining[node.value.key] = remaining
       matchedSegment[node.value.key] = segment
       _remaining = remaining

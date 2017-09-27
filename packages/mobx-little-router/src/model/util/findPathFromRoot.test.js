@@ -43,6 +43,25 @@ describe('findPathFromRoot', () => {
     const r2 = await findPathFromRoot(root, '/')
     expect(r2.map(x => x.node.value.path)).toEqual(['', ''])
   })
+
+  test('params chaining', async () => {
+    const root = createRouteStateTreeNode(
+      config('', 'partial', [
+        config(':a', 'partial', [
+          config(':b', 'partial', [
+            config(':c', 'full', [])
+          ])
+        ])
+      ])
+    )
+
+    const r1 = await findPathFromRoot(root, '/1/2/3')
+    expect(r1[3].params).toEqual({
+      a: '1',
+      b: '2',
+      c: '3',
+    })
+  })
 })
 
 function config(path, match, children) {
