@@ -43,4 +43,4 @@ const router = install({
 ```
 
 This is useful for sharing stores or other global objects in the system. For example, we may pass
-the same `stores` object to `mobx-react`'s `<Provider>` component.
+the same `stores` object to [`mobx-react`](https://github.com/mobxjs/mobx-react)'s `<Provider>` component.
