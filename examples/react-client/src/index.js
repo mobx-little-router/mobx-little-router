@@ -55,6 +55,11 @@ const router = install({
           return navigation.redirectTo('/login')
         }
       },
+      canDeactivate: (route, navigation) => {
+        if (window.confirm('Discard changes?')) {
+          return true
+        }
+      },
       willResolve: () => delay(1000)
     }
   ]

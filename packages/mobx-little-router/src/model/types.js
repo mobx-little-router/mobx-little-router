@@ -60,16 +60,16 @@ export type RedirectConfig<D: Object> = {
 export type LoadChildrenConfigFn<D> = () => Promise<any>
 
 export type GuardFn = (
-  node: Route<*, *>,
+  route: Route<*, *>,
   nav: Navigation
 ) => boolean | Promise<void>
 
 export type LifecycleFn = (
-  node: Route<*, *>,
+  route: Route<*, *>,
   nav: Navigation
 ) => Promise<void>
 
-export type ErrorHandler = (node: RouteStateTreeNode<*, *>, context: Object) => Promise<void>
+export type ErrorHandler = (route: RouteStateTreeNode<*, *>, context: Object) => Promise<void>
 
 export type LoadChildrenRouteStateTreeNode = () => Promise<any>
 
