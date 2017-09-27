@@ -1,6 +1,6 @@
 {
   "name": "mobx-little-router",
-  "version": "1.0.0-rc.9.1.0",
+  "version": "1.0.0",
   "description": "Implementation of an universal router that uses MobX to manage state.",
   "repository": "git@github.com:mobx-little-router/mobx-little-router.git",
   "license": "MIT",
@@ -15,8 +15,8 @@
   "main": "lib/index.js",
   "module": "es/index.js",
   "peerDependencies": {
-    "mobx": "^3.0.0",
-    "history": "^4.0.0"
+    "history": "^4.0.0",
+    "mobx": "^3.0.0"
   },
   "dependencies": {
     "qs": "^6.5.0",
