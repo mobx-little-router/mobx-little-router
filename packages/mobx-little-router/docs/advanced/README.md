@@ -1,4 +1,4 @@
 # Advanced
 
-- [Events](./events)
-- [Middleware](./middleware)
+- [Events](./events.md)
+- [Middleware](./middleware.md)
