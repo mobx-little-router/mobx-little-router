@@ -109,14 +109,15 @@ export async function processEvent(
     }
     case EventTypes.CHILDREN_CONFIG_LOADED: {
       const { navigation, partialPath, leaf, module } = evt
-      if (module.length) {
+      const children = typeof module.default === 'object' ? module.default : module
+      if (children.length) {
         return {
           type: EventTypes.CHILDREN_LOADING,
           navigation,
           partialPath,
           root: store.state.root,
           leaf,
-          children: module
+          children
         }
       } else {
         return {

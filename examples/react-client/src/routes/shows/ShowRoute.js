@@ -4,7 +4,7 @@ import { runInAction, extendObservable } from 'mobx'
 import styled from 'styled-components'
 import { Link } from 'mobx-little-router-react'
 
-import Modal from '../components/Modal'
+import Modal from '../../components/Modal'
 
 class ShowRoute extends Component {
   constructor(props) {

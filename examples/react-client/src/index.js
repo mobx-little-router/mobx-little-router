@@ -4,11 +4,21 @@ import ReactDOM from 'react-dom'
 import { createHashHistory } from 'history'
 import { install, RouterProvider } from 'mobx-little-router-react'
 import stores from './stores'
-
-import { HomeRoute, LoginRoute, ShowsRoute, AboutRoute, ContactRoute, ShowRoute, TagRoute, ActorRoute, AdminRoute } from './routes'
+import {
+  HomeRoute,
+  LoginRoute,
+  AboutRoute,
+  ContactRoute,
+  TagRoute,
+  ActorRoute,
+  AdminRoute
+} from './routes'
 import App from './App'
 
-const delay = (ms) => new Promise((resolve) => { setTimeout(resolve, ms) })
+const delay = ms =>
+  new Promise(resolve => {
+    setTimeout(resolve, ms)
+  })
 
 const router = install({
   history: createHashHistory(),
@@ -16,21 +26,14 @@ const router = install({
     stores
   }),
   routes: [
-    { path: '', match: 'full', component: HomeRoute },
-    { path: 'redirect', match: 'full', redirectTo: '/shows' },
+    { path: '', component: HomeRoute },
+    { path: 'redirect', redirectTo: '/shows' },
     { path: 'login', component: LoginRoute },
     { path: 'about', component: AboutRoute, animate: true },
     { path: 'contact', component: ContactRoute, animate: true },
     {
       path: 'shows',
-      query: ['q'],
-      component: ShowsRoute,
-      children: [{
-        path: ':id',
-        component: ShowRoute,
-        outlet: 'modal',
-        animate: true
-      }]
+      loadChildren: () => import('./routes/shows')
     },
     {
       path: 'actors/:id',
@@ -47,7 +50,6 @@ const router = install({
       component: AdminRoute,
       canActivate: (route, navigation) => {
         const { stores: { SessionStore } } = route.context
-
         if (SessionStore.isAuthenticated) {
           return true
         } else {
@@ -69,12 +71,19 @@ window.store = router.store
 window.router = router
 window.mobx = mobx
 
-router.subscribeEvent((ev) => {
+router.subscribeEvent(ev => {
   if (ev.type === 'NAVIGATION_START') {
     console.group(`%cNavigation (${ev.navigation.sequence})`, 'color: black')
   }
 
-  console.log(`%c${ev.type}`, `color:${getGroupColor(ev)}`, `(${ev.elapsed}ms)`, ev.navigation)
+  if (ev.navigation && ev.navigation.sequence > -1) {
+    console.log(
+      `%c${ev.type}`,
+      `color:${getGroupColor(ev)}`,
+      `(${ev.elapsed}ms)`,
+      ev.navigation
+    )
+  }
 
   if (ev.done) {
     console.groupEnd()

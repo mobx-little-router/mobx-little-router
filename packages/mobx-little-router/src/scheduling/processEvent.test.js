@@ -18,7 +18,9 @@ describe('processEvent', () => {
       children: [
         {
           path: '',
-          loadChildren: () => Promise.resolve([{ path: 'a' }, { path: 'b' }])
+          loadChildren: () => Promise.resolve({
+            default: [{ path: 'a' }, { path: 'b' }]
+          })
         },
         { path: '**' }
       ]
