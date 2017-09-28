@@ -6,83 +6,66 @@ import { Link } from 'mobx-little-router-react'
 
 import Modal from '../../components/Modal'
 
-class ShowRoute extends Component {
-  constructor(props) {
-    super(props)
-    
-    extendObservable(this, {
-      model: null
-    })
-  }
+const ShowRoute = ({ route: { params }, className, ShowsStore }) => {
+  let prevShow, nextShow
 
-  componentDidMount() {
-    this.fetchModel(this.props)
-  }
+  if (ShowsStore.shows && ShowsStore.shows.length > 0) {
+    const currIdx = ShowsStore.shows.findIndex(show => show.id === Number(params.id))
 
-  componentWillReceiveProps(props) {
-    this.fetchModel(props)
-  }
-
-  fetchModel = async (props) => {
-    const { params } = props.route
-
-    const res = await fetch(`https://api.tvmaze.com/shows/${params.id}?embed=cast`)
-    const data = await res.json()
-    
-    runInAction(() => {
-      this.model = data
-    })
-  }
-
-  render() {
-    const { route: { params }, className, ShowsStore: { collection } } = this.props
-
-    let prevShow, nextShow
-    
-    if (collection && collection.length > 0) {
-      const currIdx = collection.findIndex((show) => show.id === Number(params.id))
-      
-      if (currIdx > 0) {
-        prevShow = collection[currIdx - 1]
-      }
-
-      if (currIdx < collection.length - 1) {
-        nextShow = collection[currIdx + 1]
-      }
+    if (currIdx > 0) {
+      prevShow = ShowsStore.shows[currIdx - 1]
     }
 
-    return (
-      <Modal className={className} closePath="/shows">
-        {this.model &&
-          <Content>
-            {this.model.image && <CoverImage style={{ backgroundImage: `url(${this.model.image.original})` }} />}
-            <Abstract>
-              <Navigation>
-                {prevShow && <PrevNavigationLink to={`/shows/${prevShow.id}`}>Prev</PrevNavigationLink>}
-                {nextShow && <NextNavigationLink to={`/shows/${nextShow.id}`}>Next</NextNavigationLink>}
-              </Navigation>
-
-              <Network>{this.model.network && this.model.network.name}</Network>
-              <Title>{this.model.name}</Title>
-              <OfficialSite href={this.model.officialSite} target="_blank">Official site</OfficialSite>
-              <Summary dangerouslySetInnerHTML={{ __html: this.model.summary }} />
-              <Tags>{this.model.genres && this.model.genres.map((genre, idx) => <Link key={idx} to={`/tags/${genre}`}>{genre}</Link>)}</Tags>
-            
-              <Cast>
-                <h2>Cast</h2>
-                {this.model._embedded.cast.map((member, idx) => 
-                  <CastMember key={idx}>
-                    <Character>{member.character.name}</Character>
-                    <Actor to={`/actors/${member.person.id}`}>{member.person.name}</Actor>
-                  </CastMember>
-                )}
-              </Cast>
-            </Abstract>
-          </Content>
-        }
-      </Modal>
-    )
+    if (currIdx < ShowsStore.shows.length - 1) {
+      nextShow = ShowsStore.shows[currIdx + 1]
+    }
   }
+  const model = ShowsStore.getDetails(params.id)
+
+  return (
+    <Modal className={className} closePath="/shows">
+      {model &&
+        <Content>
+          {model.image &&
+            <CoverImage style={{ backgroundImage: `url(${model.image.original})` }} />}
+          <Abstract>
+            <Navigation>
+              {prevShow &&
+                <PrevNavigationLink to={`/shows/${prevShow.id}`}>
+                  Prev
+                </PrevNavigationLink>}
+              {nextShow &&
+                <NextNavigationLink to={`/shows/${nextShow.id}`}>
+                  Next
+                </NextNavigationLink>}
+            </Navigation>
+
+            <Network>{model.network && model.network.name}</Network>
+            <Title>{model.name}</Title>
+            <OfficialSite href={model.officialSite} target="_blank">
+              Official site
+            </OfficialSite>
+            <Summary dangerouslySetInnerHTML={{ __html: model.summary }} />
+            <Tags>
+              {model.genres &&
+                model.genres.map((genre, idx) =>
+                  <Link key={idx} to={`/tags/${genre}`}>{genre}</Link>
+                )}
+            </Tags>
+
+            <Cast>
+              <h2>Cast</h2>
+              {model._embedded.cast.map((member, idx) =>
+                <CastMember key={idx}>
+                  <Character>{member.character.name}</Character>
+                  <Actor to={`/actors/${member.person.id}`}>{member.person.name}</Actor>
+                </CastMember>
+              )}
+            </Cast>
+          </Abstract>
+        </Content>}
+    </Modal>
+  )
 }
 
 const Content = styled.div`

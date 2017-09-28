@@ -2,8 +2,9 @@ import React from 'react'
 import * as mobx from 'mobx'
 import ReactDOM from 'react-dom'
 import { createHashHistory } from 'history'
+import { Provider } from 'mobx-react'
 import { install, RouterProvider } from 'mobx-little-router-react'
-import stores from './stores'
+import createStores from './stores'
 import {
   HomeRoute,
   LoginRoute,
@@ -19,6 +20,8 @@ const delay = ms =>
   new Promise(resolve => {
     setTimeout(resolve, ms)
   })
+
+const stores = createStores()
 
 const router = install({
   history: createHashHistory(),
@@ -108,7 +111,9 @@ function getGroupColor(ev) {
 router.start(() => {
   ReactDOM.render(
     <RouterProvider router={router}>
-      <App />
+      <Provider {...stores}>
+        <App />
+      </Provider>
     </RouterProvider>,
     document.getElementById('root')
   )

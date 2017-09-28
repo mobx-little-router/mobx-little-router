@@ -1,57 +1,33 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { inject, observer } from 'mobx-react'
-import { runInAction, extendObservable } from 'mobx'
-import { Link } from 'mobx-little-router-react'
+import { extendObservable, runInAction } from 'mobx'
+import { Link, withRouter } from 'mobx-little-router-react'
 import styled from 'styled-components'
 
-class ShowsRoute extends Component {
-  constructor(props) {
-    super(props)
-
-    extendObservable(this, {
-      query: ''
-    })
-  }
-
-  componentDidMount() {
-    const { query } = this.props.route
-    this.onSearch(query.q || 'gundam')
-  }
-
-  onSearch = async (query) => {
-    const { ShowsStore } = this.props
-    const res = await fetch(`https://api.tvmaze.com/search/shows?q=${query}`)
-    const data = await res.json()
-
-    runInAction(() => {
-      this.query = query
-      ShowsStore.collection = data.map(({ show }) => show)
-    })
-  }
-
-  render() {
-    const { ShowsStore, className } = this.props
-
-    return (
-      <Container className={className}>
-        <SearchHeader>
-          <SearchInput onChange={ev => this.onSearch(ev.target.value)} value={this.query} />
-        </SearchHeader>
-        <SearchResults>
-          {ShowsStore.collection.map(show =>
-            <Show key={show.id}>
-              <CoverImage to={`/shows/${show.id}`} style={{backgroundImage: `url(${show.image && show.image.medium})` }}/>
-              <Abstract>
-                <Network>{show.network && show.network.name}</Network>
-                <ShowName to={`/shows/${show.id}`}>{show.name}</ShowName>
-              </Abstract>
-            </Show>
-          )}
-        </SearchResults>
-      </Container>
-    )
-  }
-}
+const ShowsRoute = ({ router, route, ShowsStore, className }) =>
+  <Container className={className}>
+    <SearchHeader>
+      <SearchInput
+        onChange={ev =>
+          router.replace(`${router.store.location.pathname}?q=${ev.target.value}`)}
+        value={route.query.q}
+      />
+    </SearchHeader>
+    <SearchResults>
+      {ShowsStore.shows.map(show =>
+        <Show key={show.id}>
+          <CoverImage
+            to={`/shows/${show.id}`}
+            style={{ backgroundImage: `url(${show.image && show.image.medium})` }}
+          />
+          <Abstract>
+            <Network>{show.network && show.network.name}</Network>
+            <ShowName to={`/shows/${show.id}`}>{show.name}</ShowName>
+          </Abstract>
+        </Show>
+      )}
+    </SearchResults>
+  </Container>
 
 const Container = styled.div`
   margin: 0 auto;
@@ -124,6 +100,7 @@ const CoverImage = styled(Link)`
 `
 
 const SearchInput = styled.input.attrs({
+  autoFocus: true,
   type: 'text',
   placeholder: 'Search shows...'
 })`
@@ -137,4 +114,4 @@ const SearchInput = styled.input.attrs({
   padding: 0 9px;
 `
 
-export default inject('ShowsStore')(observer(ShowsRoute))
+export default inject('ShowsStore')(withRouter(observer(ShowsRoute)))

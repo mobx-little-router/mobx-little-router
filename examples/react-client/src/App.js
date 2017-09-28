@@ -1,23 +1,20 @@
 import React, { Component } from 'react'
-import { Provider, observer } from 'mobx-react'
+import { observer } from 'mobx-react'
 import { withRouter, Outlet } from 'mobx-little-router-react'
 import styled, { injectGlobal } from 'styled-components'
 import Header from './components/Header'
-import stores from './stores'
 
 class App extends Component {
   render() {
     return (
-      <Provider {...stores}>
-        <div>
-          <Header />
-          <Viewport>
-            <p>pathname: <b>{JSON.stringify(this.props.router.store.location.pathname)}</b></p>
-            <Outlet />
-            <Outlet name="modal" />
-          </Viewport>
-        </div>
-      </Provider>
+      <div>
+        <Header />
+        <Viewport>
+          <p>pathname: <b>{JSON.stringify(this.props.router.store.location.pathname)}</b></p>
+          <Outlet key="main"/>
+          <Outlet name="modal" />
+        </Viewport>
+      </div>
     )
   }
 }

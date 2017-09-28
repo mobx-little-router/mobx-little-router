@@ -1,7 +1,11 @@
-import { observable } from 'mobx'
+import { extendObservable } from 'mobx'
 
-const SessionStore = observable({
-  isAuthenticated: false
-})
+class SessionStore {
+  constructor() {
+    extendObservable(this, {
+      isAuthenticated: false
+    })
+  }
+}
 
 export default SessionStore
