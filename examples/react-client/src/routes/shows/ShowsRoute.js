@@ -1,6 +1,5 @@
 import React from 'react'
 import { inject, observer } from 'mobx-react'
-import { extendObservable, runInAction } from 'mobx'
 import { Link, withRouter } from 'mobx-little-router-react'
 import styled from 'styled-components'
 
@@ -10,19 +9,19 @@ const ShowsRoute = ({ router, route, ShowsStore, className }) =>
       <SearchInput
         onChange={ev =>
           router.replace(`${router.store.location.pathname}?q=${ev.target.value}`)}
-        value={route.query.q}
+        defaultValue={route.query.q}
       />
     </SearchHeader>
     <SearchResults>
       {ShowsStore.shows.map(show =>
         <Show key={show.id}>
           <CoverImage
-            to={`/shows/${show.id}`}
+            to={`/shows/${show.id}?q=${route.query.q}`}
             style={{ backgroundImage: `url(${show.image && show.image.medium})` }}
           />
           <Abstract>
             <Network>{show.network && show.network.name}</Network>
-            <ShowName to={`/shows/${show.id}`}>{show.name}</ShowName>
+            <ShowName to={`/shows/${show.id}?q=${route.query.q}`}>{show.name}</ShowName>
           </Abstract>
         </Show>
       )}

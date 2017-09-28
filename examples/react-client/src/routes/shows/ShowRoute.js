@@ -1,12 +1,11 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { inject, observer } from 'mobx-react'
-import { runInAction, extendObservable } from 'mobx'
 import styled from 'styled-components'
 import { Link } from 'mobx-little-router-react'
 
 import Modal from '../../components/Modal'
 
-const ShowRoute = ({ route: { params }, className, ShowsStore }) => {
+const ShowRoute = ({ route: { params, query }, className, ShowsStore }) => {
   let prevShow, nextShow
 
   if (ShowsStore.shows && ShowsStore.shows.length > 0) {
@@ -23,7 +22,7 @@ const ShowRoute = ({ route: { params }, className, ShowsStore }) => {
   const model = ShowsStore.getDetails(params.id)
 
   return (
-    <Modal className={className} closePath="/shows">
+    <Modal className={className} closePath={`/shows?q=${query.q}`}>
       {model &&
         <Content>
           {model.image &&
@@ -31,11 +30,11 @@ const ShowRoute = ({ route: { params }, className, ShowsStore }) => {
           <Abstract>
             <Navigation>
               {prevShow &&
-                <PrevNavigationLink to={`/shows/${prevShow.id}`}>
+                <PrevNavigationLink to={`/shows/${prevShow.id}?q=${query.q}`}>
                   Prev
                 </PrevNavigationLink>}
               {nextShow &&
-                <NextNavigationLink to={`/shows/${nextShow.id}`}>
+                <NextNavigationLink to={`/shows/${nextShow.id}?q=${query.q}`}>
                   Next
                 </NextNavigationLink>}
             </Navigation>

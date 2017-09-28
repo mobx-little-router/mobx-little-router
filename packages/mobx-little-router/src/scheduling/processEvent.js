@@ -21,7 +21,12 @@ export default async function maybeProcessEvent(
   store: RouterStore
 ): Promise<Event> {
   try {
-    return (await processEvent(evt, store)) || { type: EventTypes.EMPTY, navigation: null }
+    const next = await processEvent(evt, store)
+    if (next && next.navigation && next.navigation.cancelled) {
+      return { type: EventTypes.EMPTY, navigation: null }
+    } else {
+      return next || { type: EventTypes.EMPTY, navigation: null }
+    }
   } catch (err) {
     return {
       type: EventTypes.NAVIGATION_ERROR,
@@ -229,16 +234,12 @@ export async function processEvent(
         ])
       }
 
-      if (!navigation.cancelled) {
-        return {
-          type: EventTypes.NAVIGATION_TRANSITION_END,
-          navigation: evt.navigation,
-          routes,
-          entering,
-          exiting
-        }
-      } else {
-        return null
+      return {
+        type: EventTypes.NAVIGATION_TRANSITION_END,
+        navigation: evt.navigation,
+        routes,
+        entering,
+        exiting
       }
     }
     case EventTypes.NAVIGATION_TRANSITION_END: {
