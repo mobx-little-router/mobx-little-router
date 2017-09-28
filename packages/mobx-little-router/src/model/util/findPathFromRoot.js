@@ -4,13 +4,14 @@ import type { PathElement, Params, RouteStateTreeNode } from '../types'
 
 export default function findPathFromRoot(
   node: RouteStateTreeNode<*, *>,
-  url: string
+  url: string,
+  initialParams: ?Object
 ): PathElement<*, *>[] {
   const matchedParams: { [string]: Params | null } = {}
   const matchedRemaining: { [string]: string } = {}
   const matchedSegment: { [string]: string } = {}
   let _remaining = url
-  let _params = {}
+  let _params = initialParams || {}
 
   const path = findPath(
     (node: RouteStateTreeNode<*, *>) => {

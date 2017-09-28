@@ -16,11 +16,20 @@ describe('processEvent', () => {
     root = createRouteStateTreeNode({
       path: '',
       children: [
+        // This route has two levels of dynamic children. We'll be testing that params chain properly.
+        {
+          path: 'thing/:id',
+          loadChildren: () => Promise.resolve([{
+            path: '',
+            loadChildren: () => Promise.resolve([{ path: 'edit' }])
+          }])
+        },
         {
           path: '',
-          loadChildren: () => Promise.resolve({
-            default: [{ path: 'a' }, { path: 'b' }]
-          })
+          loadChildren: () =>
+            Promise.resolve({
+              default: [{ path: 'a' }, { path: 'b' }]
+            })
         },
         { path: '**' }
       ]
@@ -50,6 +59,47 @@ describe('processEvent', () => {
         expect.objectContaining({ type: EventTypes.NAVIGATION_END })
       ])
     )
+  })
+
+  test('retry maintains params chain', async () => {
+    const events = await takeWhileIncomplete(
+      {
+        type: EventTypes.NAVIGATION_START,
+        navigation: new Navigation({
+          type: 'PUSH',
+          to: { pathname: '/thing/123/edit' }
+        })
+      },
+      store
+    )
+
+    expect(events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: EventTypes.NAVIGATION_RESULT_MATCHED }),
+        expect.objectContaining({ type: EventTypes.CHILDREN_CONFIG_REQUESTED }),
+        expect.objectContaining({ type: EventTypes.CHILDREN_CONFIG_LOADED }),
+        expect.objectContaining({ type: EventTypes.CHILDREN_LOADING }),
+        expect.objectContaining({ type: EventTypes.NAVIGATION_RETRY }),
+        expect.objectContaining({ type: EventTypes.NAVIGATION_ACTIVATED }),
+        expect.objectContaining({ type: EventTypes.NAVIGATION_END })
+      ])
+    )
+
+    // The :id param is chained.
+    expect(store.routes.slice()).toEqual([
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({
+        params: {
+          id: '123'
+        }
+      }),
+      expect.objectContaining({
+        params: {
+          id: '123'
+        }
+      })
+    ])
   })
 
   test('navigation results in catch-all when no match found', async () => {
@@ -109,12 +159,15 @@ describe('processEvent', () => {
       store.prevRoutes.replace([createRoute(store.state.root, '/', {}, {})])
     })
 
-    await processEvent({
-      type: EventTypes.NAVIGATION_CANCELLED,
-      done: true,
-      navigation: null,
-      nextNavigation: null
-    }, store)
+    await processEvent(
+      {
+        type: EventTypes.NAVIGATION_CANCELLED,
+        done: true,
+        navigation: null,
+        nextNavigation: null
+      },
+      store
+    )
 
     expect(store.prevRoutes.length).toEqual(0)
   })
@@ -124,15 +177,18 @@ describe('processEvent', () => {
       store.prevRoutes.replace([createRoute(store.state.root, '/', {}, {})])
     })
 
-    await processEvent({
-      type: EventTypes.NAVIGATION_END,
-      done: true,
-      navigation: new Navigation({
-        type: 'POP',
-        to: null,
-        from: null
-      })
-    }, store)
+    await processEvent(
+      {
+        type: EventTypes.NAVIGATION_END,
+        done: true,
+        navigation: new Navigation({
+          type: 'POP',
+          to: null,
+          from: null
+        })
+      },
+      store
+    )
 
     expect(store.prevRoutes.length).toEqual(0)
   })
@@ -141,15 +197,19 @@ describe('processEvent', () => {
     const x: any = null
 
     let result = await processEvent(x, x)
-    expect(result).toEqual(expect.objectContaining({
-      type: EventTypes.NAVIGATION_ERROR
-    }))
+    expect(result).toEqual(
+      expect.objectContaining({
+        type: EventTypes.NAVIGATION_ERROR
+      })
+    )
 
-    const y: any ={ type: EventTypes.NAVIGATION_ACTIVATED }
+    const y: any = { type: EventTypes.NAVIGATION_ACTIVATED }
     result = await processEvent(y, x)
-    expect(result).toEqual(expect.objectContaining({
-      type: EventTypes.NAVIGATION_ERROR
-    }))
+    expect(result).toEqual(
+      expect.objectContaining({
+        type: EventTypes.NAVIGATION_ERROR
+      })
+    )
   })
 })
 
