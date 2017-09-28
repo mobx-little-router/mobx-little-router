@@ -186,11 +186,21 @@ export async function processEvent(
           routes
         }
       } catch (err) {
-        return {
-          type: EventTypes.NAVIGATION_ERROR,
-          navigation,
-          error: err,
-          done: true
+        if (err instanceof TransitionFailure) {
+          // Navigation error may be thrown by a guard or lifecycle hook.
+          return {
+            type: EventTypes.NAVIGATION_CANCELLED,
+            navigation: evt.navigation,
+            nextNavigation: err.navigation,
+            done: true
+          }
+        } else {
+          return {
+            type: EventTypes.NAVIGATION_ERROR,
+            navigation,
+            error: err,
+            done: true
+          }
         }
       }
     }
@@ -239,18 +249,7 @@ export async function processEvent(
       }
     }
     case EventTypes.NAVIGATION_ERROR: {
-      const { error } = evt
-      if (error instanceof TransitionFailure) {
-        // Navigation error may be thrown by a guard or lifecycle hook.
-        return {
-          type: EventTypes.NAVIGATION_CANCELLED,
-          navigation: evt.navigation,
-          nextNavigation: error.navigation,
-          done: true
-        }
-      } else {
-        return null
-      }
+      return null
     }
     case EventTypes.NAVIGATION_CANCELLED: {
       if (evt.type === EventTypes.NAVIGATION_CANCELLED) {
