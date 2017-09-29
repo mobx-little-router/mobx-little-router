@@ -68,7 +68,10 @@ class Outlet extends Component {
     const to = this.findRoute(currRoutes)
     const from = this.findRoute(prevRoutes)
 
-    const isTransitioning = !!prevRoutes.length && !areRoutesEqual(to, from)
+    const isTransitioning =
+      prevRoutes.length > 0 &&
+      !areRoutesEqual(to, from) &&
+      (canTransition(to) || canTransition(from))
 
     const dataProps = {
       'data-depth': idx,
@@ -77,12 +80,19 @@ class Outlet extends Component {
 
     return (
       <div className={`outlet`} {...dataProps}>
-        <TransitionGroup to={to} from={from} isTransitioning={isTransitioning} additionalProps={rest} />
+        <TransitionGroup
+          to={to}
+          from={from}
+          isTransitioning={isTransitioning}
+          additionalProps={rest}
+        />
       </div>
     )
   }
 }
 
-const filterRoutes = (routes) => routes.filter(route => route.data.component)
+const filterRoutes = routes => routes.filter(route => route.data.component)
+
+const canTransition = node => (node ? typeof node.onTransition === 'function' : false)
 
 export default withRouter(observer(Outlet))

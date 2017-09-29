@@ -56,6 +56,4 @@ export { default as devTools } from './middleware/devTools'
 
 export { default as areRoutesEqual } from './model/util/areRoutesEqual'
 
-export { default as compose } from './middleware/compose'
-export { default as pipe } from './middleware/pipe'
 export type { IMiddleware } from './middleware/Middleware'

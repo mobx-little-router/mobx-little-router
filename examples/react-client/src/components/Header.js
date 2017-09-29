@@ -9,7 +9,7 @@ export default class Header extends Component {
         <ul>
           <li className="title">Basic Example</li>
           <li><Link to="/" activeClassName="active" exact={true}>Home</Link></li>
-          <li><Link to="/shows" activeClassName="active">Shows</Link></li>
+          <li><Link to="/shows?q=gundam" activeClassName="active">Shows</Link></li>
           <li><Link to="/about" activeClassName="active">About</Link></li>
           <li><Link to="/contact" activeClassName="active">Contact Us</Link></li>
           <li><Link to="/admin" activeClassName="active">Admin</Link></li>

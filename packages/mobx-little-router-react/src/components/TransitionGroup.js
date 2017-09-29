@@ -5,8 +5,6 @@ import { findDOMNode } from 'react-dom'
 import { extendObservable, action, runInAction } from 'mobx'
 import { observer } from 'mobx-react'
 
-const transitioningClassName = 'transitioning'
-
 const classNames = {
   transitioning: 'transitioning',
   enter: 'enter',
