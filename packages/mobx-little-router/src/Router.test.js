@@ -30,10 +30,12 @@ describe('Router', () => {
         abortNavigation('PUSH', { pathname: '/' }, { pathname: '/a' })
       )
       await delay(0)
+      await delay(0)
 
       expect(router.store.location.pathname).toEqual('/a/')
 
       router.scheduler.dispatch(abortNavigation('GO_BACK', { pathname: '/' }, null))
+      await delay(0)
       await delay(0)
 
       expect(router.store.location.pathname).toEqual('/')
@@ -41,6 +43,7 @@ describe('Router', () => {
       router.scheduler.dispatch(
         abortNavigation('REPLACE', { pathname: '/' }, { pathname: '/b' })
       )
+      await delay(0)
       await delay(0)
 
       expect(router.store.location.pathname).toEqual('/b/')
