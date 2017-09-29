@@ -120,10 +120,9 @@ class TransitionGroup extends Component {
     }
 
     if (from && isTransitioning) {
-      if (to && to.node.value.key !== from.node.value.key) {
-        routes.push({ route: from, className: fromClassName })
-      }
+      routes.push({ route: from, className: fromClassName })
     }
+
     if (to) {
       routes.push({ route: to, className: toClassName })
     }
@@ -132,7 +131,7 @@ class TransitionGroup extends Component {
       <div className="transition-group">
         {routes.map(({ route, className }) =>
           createElement(route.data.component, {
-            key: route.node.value.key,
+            key: route.key,
             route,
             className,
             ...additionalProps,

@@ -147,6 +147,7 @@ describe('RouterStore', () => {
     const currRoutes: Route<*, *>[] = [
       {
         key: `${a.value.key}/a/1`,
+        value: `${a.value.key}/a/1?`,
         node: a,
         context: {},
         data: {},
@@ -157,6 +158,7 @@ describe('RouterStore', () => {
       },
       {
         key: `${b.value.key}/b/2`,
+        value: `${b.value.key}/b/2?`,
         node: b,
         context: {},
         data: {},
@@ -174,9 +176,6 @@ describe('RouterStore', () => {
     store.routes.replace(currRoutes)
 
     const nextRoutes = store.getNextRoutes(nextPath, {})
-
-    expect(dataSpy).toHaveBeenCalledTimes(2)
-    expect(dataSpy.mock.calls.map(x => x[0])).toEqual(['a', 'c']) // 'b' is not called since it did not change.
 
     expect(nextRoutes.length).toEqual(3)
     expect(nextRoutes[0]).not.toBe(store.routes[0])

@@ -29,9 +29,7 @@ class RouterStore {
   routes: IObservableArray<Route<*, *>>
   prevRoutes: IObservableArray<Route<*, *>>
 
-  constructor(
-    root: RouteStateTreeNode<*, *>
-  ) {
+  constructor(root: RouteStateTreeNode<*, *>) {
     this.state = new RouterStateTree(root)
     extendObservable(this, {
       location: {},
@@ -56,15 +54,12 @@ class RouterStore {
   // Returns a list of the next routes from the matched path.
   // If the route is not currently active or has changed, then it will be created from factory function.
   getNextRoutes(path: PathElement<*, *>[], location: Location): Route<*, *>[] {
-    const queryParams = getQueryParams(location)
-    
+    const query = getQueryParams(location)
+
     return path.map(element => {
-      const matchedQueryParams = this.getMatchedQueryParams(element.node, queryParams)
-
-      const existingRoute = this.routes.find(
-        x => x.key === createRouteKey(element.node, element.segment, matchedQueryParams)
-      )
-
+      const matchedQueryParams = this.getMatchedQueryParams(element.node, query)
+      const newRoute = createRoute(element.node, element.segment, element.params, query)
+      const existingRoute = this.routes.find(x => x.value === newRoute.value)
       return existingRoute || observable(createRoute(element.node, element.segment, element.params, matchedQueryParams))
     })
   }
@@ -124,9 +119,7 @@ class RouterStore {
 }
 
 function getQueryParams(location: Location): Query {
-  return location.search != null
-    ? QueryString.parse(location.search.substr(1))
-    : {}
+  return location.search != null ? QueryString.parse(location.search.substr(1)) : {}
 }
 
 export default RouterStore

@@ -103,6 +103,7 @@ export type PathElement<C, D> = {
 
 export type Route<C,D> = {
   key: string,
+  value: string,
   node: RouteStateTreeNode<C, D>,
   data: D,
   context: C,
