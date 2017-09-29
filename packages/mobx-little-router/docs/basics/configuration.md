@@ -121,7 +121,8 @@ const ROUTES = [
     willResolve: async (route) => {
       const { todoStore } = route.context.stores
       const todo = await fetch(`/api/todos/${route.params.id}`)
-      todoStore.add(todo)
+      // Returns a setter function that will only be called if this route activated.
+      return () => todoStore.add(todo)
     }
   },
   {
@@ -130,9 +131,14 @@ const ROUTES = [
     willResolve: async (route) => {
       const { todoStore } = route.context.stores
       const todos = await fetch(`/api/todos/?q=${q}`)
-      todoStore.load(todos)
+      // Returns a setter function that will only be called if this route activated.
+      return () => todoStore.load(todos)
     }
   }
 ]
 ```
+
+**Note:** The `willActivate` function can optionally resolve a *setter* function (`() => void`). This is useful
+if you want to set some values only if the route activates. Using setters solves issues such as network requests
+coming back out of order.
 
