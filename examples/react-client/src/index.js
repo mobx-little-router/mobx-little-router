@@ -84,7 +84,7 @@ router.subscribeEvent(ev => {
       `%c${ev.type}`,
       `color:${getGroupColor(ev)}`,
       `(${ev.elapsed}ms)`,
-      ev.navigation
+      ev
     )
   }
 

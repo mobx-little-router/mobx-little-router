@@ -61,8 +61,6 @@ export default class Scheduler {
   })
 
   schedule(next: NavigationDescriptor) {
-    if (!hasChanged(this.store.location, next.to)) return
-
     // If there is an existing navigation in transition, then cancel it.
     if (
       this.currentNavigation &&
@@ -85,9 +83,4 @@ export default class Scheduler {
       })
     })
   }
-}
-
-function hasChanged(curr, next) {
-  // If location path and query has not changed, skip it.
-  return !curr || curr.pathname !== next.pathname || curr.search !== next.search
 }

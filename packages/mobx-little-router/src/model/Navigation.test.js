@@ -15,8 +15,7 @@ describe('Navigation', () => {
       sequence: 1,
       from: { pathname: '/' },
       to: { pathname: '/login' },
-      shouldTransition: true,
-      cancelled: false
+      shouldTransition: true
     })
 
     expect(a.prev()).toEqual({
@@ -24,8 +23,7 @@ describe('Navigation', () => {
       sequence: 1,
       from: { pathname: '/' },
       to: null,
-      shouldTransition: true,
-      cancelled: false
+      shouldTransition: true
     })
 
     // Sequence increments after each call.
@@ -53,8 +51,7 @@ describe('Navigation', () => {
       from: { pathname: '/' },
       to: { pathname: '/login' },
       sequence: 1,
-      shouldTransition: true,
-      cancelled: false
+      shouldTransition: true
     })
 
     expect(a.goBack()).rejects.toEqual({
@@ -62,8 +59,7 @@ describe('Navigation', () => {
       from: { pathname: '/' },
       to: null,
       sequence: 1,
-      shouldTransition: true,
-      cancelled: false
+      shouldTransition: true
     })
   })
 })

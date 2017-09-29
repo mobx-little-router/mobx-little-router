@@ -22,8 +22,7 @@ export type NavigationDescriptor = {
   sequence?: number,
   to: Location,
   from?: Location,
-  shouldTransition?: boolean,
-  cancelled?: boolean
+  shouldTransition?: boolean
 }
 
 export default class Navigation {
@@ -32,7 +31,6 @@ export default class Navigation {
   from: null | Location
   sequence: number
   shouldTransition: boolean
-  cancelled: boolean
 
   static EMPTY = new Navigation({
     type: NavigationTypes.POP,
@@ -45,7 +43,6 @@ export default class Navigation {
     this.to = x.to || null
     this.from = x.from || null
     this.shouldTransition = typeof x.shouldTransition === 'boolean' ? x.shouldTransition : this.sequence > 0
-    this.cancelled = false
   }
 
   next(next: NavigationDescriptor) {
@@ -75,10 +72,6 @@ export default class Navigation {
 
   goBack() {
     return Promise.reject(this.prev())
-  }
-
-  cancel() {
-    this.cancelled = true
   }
 }
 

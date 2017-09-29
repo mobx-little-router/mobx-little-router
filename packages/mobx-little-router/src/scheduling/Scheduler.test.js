@@ -40,7 +40,7 @@ describe('Scheduler', () => {
 
       expectEventTimes(EventTypes.NAVIGATION_START, 4, events)
       expectEventTimes(EventTypes.NAVIGATION_CANCELLED, 2, events)
-      expectEventTimes(EventTypes.NAVIGATION_END, 2, events)
+      expectEventTimes(EventTypes.NAVIGATION_END, 1, events)
     })
   })
 

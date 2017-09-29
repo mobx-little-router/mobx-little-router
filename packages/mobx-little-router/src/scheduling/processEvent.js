@@ -1,10 +1,10 @@
 // @flow
-import { runInAction } from 'mobx'
+import { action } from 'mobx'
 import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
 import type RouterStore from '../model/RouterStore'
 import { NoMatch, TransitionFailure } from '../errors'
 import Navigation from '../model/Navigation'
-import type { Route } from '../model/types'
+import type { Route, Setter } from '../model/types'
 import differenceWith from '../util/differenceWith'
 import isUrlFullyMatched from './util/isUrlFullyMatched'
 import areRoutesEqual from '../model/util/areRoutesEqual'
@@ -22,10 +22,18 @@ export default async function maybeProcessEvent(
 ): Promise<Event> {
   try {
     const next = await processEvent(evt, store)
-    if (next && next.navigation && next.navigation.cancelled) {
-      return { type: EventTypes.EMPTY, navigation: null }
+    if (next) {
+      if (store.isCancelled(next.navigation)) {
+        return { type: EventTypes.EMPTY, navigation: null }
+      } else {
+        // Any setters returned after willResolve is called here.
+        if (typeof next.setter === 'function') {
+          next.setter()
+        }
+        return next
+      }
     } else {
-      return next || { type: EventTypes.EMPTY, navigation: null }
+      return { type: EventTypes.EMPTY, navigation: null }
     }
   } catch (err) {
     return {
@@ -135,23 +143,23 @@ export async function processEvent(
       }
     }
     case EventTypes.CHILDREN_LOADING: {
-      const {navigation, partialPath, leaf, children} = evt
-      runInAction(() => {
-        leaf.node.children.replace(
-          children.map(x => createRouteStateTreeNode(x, leaf.node.value.getContext))
-        )
-        leaf.node.value.loadChildren = null
-      })
+      const { navigation, partialPath, leaf, children } = evt
       return {
         type: EventTypes.CHILDREN_LOADED,
         navigation,
         partialPath,
         leaf,
-        root: store.state.root
+        root: store.state.root,
+        setter: action(() => {
+          leaf.node.children.replace(
+            children.map(x => createRouteStateTreeNode(x, leaf.node.value.getContext))
+          )
+          leaf.node.value.loadChildren = null
+        })
       }
     }
     case EventTypes.CHILDREN_LOADED: {
-      const {navigation, partialPath, leaf } = evt
+      const { navigation, partialPath, leaf } = evt
       if (navigation && partialPath) {
         return {
           type: EventTypes.NAVIGATION_RETRY,
@@ -181,14 +189,18 @@ export async function processEvent(
         await assertTransitionOk('willDeactivate', deactivating, navigation)
         await assertTransitionOk('willActivate', activating, navigation)
 
-        await assertTransitionOk('willResolve', entering, navigation)
-
+        const setter: void | Function = await assertTransitionOk(
+          'willResolve',
+          entering,
+          navigation
+        )
         return {
           type: EventTypes.NAVIGATION_ACTIVATED,
           navigation,
           entering,
           exiting,
-          routes
+          routes,
+          setter
         }
       } catch (err) {
         if (err instanceof TransitionFailure) {
@@ -211,17 +223,16 @@ export async function processEvent(
     }
     case EventTypes.NAVIGATION_ACTIVATED: {
       const { navigation, routes, exiting, entering } = evt
-      runInAction(() => {
-        store.updateRoutes(routes)
-        store.updateLocation(navigation.to)
-      })
-
       return {
         type: EventTypes.NAVIGATION_TRANSITION_START,
         navigation: evt.navigation,
         routes,
         entering,
-        exiting
+        exiting,
+        setter: action(() => {
+          store.updateRoutes(routes)
+          store.updateLocation(navigation.to)
+        })
       }
     }
     case EventTypes.NAVIGATION_TRANSITION_START: {
@@ -252,17 +263,24 @@ export async function processEvent(
     case EventTypes.NAVIGATION_ERROR: {
       return null
     }
-    case EventTypes.NAVIGATION_CANCELLED: {
-      if (evt.type === EventTypes.NAVIGATION_CANCELLED) {
-        const { navigation } = evt
-        navigation && navigation.cancel()
+    case EventTypes.NAVIGATION_CANCELLED:{
+      return {
+        type: EventTypes.EMPTY,
+        navigation: evt.navigation,
+        setter: () => {
+          store.cancel(evt.navigation)
+          store.clearPrevRoutes()
+        }
       }
-      store.clearPrevRoutes()
-      return null
     }
     case EventTypes.NAVIGATION_END: {
-      store.clearPrevRoutes()
-      return null
+      return {
+        type: EventTypes.EMPTY,
+        navigation: evt.navigation,
+        setter: () => {
+          store.clearPrevRoutes()
+        }
+      }
     }
     default:
       return evt
@@ -314,7 +332,8 @@ async function assertTransitionOk(
     | 'willResolve',
   routes: Route<*, *>[],
   navigation: Navigation
-): Promise<void> {
+): Promise<void | Setter> {
+  const setters = []
   for (const route of routes) {
     const { value } = route.node
     const result = typeof value[type] === 'function'
@@ -326,12 +345,16 @@ async function assertTransitionOk(
       if (false === result) {
         await navigation.goBack()
       } else if (typeof result.then === 'function') {
-        await result
+        const x = await result
+        if (typeof x === 'function') {
+          setters.push(x)
+        }
       }
     } catch (e) {
       throw new TransitionFailure(route, e instanceof Navigation ? e : null)
     }
   }
+  return () => setters.forEach(f => f())
 }
 
 function findCatchAllPath(matchedPath, leaf) {

@@ -1,18 +1,25 @@
 import ShowsRoute from './ShowsRoute'
 import ShowRoute from './ShowRoute'
 
+const delay = ms => new Promise(res => setTimeout(res, ms))
+
 export default [
   {
     path: '',
     query: ['q'],
     willResolve: async route => {
       const { ShowsStore } = route.context.stores
+
+      // Faking some network order and latency issues.
+      await delay(Math.random() * 900 + 100)
       if (!route.query.q) {
-        ShowsStore.load([])
+        return () => ShowsStore.load([])
       } else {
         const res = await fetch(`https://api.tvmaze.com/search/shows?q=${route.query.q}`)
         const data = await res.json()
-        ShowsStore.load(data.map(({ show }) => show))
+        return () => {
+          ShowsStore.load(data.map(({ show }) => show))
+        }
       }
     },
     component: ShowsRoute,

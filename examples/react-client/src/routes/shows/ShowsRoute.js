@@ -7,8 +7,11 @@ const ShowsRoute = ({ router, route, ShowsStore, className }) =>
   <Container className={className}>
     <SearchHeader>
       <SearchInput
-        onChange={ev =>
-          router.replace(`${router.store.location.pathname}?q=${encodeURIComponent(ev.target.value)}`)}
+        onChange={ev => {
+          router.replace(
+            `${router.store.location.pathname}?q=${encodeURIComponent(ev.target.value)}`
+          )
+        }}
         defaultValue={route.query.q}
       />
     </SearchHeader>

@@ -1,6 +1,6 @@
 // @flow
 import Navigation from '../model/Navigation'
-import type { PathElement, Route, RouteStateTreeNode } from '../model/types'
+import type { PathElement, Route, RouteStateTreeNode, Setter } from '../model/types'
 
 /*
   * Sequence of events that occur from navigation start to end.
@@ -45,6 +45,7 @@ export type Event =
 export type Empty = {
   type: 'EMPTY',
   navigation: null | Navigation,
+  setter?: Setter,
   done?: false,
   [other: string]: any
 }
@@ -80,6 +81,7 @@ export type ChildrenConfigLoaded = {
   partialPath: PathElement<*, *>[],
   leaf: PathElement<*, *>,
   module: any,
+  setter?: ?Setter,
   done?: false,
   [other: string]: any
 }
@@ -100,6 +102,7 @@ export type ChildrenLoaded = {
   partialPath: null | PathElement<*, *>[],
   root: RouteStateTreeNode<*, *>,
   leaf: PathElement<*, *>,
+  setter?: ?Setter,
   done?: false,
   [other: string]: any
 }
@@ -117,6 +120,7 @@ export type NavigationActivating = {
   type: 'NAVIGATION_ACTIVATING',
   navigation: Navigation,
   routes: Route<*, *>[],
+  setter?: ?Setter,
   done?: false,
   [other: string]: any
 }
@@ -127,6 +131,7 @@ export type NavigationActivated = {
   routes: Route<*, *>[],
   entering: Route<*, *>[],
   exiting: Route<*, *>[],
+  setter?: ?Setter,
   done?: false,
   [other: string]: any
 }
@@ -135,8 +140,9 @@ export type NavigationTransitionStart = {
   type: 'NAVIGATION_TRANSITION_START',
   navigation: Navigation,
   routes: Route<*, *>[],
-  entering: Route <*, *>[],
-  exiting: Route <*, *>[],
+  entering: Route<*, *>[],
+  exiting: Route<*, *>[],
+  setter?: ?Setter,
   done?: false,
   [other: string]: any
 }
@@ -145,8 +151,9 @@ export type NavigationTransitionEnd = {
   type: 'NAVIGATION_TRANSITION_END',
   navigation: Navigation,
   routes: Route<*, *>[],
-  entering: Route <*, *>[],
-  exiting: Route <*, *>[],
+  entering: Route<*, *>[],
+  exiting: Route<*, *>[],
+  setter?: ?Setter,
   done?: false,
   [other: string]: any
 }
@@ -155,6 +162,7 @@ export type NavigationCancelled = {
   type: 'NAVIGATION_CANCELLED',
   navigation: null | Navigation,
   nextNavigation: null | Navigation,
+  setter?: ?Setter,
   done: true,
   [other: string]: any
 }
@@ -163,6 +171,7 @@ export type NavigationError = {
   type: 'NAVIGATION_ERROR',
   navigation: null | Navigation,
   error: any,
+  setter?: ?Setter,
   done: true,
   [other: string]: any
 }
@@ -170,6 +179,7 @@ export type NavigationError = {
 export type NavigationEnd = {
   type: 'NAVIGATION_END',
   navigation: Navigation,
+  setter?: ?Setter,
   done: true,
   [other: string]: any
 }

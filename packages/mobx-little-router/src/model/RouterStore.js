@@ -3,10 +3,10 @@ import type { IObservableArray } from 'mobx'
 import { extendObservable, runInAction, observable, computed } from 'mobx'
 import type { ObservableMap } from 'mobx'
 import createRoute from './createRoute'
-import createRouteKey from './createRouteKey'
 import RouterStateTree from './RouterStateTree'
 import QueryString from 'qs'
 
+import type Navigation from './Navigation'
 import type {
   Location,
   Query,
@@ -28,9 +28,11 @@ class RouterStore {
   // Keep a list of activated nodes so we can track differences when transitioning to a new state.
   routes: IObservableArray<Route<*, *>>
   prevRoutes: IObservableArray<Route<*, *>>
+  cancelledSequence: number
 
   constructor(root: RouteStateTreeNode<*, *>) {
     this.state = new RouterStateTree(root)
+    this.cancelledSequence = -1
     extendObservable(this, {
       location: {},
       cache: observable.map({ [root.value.key]: root }),
@@ -106,6 +108,16 @@ class RouterStore {
     runInAction(() => {
       this.prevRoutes.replace([])
     })
+  }
+
+  cancel(navigation: null | Navigation) {
+    if (navigation) {
+      this.cancelledSequence = navigation.sequence
+    }
+  }
+
+  isCancelled(navigation: null | Navigation) {
+    return navigation ? navigation.sequence <= this.cancelledSequence : false
   }
 
   getMatchedQueryParams(node: RouteStateTreeNode<*, *>, query: Query): Query {

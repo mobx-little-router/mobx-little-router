@@ -69,6 +69,13 @@ export type LifecycleFn = (
   nav: Navigation
 ) => Promise<void>
 
+export type Setter = () => void
+
+export type ResolveFn = (
+  route: Route<*, *>,
+  nav: Navigation
+) => Promise<void | Setter>
+
 export type ErrorHandler = (route: RouteStateTreeNode<*, *>, context: Object) => Promise<void>
 
 export type LoadChildrenRouteStateTreeNode = () => Promise<any>
@@ -84,7 +91,7 @@ export type RouteValue<C: Object, D: Object> = {
   canDeactivate: GuardFn,
   willActivate: LifecycleFn,
   willDeactivate: LifecycleFn,
-  willResolve: LifecycleFn,
+  willResolve: ResolveFn,
   onError: null | ErrorHandler,
   onTransition: null | TransitionFn,
   getContext: () => C,
