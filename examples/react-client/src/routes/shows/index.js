@@ -11,7 +11,7 @@ export default [
       const { ShowsStore } = route.context.stores
 
       // Faking some network order and latency issues.
-      await delay(Math.random() * 900 + 100)
+      await delay(Math.random() * 500)
       if (!route.query.q) {
         return () => ShowsStore.load([])
       } else {
