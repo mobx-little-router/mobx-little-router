@@ -64,7 +64,6 @@ export default class Scheduler {
     // If there is an existing navigation in transition, then cancel it.
     if (
       this.currentNavigation &&
-      this.currentNavigation.shouldTransition &&
       this.event.done !== true
     ) {
       this.dispatch({

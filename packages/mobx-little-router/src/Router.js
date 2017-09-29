@@ -135,16 +135,20 @@ class Router {
       return
     }
 
-    switch (nextNavigation.type) {
-      case NavigationTypes.PUSH:
-        return this.push(nextNavigation.to)
-      case NavigationTypes.REPLACE:
-        return this.replace(nextNavigation.to)
-      case NavigationTypes.GO_BACK:
-        return this.goBack()
-      default:
-        throw new TypeError(`Invalid navigation returned (${nextNavigation.type})`)
-    }
+    // Do this on next tick so we don't clobber current event.
+    // TODO: Move this redirect logic to a middleware.
+    setTimeout(() => {
+      switch (nextNavigation.type) {
+        case NavigationTypes.PUSH:
+          return this.push(nextNavigation.to)
+        case NavigationTypes.REPLACE:
+          return this.replace(nextNavigation.to)
+        case NavigationTypes.GO_BACK:
+          return this.goBack()
+        default:
+          throw new TypeError(`Invalid navigation returned (${nextNavigation.type})`)
+      }
+    })
   }
 
   handleLocationChange = (location: Object, action: ?Action) => {
