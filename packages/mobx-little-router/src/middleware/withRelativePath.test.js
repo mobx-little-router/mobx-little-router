@@ -9,7 +9,7 @@ import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
 describe('withRelativePath middleware', () => {
   test('transforms pathname', () => {
     const store = new RouterStore(createRouteStateTreeNode({ path: '' }))
-    store.location = { pathname: '/foo/bar' }
+    store.location = { pathname: '/foo/bar/' }
     const c: NavigationStart = {
       type: EventTypes.NAVIGATION_START,
       navigation: new Navigation({
@@ -24,7 +24,7 @@ describe('withRelativePath middleware', () => {
       expect.objectContaining({
         navigation: expect.objectContaining({
           to: {
-            pathname: '/a'
+            pathname: '/a/'
           }
         })
       })
