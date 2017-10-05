@@ -10,7 +10,6 @@ import Scheduler from './scheduling/Scheduler'
 import type { Event } from './events'
 import { EventTypes } from './events'
 import { NavigationTypes } from './model/Navigation'
-import { TransitionFailure } from './errors'
 import type { IMiddleware } from './middleware/Middleware'
 
 class Router {
@@ -49,12 +48,9 @@ class Router {
   // This means we can do `.start(router => {/* do stuff with router */})`, as opposed
   // to `.start().then(() => {/* do stuff with router in original scope */})`
   async start(callback: ?Function) {
+    let error: any = null
     try {
       this.scheduler.start()
-
-      if (process.env.NODE_ENV !== 'production') {
-        this.disposers.push(this.subscribeEvent(this.logErrors))
-      }
 
       // Loads initial set of children (running through all middleware).
       this.scheduler.dispatch({
@@ -65,7 +61,6 @@ class Router {
 
       // Look for any next navigation from events and call corresponding method on history.
       this.disposers.push(autorun(this.handleNextNavigation))
-
       // Initial location.
       this.disposers.push(this.history.listen(this.handleLocationChange))
 
@@ -77,10 +72,23 @@ class Router {
       // Wait until nextNavigation is processed.
       await this.navigated()
 
-      callback && callback(this)
+      if (this.scheduler.event.done === true) {
+        if (this.scheduler.event.type === EventTypes.NAVIGATION_ERROR) {
+          error = this.scheduler.event.error
+        } else {
+          callback && callback(this)
+        }
+      } else {
+        // TODO: Provide better hint to fix detected errors.
+        error = new Error('Router failed to start for unknown reasons')
+      }
     } catch (err) {
-      console.error(err)
+      error = err
+    }
+
+    if (error) {
       this.stop()
+      throw error
     }
   }
 
@@ -120,10 +128,7 @@ class Router {
     return new Promise(res => {
       when(() => {
         const { event } = this.scheduler
-        const { location } = this.store
-        return (
-          event.done === true && typeof location.pathname === 'string'
-        )
+        return event.done === true
       }, res)
     })
   }
@@ -154,15 +159,6 @@ class Router {
   handleLocationChange = (location: Object, action: ?Action) => {
     this.scheduler.schedule(asNavigation(location, action))
   }
-
-  logErrors = (evt: Event) => {
-    if (evt.type === EventTypes.NAVIGATION_ERROR) {
-      const { error } = evt
-      if (error && !(error instanceof TransitionFailure)) {
-        console.error('[router] Uncaught exception encountered during router event.', error)
-      }
-    }
-  }
 }
 
 function asNavigation(location: Object, action: ?Action) {
@@ -183,7 +179,7 @@ function withSearch(href: Href) {
   if (typeof href === 'string') {
     return href
   } else {
-    const qs = href.query ? QueryString.stringify(href.query)  : ''
+    const qs = href.query ? QueryString.stringify(href.query) : ''
     return {
       ...href,
       search: qs ? `?${qs}` : qs

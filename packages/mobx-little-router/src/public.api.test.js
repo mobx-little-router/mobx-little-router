@@ -3,7 +3,8 @@ import { autorun } from 'mobx'
 import { createMemoryHistory } from 'history'
 import delay from './util/delay'
 import { EventTypes } from './events'
-import { install, Middleware } from './'
+import { install, Middleware } from './index'
+import { NoMatch } from './errors'
 
 describe('Public API', () => {
   let router
@@ -100,6 +101,15 @@ describe('Public API', () => {
         done()
       })
     })
+  })
+
+  test('errors', async () => {
+    router = install({
+      history: createMemoryHistory({ initialEntries: ['/404'] }),
+      getContext: () => ({}),
+      routes: [{ path: '' }]
+    })
+    await expect(router.start()).rejects.toEqual(expect.any(NoMatch))
   })
 
   describe('Events', () => {
@@ -209,7 +219,7 @@ describe('Public API', () => {
     router.stop()
   })
 
-  test.only('middleware', async () => {
+  test('middleware', async () => {
     const middleware = (evt): any => {
       if (evt.type === 'CHILDREN_CONFIG_LOADED') {
         return {
