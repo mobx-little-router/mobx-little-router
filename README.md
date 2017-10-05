@@ -86,6 +86,10 @@ For more information, you may refer to the README files for each of the packages
 - [`mobx-little-router`](./packages/mobx-little-router)
 - [`mobx-little-router-react`](./packages/mobx-little-router-react)
 
+## CHANGELOG
+
+See: [CHANGELOG.md](./CHANGELOG.md)
+
 ## Development
 
 This project is a [monorepo](http://www.drmaciver.com/2016/10/why-you-should-use-a-single-repository-for-all-your-companys-projects/)

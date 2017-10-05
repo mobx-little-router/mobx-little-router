@@ -4,7 +4,7 @@ import withRouter from '../hoc/withRouter'
 import { observer } from 'mobx-react'
 import type { Router } from 'mobx-little-router'
 import { areRoutesEqual } from 'mobx-little-router'
-import { OutletType, RouterType } from '../propTypes'
+import { OutletType } from '../propTypes'
 
 import TransitionGroup from './TransitionGroup'
 
@@ -21,7 +21,7 @@ type OutletProps = {
   router: Router
 }
 
-class Outlet extends Component {
+class Outlet extends Component<OutletProps> {
   static contextTypes = {
     // We may have another outlet above us in the context.
     outlet: OutletType
@@ -30,8 +30,6 @@ class Outlet extends Component {
   static childContextTypes = {
     outlet: OutletType
   }
-
-  props: OutletProps
 
   getChildContext() {
     return {

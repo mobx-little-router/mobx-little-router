@@ -1,14 +1,15 @@
 // @flow
 import React, { Component } from 'react'
+import type { Element } from 'react'
 import type { Router } from 'mobx-little-router'
 import { RouterType } from '../propTypes'
 
-export default class RouterProvider extends Component {
-  props: {
-    router: Router,
-    children?: React.Element<*>
-  }
+type Props = {
+  router: Router,
+  children?: Element<*>
+}
 
+export default class RouterProvider extends Component<Props> {
   static childContextTypes = {
     router: RouterType
   }

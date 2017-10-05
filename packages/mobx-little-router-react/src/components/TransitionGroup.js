@@ -13,14 +13,14 @@ const classNames = {
   exitActive: 'exit-active',
 }
 
-class TransitionGroup extends Component {
-  props: {
-    from: ?Object,
-    to: ?Object,
-    isTransitioning: boolean,
-    additionalProps: ?Object
-  }
+type Props = {
+  from: ?Object,
+  to: ?Object,
+  isTransitioning: boolean,
+  additionalProps: ?Object
+}
 
+class TransitionGroup extends Component<Props> {
   transitionState: string
   innerRefs: Object = {}
 

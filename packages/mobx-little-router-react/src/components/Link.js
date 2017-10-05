@@ -1,24 +1,25 @@
 // @flow
 import React, { Component } from 'react'
+import type { Element } from 'react'
 import { observer } from 'mobx-react'
 import type { Location } from 'mobx-little-router'
 import { RouterType } from '../propTypes'
 import cx from 'classnames'
 
-class Link extends Component {
+type Props =  {
+  to: string,
+  className?: string,
+  activeClassName?: string,
+  style?: Object,
+  children?: Element<*>,
+  exact?: boolean,
+  reload?: boolean,
+  onClick: Function
+}
+
+class Link extends Component<Props> {
   static contextTypes = {
     router: RouterType
-  }
-
-  props: {
-    to: string,
-    className?: string,
-    activeClassName?: string,
-    style?: Object,
-    children?: React.Element<*>,
-    exact?: boolean,
-    reload?: boolean,
-    onClick: Function
   }
 
   onClick = (evt: Event) => {

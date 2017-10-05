@@ -63,14 +63,14 @@ export default class Navigation {
     })
   }
 
-  redirectTo(href: Href) {
+  redirectTo(href: Href): Promise<void> {
     return Promise.reject(this.next({
       type: 'PUSH',
       to: asLocation(href)
     }))
   }
 
-  goBack() {
+  goBack(): Promise<void> {
     return Promise.reject(this.prev())
   }
 }

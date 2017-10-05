@@ -22,14 +22,20 @@ app.get('*', (req, res) => {
   })
 
   router.start(() => {
-    const html = ReactDOM.renderToString(
+    const stream = ReactDOM.renderToNodeStream(
       <App dataStore={dataStore} router={router} />
     )
 
     if (ctx.status > 300 && ctx.status < 400) {
       res.redirect(ctx.status, router.store.location.pathname)
     } else {
-      res.status(ctx.status).send(html)
+      res.status(ctx.status)
+      res.write('<!doctype html><html><body>')
+      stream.pipe(res, { end: false })
+      stream.on('end', () => {
+        res.write('</body></html>')
+        res.end()
+      })
     }
   })
 })

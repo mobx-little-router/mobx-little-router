@@ -116,7 +116,7 @@ class Router {
   /* Private helpers */
 
   // Waits for next navigation event to be processed and resolves.
-  navigated() {
+  navigated(): Promise<void> {
     return new Promise(res => {
       when(() => {
         const { event } = this.scheduler
