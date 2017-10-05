@@ -23,15 +23,15 @@ Here are what you get from `mobx-little-router` out of the box.
 - *State management* and *change detection* that lives completely within MobX. This means you have a single source of
   truth and a single place to change *all* data in your application.
 
-- View-agnostic routing capabilities. This means adapters other than React can be created by hooking
-  into the router state.
-
 - Support for *dynamically* loaded routes on both client and server environments. This is key for
   building modern-day [progressive web apps](https://developers.google.com/web/progressive-web-apps/).
 
-- Custom *middleware* support for adding custom logic to how router events are handled.
+- [*Middleware*](./packages/mobx-little-router/docs/advanced/middleware.md) layer that provides extensibility to the router.
 
 - Server-side rendering support (SSR) and integration with express server.
+
+- View-agnostic routing capabilities. This means adapters other than React can be created by hooking
+  into the router state.
 
 ## Quick start
 
