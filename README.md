@@ -26,7 +26,7 @@ Here are what you get from `mobx-little-router` out of the box.
 - Support for *dynamically* loaded routes on both client and server environments. This is key for
   building modern-day [progressive web apps](https://developers.google.com/web/progressive-web-apps/).
 
-- [*Middleware*](./packages/mobx-little-router/docs/advanced/middleware.md) layer that provides extensibility to the router.
+- [Middleware](./packages/mobx-little-router/docs/advanced/middleware.md) layer that provides *extensibility* to the router.
 
 - Server-side rendering support (SSR) and integration with express server.
 
@@ -67,6 +67,7 @@ const router = install({
 })
 
 router.start(() => {
+  // The <Outlet/> element outputs the matched route.
   ReactDOM.render(
     <RouterProvider router={router}>
       <Outlet />

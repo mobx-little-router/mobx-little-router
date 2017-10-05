@@ -9,6 +9,10 @@
   import { install, RouterProvider, Outlet } from 'mobx-little-router-react'
   import { install } from 'mobx-little-router-react'
 
+  // Note that <Outlet/> is rendered at the App component level.
+  // This will allow any matched child route to also be rendered.
+  // If you need to block child rendering you can do that by not rendering
+  // the <Outlet/> element.
   const App = () => (
     <div>
       <header>Acme Inc.</header>
