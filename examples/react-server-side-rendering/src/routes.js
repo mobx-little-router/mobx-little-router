@@ -16,7 +16,8 @@ export default [
   {
     path: 'about',
     getData: () => ({ component: About }),
-    children: [
+    // We can handle dynamic routes on server side as well!
+    loadChildren: () => Promise.resolve([
       {
         path: '',
         getData: () => ({
@@ -33,7 +34,7 @@ export default [
           component: AboutNotFound
         })
       }
-    ]
+    ])
   },
   {
     path: 'gif/:topic',
