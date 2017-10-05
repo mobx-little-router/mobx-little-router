@@ -5,21 +5,21 @@ import transformEventType from './transformEventType'
 /*
  * Takes a config mapper and create a middleware that will map over loaded configuration objects.
  */
-export default (f: (x: any) => any) =>
-  transformEventType(EventTypes.CHILDREN_LOADING)(evt => {
+export default (f: (x: any, y: any) => any) =>
+  transformEventType(EventTypes.CHILDREN_LOADING)((evt, store) => {
     const { children } = evt
     return {
       ...evt,
-      children: mapChildren(f, children)
+      children: mapChildren(f, store, children)
     }
   })
 
-function mapChildren(f, children) {
+function mapChildren(f, store, children) {
   if (children && children.length) {
     return children.map(x => {
       return {
-        ...f(x),
-        children: mapChildren(f, x.children)
+        ...f(x, store),
+        children: mapChildren(f, store, x.children)
       }
     })
   } else {

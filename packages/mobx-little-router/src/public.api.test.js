@@ -209,7 +209,7 @@ describe('Public API', () => {
     router.stop()
   })
 
-  test('middleware', async () => {
+  test.only('middleware', async () => {
     const middleware = (evt): any => {
       if (evt.type === 'CHILDREN_CONFIG_LOADED') {
         return {

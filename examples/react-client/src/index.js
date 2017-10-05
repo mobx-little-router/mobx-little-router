@@ -30,7 +30,6 @@ const router = install({
   }),
   routes: [
     { path: '', component: HomeRoute },
-    { path: 'redirect', redirectTo: '/shows' },
     { path: 'login', component: LoginRoute },
     { path: 'about', component: AboutRoute, animate: true },
     { path: 'contact', component: ContactRoute, animate: true },
@@ -48,6 +47,17 @@ const router = install({
       path: 'tags/:tag',
       component: TagRoute
     },
+    // Redirects
+    {path: 'actors', redirectTo: '/' },
+    {path: 'tags', redirectTo: '/' },
+    {
+      // Using relative path
+      path: 'redirect',
+      children: [
+        { path: '', redirectTo: '../shows' }
+      ]
+    },
+    // Admin route with a session guard
     {
       path: 'admin',
       component: AdminRoute,
@@ -65,7 +75,8 @@ const router = install({
           return true
         }
       },
-      willResolve: () => delay(1000)
+      // Fakes network delay
+      willResolve: () => delay(20 + Math.random() * 1000)
     }
   ]
 })
@@ -80,12 +91,7 @@ router.subscribeEvent(ev => {
   }
 
   if (ev.navigation && ev.navigation.sequence > -1) {
-    console.log(
-      `%c${ev.type}`,
-      `color:${getGroupColor(ev)}`,
-      `(${ev.elapsed}ms)`,
-      ev
-    )
+    console.log(`%c${ev.type}`, `color:${getGroupColor(ev)}`, `(${ev.elapsed}ms)`, ev)
   }
 
   if (ev.done) {
