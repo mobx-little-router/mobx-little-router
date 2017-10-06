@@ -7,6 +7,7 @@ export const RouterType = PropTypes.shape({
   push: PropTypes.func,
   replace: PropTypes.func,
   goBack: PropTypes.func,
+  goBackOrElse: PropTypes.func,
   navigated: PropTypes.func
 })
 
