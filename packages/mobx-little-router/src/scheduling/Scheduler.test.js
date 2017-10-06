@@ -254,7 +254,7 @@ describe('Scheduler', () => {
           expect.objectContaining({
             type: 'NAVIGATION_CANCELLED',
             nextNavigation: expect.objectContaining({
-              type: 'PUSH',
+              type: 'REPLACE',
               from: expect.anything(),
               to: { pathname: '/sign-in' }
             })
@@ -331,7 +331,7 @@ describe('Scheduler', () => {
           expect.objectContaining({
             type: 'NAVIGATION_CANCELLED',
             nextNavigation: expect.objectContaining({
-              type: 'PUSH',
+              type: 'REPLACE',
               from: expect.anything(),
               to: { pathname: '/sign-in' }
             })
@@ -355,7 +355,7 @@ describe('Scheduler', () => {
           expect.objectContaining({
             type: 'NAVIGATION_CANCELLED',
             nextNavigation: expect.objectContaining({
-              type: 'PUSH',
+              type: 'REPLACE',
               from: expect.anything(),
               to: { pathname: '/sign-in' }
             })

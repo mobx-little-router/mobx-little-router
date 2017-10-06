@@ -47,7 +47,7 @@ describe('Navigation', () => {
     })
 
     expect(a.redirectTo('/login')).rejects.toEqual({
-      type: 'PUSH',
+      type: 'REPLACE',
       from: { pathname: '/' },
       to: { pathname: '/login' },
       sequence: 1,

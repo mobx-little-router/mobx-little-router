@@ -65,7 +65,7 @@ export default class Navigation {
 
   redirectTo(href: Href): Promise<void> {
     return Promise.reject(this.next({
-      type: 'PUSH',
+      type: 'REPLACE',
       to: asLocation(href)
     }))
   }
