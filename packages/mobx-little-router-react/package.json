@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "classnames": "^2.2.5",
+    "hoist-non-react-statics": "^2.3.1",
     "mobx-little-router": "^1.2.0"
   }
 }
