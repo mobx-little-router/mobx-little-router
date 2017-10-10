@@ -121,14 +121,6 @@ class Router {
     return this.navigated()
   }
 
-  goBackOrElse(href: Href) {
-    return (
-      this.scheduler.currentNavigation.shouldTransition
-        ? this.goBack()
-        : this.push(href)
-    ) 
-  }
-
   /* Private helpers */
 
   // Waits for next navigation event to be processed and resolves.
