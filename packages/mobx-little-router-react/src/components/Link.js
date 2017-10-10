@@ -5,6 +5,7 @@ import { observer } from 'mobx-react'
 import type { Location } from 'mobx-little-router'
 import { RouterType } from '../propTypes'
 import cx from 'classnames'
+import QueryString from 'qs'
 
 type Props =  {
   to: string | Location,
@@ -38,7 +39,7 @@ class Link extends Component<Props> {
   render() {
     const { to, className, activeClassName, style, children, exact } = this.props
     const href = typeof to === 'object'
-      ? to.pathname + to.search
+      ? locationToHref(to)
       : to
 
     const matchPrefix = '^'
@@ -48,6 +49,14 @@ class Link extends Component<Props> {
 
     return <a href={href} className={cx(className, typeof activeClassName ==='string' && { [activeClassName]: isActive })} style={style} onClick={this.onClick}>{children}</a>
   }
+}
+
+const locationToHref = (location: Location) => {
+  const queryString = QueryString.stringify(location.query)
+  const hash = location.hash || ''
+  const search = (queryString ? `?${queryString}` : location.search) || ''
+  
+  return `${location.pathname}${hash}${search}`
 }
 
 export default observer(Link)
