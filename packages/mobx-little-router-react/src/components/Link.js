@@ -31,7 +31,7 @@ class Link extends Component<Props> {
     }
 
     evt.preventDefault()
-    this.context.router.history.push(to)
+    this.context.router.push(to)
 
     onClick && onClick(evt)
   }

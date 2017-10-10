@@ -83,8 +83,8 @@ describe('Link', () => {
     expect(spy).toHaveBeenCalled()
     expect(router.store.location.pathname).toEqual('/foo/')
     expect(router.store.location.hash).toEqual('#hey')
-    expect(router.store.location.query).toEqual({ a: 1, b: 2 })
-    //expect(router.store.location.search).toEqual('?a=1&b=2') // Not yet kept in sync
+    expect(router.store.location.query).toEqual({ a: '1', b: '2' })
+    expect(router.store.location.search).toEqual('?a=1&b=2')
   })
 
   test('supports Location objects with state', async () => {
