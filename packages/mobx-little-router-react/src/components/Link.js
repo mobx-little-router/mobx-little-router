@@ -37,14 +37,14 @@ class Link extends Component<Props> {
 
   render() {
     const { to, className, activeClassName, style, children, exact } = this.props
+    const href = typeof to === 'object'
+      ? to.pathname + to.search
+      : to
+
     const matchPrefix = '^'
     const matchSuffix = '/?' + (exact === true ? '$' : '')
-    const matcher = new RegExp(`${matchPrefix}${to}${matchSuffix}`)
+    const matcher = new RegExp(`${matchPrefix}${typeof href === 'string' ? href : ''}${matchSuffix}`)
     const isActive = matcher.test(this.context.router.store.location.pathname)
-
-    const href = typeof to === 'object'
-      ? to.pathname
-      : to
 
     return <a href={href} className={cx(className, typeof activeClassName ==='string' && { [activeClassName]: isActive })} style={style} onClick={this.onClick}>{children}</a>
   }
