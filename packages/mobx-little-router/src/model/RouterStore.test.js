@@ -82,7 +82,7 @@ describe('RouterStore', () => {
     })
 
     store.replaceChildren(store.state.root, [a])
-    store.updateRoutes([createRoute(a, '1', { x: '1' }, {})])
+    store.updateRoutes([createRoute(a, '1', '1', { x: '1' }, {})])
 
     expect(store.routes[0]).toEqual(
       expect.objectContaining({
@@ -95,7 +95,7 @@ describe('RouterStore', () => {
       })
     )
 
-    store.updateRoutes([createRoute(a, '2', { x: '2' }, {})])
+    store.updateRoutes([createRoute(a, '2', '2', { x: '2' }, {})])
 
     expect(store.routes[0]).toEqual(
       expect.objectContaining({
@@ -154,7 +154,8 @@ describe('RouterStore', () => {
         params: { x: '1' },
         query: {},
         onTransition: spy,
-        segment: '/a/1'
+        segment: '/a/1',
+        parentUrl: ''
       },
       {
         key: `${b.value.key}/b/2`,
@@ -165,7 +166,8 @@ describe('RouterStore', () => {
         params: { y: '2' },
         query: {},
         onTransition: spy,
-        segment: '/b/2'
+        segment: '/b/2',
+        parentUrl: ''
       }
     ]
     const nextPath: PathElement<*, *>[] = [
@@ -197,7 +199,7 @@ describe('RouterStore', () => {
     })
 
     store.replaceChildren(store.state.root, [a, b])
-    store.updateRoutes([createRoute(a, '', {}, { q: 'hey' })])
+    store.updateRoutes([createRoute(a, '', '', {}, { q: 'hey' })])
 
     expect(store.routes[0]).toEqual(
       expect.objectContaining({
@@ -210,7 +212,7 @@ describe('RouterStore', () => {
       })
     )
 
-    store.updateRoutes([createRoute(b, '', {}, { r: 'what' })])
+    store.updateRoutes([createRoute(b, '', '', {}, { r: 'what' })])
 
     expect(store.routes[0]).toEqual(
       expect.objectContaining({

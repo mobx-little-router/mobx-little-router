@@ -95,7 +95,7 @@ describe('createRouteStateTreeNode', () => {
         pathname: '/'
       }
     })
-    const promise = willActivate(createRoute(node, '/a/1', { id: '1' }, {}), navigation)
+    const promise = willActivate(createRoute(node, '/a/1', '/a/1', { id: '1' }, {}), navigation)
     await expect(promise).rejects.toEqual(
       expect.objectContaining({
         to: expect.objectContaining({

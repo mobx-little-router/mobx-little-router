@@ -156,7 +156,7 @@ describe('processEvent', () => {
 
   test('cancel event clears previous routes on store', async () => {
     runInAction(() => {
-      store.prevRoutes.replace([createRoute(store.state.root, '/', {}, {})])
+      store.prevRoutes.replace([createRoute(store.state.root, '/', '/', {}, {})])
     })
 
     await processEvent(
@@ -174,7 +174,7 @@ describe('processEvent', () => {
 
   test('cancel event clears previous routes on store', async () => {
     runInAction(() => {
-      store.prevRoutes.replace([createRoute(store.state.root, '/', {}, {})])
+      store.prevRoutes.replace([createRoute(store.state.root, '/', '/', {}, {})])
     })
 
     await processEvent(

@@ -60,9 +60,9 @@ class RouterStore {
 
     return path.map(element => {
       const matchedQueryParams = this.getMatchedQueryParams(element.node, query)
-      const newRoute = createRoute(element.node, element.segment, element.params, query)
+      const newRoute = createRoute(element.node, element.segment, element.segment, element.params, query)
       const existingRoute = this.routes.find(x => x.value === newRoute.value)
-      return existingRoute || observable(createRoute(element.node, element.segment, element.params, matchedQueryParams))
+      return existingRoute || observable(createRoute(element.node, element.segment, element.segment, element.params, matchedQueryParams))
     })
   }
 

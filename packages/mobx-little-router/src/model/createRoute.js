@@ -4,12 +4,13 @@ import qs from 'qs'
 import createRouteKey from './createRouteKey'
 import type { Params, Query, Route, RouteStateTreeNode } from './types'
 
-export default function createRoute<C: Object, D: Object>(node: RouteStateTreeNode<C, D>, segment: string, params: Params, query: Query): Route<C,D> {
+export default function createRoute<C: Object, D: Object>(node: RouteStateTreeNode<C, D>, parentUrl: string, segment: string, params: Params, query: Query): Route<C,D> {
   const key = createRouteKey(node, segment)
   return observable({
     node: node,
     key,
     value: `${key}?${qs.stringify(query)}`,
+    parentUrl,
     segment,
     params,
     query,

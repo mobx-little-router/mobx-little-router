@@ -13,7 +13,17 @@ describe('Public API', () => {
     router = install({
       history: createMemoryHistory({ initialEntries: ['/initial'], initialIndex: 0 }),
       getContext: () => ({ message: 'Hello' }),
-      routes: [{ path: ':whatever' }]
+      routes: [
+        {
+          path: 'a',
+          children: [
+            { path: '', redirectTo: 'c' },
+            { path: 'b', redirectTo: 'c' },
+            { path: 'c' }
+          ]
+        },
+        { path: ':whatever' }
+      ]
     })
   })
 
@@ -68,11 +78,7 @@ describe('Public API', () => {
     router.push('/9')
     await router.push('/10')
 
-
-    expect(changes).toEqual([
-      '/initial/',
-      '/10/'
-    ])
+    expect(changes).toEqual(['/initial/', '/10/'])
 
     expect(router.store.routes.map(route => route.node.value.path)).toEqual([
       '',
@@ -127,7 +133,9 @@ describe('Public API', () => {
       )
 
       expect(
-        spy.mock.calls.map(x => x[0].navigation && x[0].navigation.to && x[0].navigation.to.pathname)
+        spy.mock.calls.map(
+          x => x[0].navigation && x[0].navigation.to && x[0].navigation.to.pathname
+        )
       ).toEqual(expect.arrayContaining(['/initial/', '/bar/']))
 
       dispose()
@@ -265,7 +273,7 @@ describe('Public API', () => {
         {
           path: 'a',
           query: ['q'],
-          canActivate: (route) => {
+          canActivate: route => {
             stores = route.context.stores
             return Promise.resolve()
           }
@@ -280,9 +288,7 @@ describe('Public API', () => {
   })
 
   test('dynamic children', async () => {
-    const spy = jest.fn(() => Promise.resolve([
-      { path: '' }
-    ]))
+    const spy = jest.fn(() => Promise.resolve([{ path: '' }]))
     const router = install({
       history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
       getContext: () => ({ stores: { a: false, b: 123 } }),
@@ -299,5 +305,14 @@ describe('Public API', () => {
     expect(router.store.location.pathname).toEqual('/')
 
     expect(spy).toHaveBeenCalled()
+  })
+
+  test.skip('redirects', async () => {
+    await router.start()
+    await router.push('/a')
+    await delay(0)
+    await delay(0)
+
+    console.log(router.store.location.pathname)
   })
 })

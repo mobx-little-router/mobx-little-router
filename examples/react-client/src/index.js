@@ -76,7 +76,7 @@ const router = install({
         }
       },
       // Fakes network delay
-      willResolve: () => delay(20 + Math.random() * 1000)
+      willResolve: () => delay(20 + Math.random() * 200)
     }
   ]
 })

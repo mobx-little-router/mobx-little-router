@@ -10,6 +10,7 @@ export default function findPathFromRoot(
   const matchedParams: { [string]: Params | null } = {}
   const matchedRemaining: { [string]: string } = {}
   const matchedSegment: { [string]: string } = {}
+  const matchedParentUrl: { [string]: string } = {}
   let _remaining = url
   let _params = initialParams || {}
 
@@ -18,6 +19,7 @@ export default function findPathFromRoot(
       const { matched, params, remaining, segment } = node.value.matcher(_remaining)
       _params = { ..._params, ...params }
       matchedParams[node.value.key] = _params
+      matchedParentUrl[node.value.key] = _remaining
       matchedRemaining[node.value.key] = remaining
       matchedSegment[node.value.key] = segment
       _remaining = remaining
@@ -28,6 +30,7 @@ export default function findPathFromRoot(
 
   return path.map(node => ({
     node,
+    parentUrl: matchedParentUrl[node.value.key] || '',
     segment: matchedSegment[node.value.key] || '',
     remaining: matchedRemaining[node.value.key] || '',
     params: matchedParams[node.value.key] || {}

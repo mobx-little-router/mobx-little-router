@@ -7,6 +7,7 @@ import Middleware from './middleware/Middleware'
 import type { IMiddleware } from './middleware/Middleware'
 import withQueryMiddleware from './middleware/withQueryMiddleware'
 import withRelativePath from './middleware/withRelativePath'
+import withRedirect from './middleware/withRedirect'
 import devTools from './middleware/devTools'
 
 export type InstallOptions = {
@@ -22,6 +23,7 @@ export function install(opts: InstallOptions): Router {
     opts.routes,
     opts.getContext || (() => ({})),
     withQueryMiddleware
+      .concat(withRedirect)
       .concat(withRelativePath)
       .concat(opts.middleware || Middleware.EMPTY)
       .concat(devTools) // devTools always has to be the last in case there are any config/node transforms

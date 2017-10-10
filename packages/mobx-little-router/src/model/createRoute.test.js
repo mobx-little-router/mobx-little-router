@@ -19,7 +19,7 @@ describe('createRouteStateTreeNode', () => {
   })
 
   test('Sets the params, context and data', () => {
-    expect(createRoute(node, '/1', { id: '1' }, { q: 'hey' })).toEqual(
+    expect(createRoute(node, '/1', '/1', { id: '1' }, { q: 'hey' })).toEqual(
       expect.objectContaining({
         segment: '/1',
         params: { id: '1' },

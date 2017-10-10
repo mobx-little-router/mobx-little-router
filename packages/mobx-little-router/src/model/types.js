@@ -117,5 +117,6 @@ export type Route<C,D> = {
   params: Params,
   query: Query,
   segment: string, // This is the matched segment from URL. e.g. "/123" for ":id"
+  parentUrl: string,
   onTransition: null | TransitionFn
 }

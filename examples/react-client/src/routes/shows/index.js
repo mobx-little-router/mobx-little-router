@@ -1,8 +1,6 @@
 import ShowsRoute from './ShowsRoute'
 import ShowRoute from './ShowRoute'
 
-const delay = ms => new Promise(res => setTimeout(res, ms))
-
 export default [
   {
     path: '',
@@ -10,9 +8,6 @@ export default [
     willResolve: async route => {
       const { ShowsStore } = route.context.stores
       let data
-
-      // Faking some network order and latency issues.
-      await delay(Math.random() * 500)
 
       if (!route.query.q) {
         data = []
