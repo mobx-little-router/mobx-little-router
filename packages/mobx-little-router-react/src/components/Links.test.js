@@ -60,6 +60,24 @@ describe('Link', () => {
 
     expect(spy).toHaveBeenCalled()
   })
+
+  test('supports Location objects', async () => {
+    const location = {
+      pathname: '/foo'
+    }
+    const spy = jest.fn()
+    const wrapper = mountInProvider(router)(
+      <div>
+        <Link onClick={spy} className="foo" to={location}>Foo</Link>
+      </div>
+    )
+
+    wrapper.find('.foo').simulate('click')
+    await delay(0)
+
+    expect(spy).toHaveBeenCalled()
+    expect(router.store.location.pathname).toEqual('/foo/')
+  })
 })
 
 function delay(ms: number) {

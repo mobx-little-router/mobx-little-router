@@ -7,7 +7,7 @@ import { RouterType } from '../propTypes'
 import cx from 'classnames'
 
 type Props =  {
-  to: string,
+  to: string | Location,
   className?: string,
   activeClassName?: string,
   style?: Object,
@@ -42,7 +42,11 @@ class Link extends Component<Props> {
     const matcher = new RegExp(`${matchPrefix}${to}${matchSuffix}`)
     const isActive = matcher.test(this.context.router.store.location.pathname)
 
-    return <a href={to} className={cx(className, typeof activeClassName ==='string' && { [activeClassName]: isActive })} style={style} onClick={this.onClick}>{children}</a>
+    const href = typeof to === 'object'
+      ? to.pathname
+      : to
+
+    return <a href={href} className={cx(className, typeof activeClassName ==='string' && { [activeClassName]: isActive })} style={style} onClick={this.onClick}>{children}</a>
   }
 }
 
