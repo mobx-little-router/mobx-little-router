@@ -13,14 +13,14 @@ const classNames = {
   exitActive: 'exit-active',
 }
 
-type Props = {
+type TransitionGroupProps = {
   from: ?Object,
   to: ?Object,
   isTransitioning: boolean,
   additionalProps: ?Object
 }
 
-class TransitionGroup extends Component<Props> {
+class TransitionGroup extends Component<TransitionGroupProps> {
   transitionState: string
   innerRefs: Object = {}
 
@@ -47,9 +47,7 @@ class TransitionGroup extends Component<Props> {
 
         if (el instanceof window.HTMLElement) {
           // Find element with data-transition-ref attribute to add transitionend event listener
-          const target = el.hasAttribute('data-transition-ref')
-            ? el
-            : el.querySelector('[data-transition-ref]')
+          const target = el.querySelector('[data-transition-ref]')
 
           const finishTransition = () => {
             runInAction(() => {
@@ -126,18 +124,40 @@ class TransitionGroup extends Component<Props> {
     }
 
     return (
-      <div className="transition-group">
+      <div className="router-transition-group">
         {routes.map(({ route, className }) =>
-          createElement(route.data.component, {
-            key: route.key,
-            route,
-            className,
-            ...additionalProps,
-            ref: (ref) => {
-              this.innerRefs[route.key] = ref
-            }
-          })
+          <TransitionItem
+            key={route.key}
+            route={route}
+            className={className}
+            additionalProps={additionalProps}
+            innerRef={ref => this.innerRefs[route.key] = ref}
+          />
         )}
+      </div>
+    )
+  }
+}
+
+type TransitionItemProps = {
+  route: Object,
+  className: string,
+  additionalProps: ?Object,
+  innerRef: Function
+}
+
+// Need to wrap the item so we can properly set the innerRef
+class TransitionItem extends Component<TransitionItemProps> {
+  render() {
+    const { route, className, additionalProps, innerRef } = this.props
+    
+    return (
+      <div className="router-transition-item" data-route-key={route.key} ref={innerRef}>
+        {createElement(route.data.component, {
+          route,
+          className,
+          ...additionalProps
+        })}
       </div>
     )
   }

@@ -13,7 +13,10 @@ describe('TransitionGroup', () => {
     if (router.store.routes.length > 1) { to = router.store.routes[1] }
     if (router.store.prevRoutes.length > 1) { from = router.store.prevRoutes[1] }
 
-    const isTransitioning = !!router.store.prevRoutes.length && !areRoutesEqual(to, from)
+    const isTransitioning =
+      router.store.prevRoutes.length > 0 &&
+      !areRoutesEqual(to, from) &&
+      (canTransition(to) || canTransition(from))
 
     wrapper.setProps({ to, from, isTransitioning })
   }
@@ -56,13 +59,13 @@ describe('TransitionGroup', () => {
 
     // Initially we should be transitioning and have the enter class
     expect(wrapper.children().length).toBe(1)
-    expect(wrapper.childAt(0).hasClass('transitioning')).toBe(true)  
-    expect(wrapper.childAt(0).hasClass('enter')).toBe(true)
+    expect(wrapper.childAt(0).childAt(0).hasClass('transitioning')).toBe(true)  
+    expect(wrapper.childAt(0).childAt(0).hasClass('enter')).toBe(true)
     
     await delay(0)
 
     // Then the animation is initialized with the active class
-    expect(wrapper.childAt(0).hasClass('enter-active')).toBe(true)
+    expect(wrapper.childAt(0).childAt(0).hasClass('enter-active')).toBe(true)
     expect(router.store.routes[1].data.transitionState).toBe('entering')
 
     // Wait for transition to complete
@@ -70,8 +73,8 @@ describe('TransitionGroup', () => {
     updateRoutes(wrapper)
 
     // Our transition has settled and transitioning class removed 
-    expect(wrapper.childAt(0).hasClass('transitioning')).toBe(false)
-    expect(wrapper.childAt(0).hasClass('enter-active')).toBe(false)
+    expect(wrapper.childAt(0).childAt(0).hasClass('transitioning')).toBe(false)
+    expect(wrapper.childAt(0).childAt(0).hasClass('enter-active')).toBe(false)
     expect(router.store.routes[1].data.transitionState).toBe('entered')
 
     router.push('/contact')
@@ -80,16 +83,16 @@ describe('TransitionGroup', () => {
 
     // Now we will have two transitioning elements
     expect(wrapper.children().length).toBe(2)
-    expect(wrapper.childAt(0).hasClass('transitioning')).toBe(true)
-    expect(wrapper.childAt(1).hasClass('transitioning')).toBe(true)
-    expect(wrapper.childAt(0).hasClass('exit')).toBe(true)
-    expect(wrapper.childAt(1).hasClass('enter')).toBe(true)
+    expect(wrapper.childAt(0).childAt(0).hasClass('transitioning')).toBe(true)
+    expect(wrapper.childAt(1).childAt(0).hasClass('transitioning')).toBe(true)
+    expect(wrapper.childAt(0).childAt(0).hasClass('exit')).toBe(true)
+    expect(wrapper.childAt(1).childAt(0).hasClass('enter')).toBe(true)
 
     await delay(0)
 
     // Then the animation is initialized with the active class
-    expect(wrapper.childAt(0).hasClass('exit-active')).toBe(true)
-    expect(wrapper.childAt(1).hasClass('enter-active')).toBe(true)
+    expect(wrapper.childAt(0).childAt(0).hasClass('exit-active')).toBe(true)
+    expect(wrapper.childAt(1).childAt(0).hasClass('enter-active')).toBe(true)
     expect(router.store.routes[1].data.transitionState).toBe('entering')
     expect(router.store.prevRoutes[1].data.transitionState).toBe('exiting')
 
@@ -99,9 +102,11 @@ describe('TransitionGroup', () => {
 
     // Our transition has settled and transitioning class removed 
     expect(wrapper.children().length).toBe(1)
-    expect(wrapper.childAt(0).hasClass('transitioning')).toBe(false)
+    expect(wrapper.childAt(0).childAt(0).hasClass('transitioning')).toBe(false)
   })
 })
 
 const AboutPage = ({ className }) => <div className={className}>AboutPage</div>
 const ContactPage = ({ className }) => <div className={className}>ContactPage</div>
+
+const canTransition = node => (node ? typeof node.onTransition === 'function' : false)
