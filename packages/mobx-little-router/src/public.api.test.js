@@ -418,7 +418,7 @@ describe('Public API', () => {
             { path: '', redirectTo: 'b' }
           ]
         },
-        { path: 'b' } // Goes here instead
+        { path: 'b' }
       ]
     })
 
@@ -462,6 +462,38 @@ describe('Public API', () => {
 
     router.stop()
   })
+
+  test('redirectTo multiple redirects', async () => {
+    const router = install({
+      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+      getContext: () => { },
+      routes: [
+        {
+          path: 'a',
+          children: [
+            { path: 'b', children: [
+              { path: 'd' }, // 3) End up here
+              { path: '', redirectTo: 'd' } // 2) Now redirect from here
+            ]},
+            { path: 'c', redirectTo: 'b' } // 1) redirect from here first
+          ]
+        }
+      ]
+    })
+
+    await router.start()
+
+    expect(router.store.location.pathname).toEqual('/')
+
+    router.push('/a/c')
+
+    await delay(200)
+
+    expect(router.store.location.pathname).toEqual('/a/b/d/')
+
+    router.stop()
+  })
+
 })
 
 const getLastRoute = (router) => {
