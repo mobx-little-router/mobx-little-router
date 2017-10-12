@@ -5,12 +5,13 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "babel-cli": "^6.24.1",
     "express": "^4.15.4",
     "history": "^4.7.2",
-    "mobx": "^3.2.2",
+    "mobx": "^3.0.0",
     "mobx-little-router": "^1.4.1",
     "mobx-little-router-react": "^1.4.1",
-    "mobx-react": "^4.2.2",
+    "mobx-react": "^4.0.0",
     "node-fetch": "^1.7.2",
     "react": "^16.0.0",
     "react-dom": "^16.0.0"
