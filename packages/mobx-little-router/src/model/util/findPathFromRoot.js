@@ -5,7 +5,8 @@ import type { PathElement, Params, RouteStateTreeNode } from '../types'
 export default function findPathFromRoot(
   node: RouteStateTreeNode<*, *>,
   url: string,
-  initialParams: ?Object
+  initialParams: ?Object,
+  mountUrl?: string
 ): PathElement<*, *>[] {
   const matchedParams: { [string]: Params | null } = {}
   const matchedRemaining: { [string]: string } = {}
@@ -20,7 +21,7 @@ export default function findPathFromRoot(
 
       _params = { ..._params, ...params }
       matchedParams[node.value.key] = _params
-      matchedParentUrl[node.value.key] = parentUrl
+      matchedParentUrl[node.value.key] = `${mountUrl || ''}${parentUrl}`
       matchedSegment[node.value.key] = segment
       matchedRemaining[node.value.key] = remaining
       _remaining = remaining

@@ -64,7 +64,8 @@ export async function processEvent(
       const restOfPathElements = store.state.pathFrom(
         leaf.node,
         `${leaf.segment}${leaf.remaining}`,
-        leaf.params
+        leaf.params,
+        leaf.parentUrl
       )
       const matchedPath = partialPath.slice().concat(restOfPathElements.slice(1))
       return {

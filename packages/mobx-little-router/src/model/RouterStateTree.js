@@ -26,8 +26,9 @@ export default class RouterStateTree {
   pathFrom(
     node: RouteStateTreeNode<*, *>,
     url: string,
-    params: ?Object
+    params: ?Object,
+    mountUrl?: string
   ): PathElement<*, *>[] {
-    return findPathFromRoot(node, url, params)
+    return findPathFromRoot(node, url, params, mountUrl)
   }
 }
