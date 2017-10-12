@@ -6,6 +6,7 @@ describe('URL matchers', () => {
     expect(m.partial('shows/:id')('/shows/1/edit')).toEqual({
       matched: true,
       params: { id: '1' },
+      parentUrl: '',
       segment: '/shows/1',
       remaining: '/edit'
     })
@@ -13,6 +14,7 @@ describe('URL matchers', () => {
     expect(m.partial('/shows/:id')('/shows/2/edit')).toEqual({
       matched: true,
       params: { id: '2' },
+      parentUrl: '',
       segment: '/shows/2',
       remaining: '/edit'
     })
@@ -20,6 +22,7 @@ describe('URL matchers', () => {
     expect(m.partial('')('/shows/2')).toEqual({
       matched: true,
       params: {},
+      parentUrl: '',
       segment: '',
       remaining: '/shows/2'
     })
@@ -27,6 +30,7 @@ describe('URL matchers', () => {
     expect(m.partial('/')('/shows/2')).toEqual({
       matched: true,
       params: {},
+      parentUrl: '',
       segment: '',
       remaining: '/shows/2'
     })
@@ -34,6 +38,7 @@ describe('URL matchers', () => {
     expect(m.partial('/shows/:id')('/nope')).toEqual({
       matched: false,
       params: null,
+      parentUrl: '',
       segment: '',
       remaining: '/nope'
     })
@@ -43,6 +48,7 @@ describe('URL matchers', () => {
     expect(m.full('shows/:id')('/shows/1')).toEqual({
       matched: true,
       params: { id: '1' },
+      parentUrl: '',
       segment: '/shows/1',
       remaining: undefined
     })
@@ -50,6 +56,7 @@ describe('URL matchers', () => {
     expect(m.full('/shows/:id')('/shows/2')).toEqual({
       matched: true,
       params: { id: '2' },
+      parentUrl: '',
       segment: '/shows/2',
       remaining: undefined
     })
@@ -57,6 +64,7 @@ describe('URL matchers', () => {
     expect(m.full('/')('/')).toEqual({
       matched: true,
       params: {},
+      parentUrl: '',
       segment: '',
       remaining: undefined
     })
@@ -64,6 +72,7 @@ describe('URL matchers', () => {
     expect(m.full('')('/')).toEqual({
       matched: true,
       params: {},
+      parentUrl: '',
       segment: '',
       remaining: undefined
     })
@@ -71,6 +80,7 @@ describe('URL matchers', () => {
     expect(m.full('')('/shows/1')).toEqual({
       matched: false,
       params: null,
+      parentUrl: '',
       segment: '',
       remaining: '/shows/1'
     })
@@ -80,6 +90,7 @@ describe('URL matchers', () => {
     expect(m.any('')('/whatever')).toEqual({
       matched: true,
       params: null,
+      parentUrl: '',
       segment: '/whatever',
       remaining: ''
     })})

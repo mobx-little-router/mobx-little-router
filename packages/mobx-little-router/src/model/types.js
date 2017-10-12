@@ -104,6 +104,7 @@ export type RouteStateTreeNode<C, D> = ITreeNode<RouteValue<C, D>>
 export type PathElement<C, D> = {
   node: RouteStateTreeNode<C, D>,
   remaining: string,
+  parentUrl: string,
   segment: string,
   params: Params
 }

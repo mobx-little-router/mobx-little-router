@@ -28,6 +28,7 @@ describe('isUrlFullyMatched', () => {
     const results = [
       {
         node: routes[0],
+        parentUrl: '',
         segment: '/a',
         remaining: '',
         params: {}
@@ -37,15 +38,15 @@ describe('isUrlFullyMatched', () => {
   })
 
   test('not matched', () => {
-    let results = [{ node: routes[0], segment: '', remaining: '/b/c', params: {} }]
+    let results = [{ node: routes[0], parentUrl: '', segment: '', remaining: '/b/c', params: {} }]
     expect(isUrlFullyMatched('/a/b/c', results)).toBe(false)
   })
 
   test('ignores last "/"', () => {
     const results = [
-      { node: routes[0], segment: '', remaining: '/b/c/', params: {} },
-      { node: routes[0].children[0], segment: '', remaining: '/c/', params: {} },
-      { node: routes[0].children[0].children[0], segment: '', remaining: '/', params: {} }
+      { node: routes[0], parentUrl: '', segment: '', remaining: '/b/c/', params: {} },
+      { node: routes[0].children[0], parentUrl: '', segment: '', remaining: '/c/', params: {} },
+      { node: routes[0].children[0].children[0], parentUrl: '', segment: '', remaining: '/', params: {} }
     ]
 
     expect(isUrlFullyMatched('/a/b/c/', results)).toBe(true)

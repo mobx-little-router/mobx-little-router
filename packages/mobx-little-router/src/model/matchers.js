@@ -1,9 +1,10 @@
 // @flow
 import UrlPattern from 'url-pattern'
 
-export type MatchFn = (url: string) => {
+export type MatchFn = (current: string, full?: string) => {
   matched: boolean,
   params: null | Object,
+  parentUrl: string,
   segment: string,
   remaining: string
 }
@@ -23,6 +24,7 @@ export function any(path: string): MatchFn {
     return {
       matched: true,
       params: null,
+      parentUrl: '',
       segment: url,
       remaining: ''
     }
@@ -39,22 +41,30 @@ function normalize(path: string): string {
 }
 
 function createMatcher(pattern: UrlPattern) {
-  return (url: string) => {
-    const result = pattern.match(url)
+  return (current: string, full?: string) => {
+    const result = pattern.match(current)
+
     if (result) {
       const { _, ...params } = result
+      const segment = pattern.stringify({ ...params, _: '' })
+      const parentUrl = typeof full === 'string'
+        ? full.replace(new RegExp(`${segment}${_ || ''}\/?$`), '')
+        : ''
+
       return {
         matched: true,
         params,
-        segment: pattern.stringify({ ...params, _: '' }),
+        parentUrl,
+        segment,
         remaining: _
       }
     } else {
       return {
         matched: false,
         params: null,
+        parentUrl: '',
         segment: '',
-        remaining: url
+        remaining: current
       }
     }
   }

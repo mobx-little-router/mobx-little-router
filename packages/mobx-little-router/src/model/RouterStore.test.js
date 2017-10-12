@@ -171,9 +171,9 @@ describe('RouterStore', () => {
       }
     ]
     const nextPath: PathElement<*, *>[] = [
-      { node: a, params: { x: '3' }, segment: '/a/3', remaining: '/b/2/c/4' },
-      { node: b, params: { y: '2' }, segment: '/b/2', remaining: '/c/4' },
-      { node: c, params: { z: '4' }, segment: '/c/4', remaining: '' }
+      { node: a, params: { x: '3' }, parentUrl: '', segment: '/a/3', remaining: '/b/2/c/4' },
+      { node: b, params: { y: '2' }, parentUrl: '', segment: '/b/2', remaining: '/c/4' },
+      { node: c, params: { z: '4' }, parentUrl: '', segment: '/c/4', remaining: '' }
     ]
     store.routes.replace(currRoutes)
 

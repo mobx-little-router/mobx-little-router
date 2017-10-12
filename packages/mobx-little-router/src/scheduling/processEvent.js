@@ -374,7 +374,7 @@ function findCatchAllPath(matchedPath, leaf) {
   if (catchAll) {
     return matchedPath
       .slice(0, idx)
-      .concat([{ node: catchAll, segment: leaf.remaining, remaining: '', params: {} }])
+      .concat([{ node: catchAll, parentUrl: leaf.parentUrl, segment: leaf.remaining, remaining: '', params: {} }])
   }
   return []
 }

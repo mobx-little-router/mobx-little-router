@@ -315,4 +315,98 @@ describe('Public API', () => {
 
     console.log(router.store.location.pathname)
   })
+
+  test('route segments are correct', async () => {
+    const router = install({
+      history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
+      getContext: () => { },
+      routes: [
+        {
+          path: 'a',
+          children: [
+            {
+              path: 'b',
+              children: [
+                {
+                  path: 'c'
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    await router.start()
+
+    await delay(0)
+
+    expect(router.store.location.pathname).toEqual('/a/')
+    expect(getLastRoute(router).segment).toBe('/a')
+
+    router.push('/a/b')
+
+    await delay(0)
+
+    expect(router.store.location.pathname).toEqual('/a/b/')
+    expect(getLastRoute(router).segment).toBe('/b')
+
+    router.push('/a/b/c')
+
+    await delay(0)
+
+    expect(router.store.location.pathname).toEqual('/a/b/c/')
+    expect(getLastRoute(router).segment).toBe('/c')
+
+    router.stop()
+  })
+
+  test('route parentUrls are correct', async () => {
+    const router = install({
+      history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
+      getContext: () => { },
+      routes: [
+        {
+          path: 'a',
+          children: [
+            {
+              path: 'b',
+              children: [
+                {
+                  path: 'c'
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+
+    await router.start()
+
+    await delay(0)
+
+    expect(router.store.location.pathname).toEqual('/a/')
+    expect(getLastRoute(router).parentUrl).toBe('')
+
+    router.push('/a/b')
+
+    await delay(0)
+
+    expect(router.store.location.pathname).toEqual('/a/b/')
+    expect(getLastRoute(router).parentUrl).toBe('/a')
+
+    router.push('/a/b/c')
+
+    await delay(0)
+
+    expect(router.store.location.pathname).toEqual('/a/b/c/')
+    expect(getLastRoute(router).parentUrl).toBe('/a/b')
+
+    router.stop()
+  })
 })
+
+const getLastRoute = (router) => {
+  return router.store.routes[router.store.routes.length -1]
+}
