@@ -84,10 +84,6 @@ and [server](https://github.com/mobx-little-router/mobx-little-router/blob/maste
 
 Install modules by running `yarn`, then run `yarn start` and follow the prompts.
 
-You can also run each example individually by going to the [`examples`](./examples)/[module] folder, and running `yarn start`.
-
-Note: Make sure to run `yarn bootstrap` before starting an example.
-
 ## Learn more
 
 For more information, you may refer to the README files for each of the packages under MobX Little Router.
