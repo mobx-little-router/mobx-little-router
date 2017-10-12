@@ -19,7 +19,8 @@ describe('withRedirect', () => {
             {
               path: 'e',
               children: [{ path: 'f', redirectTo: 'g' }]
-            }
+            },
+            { path: 'h', redirectTo: 'i' }
           ]
         }
       ]
@@ -27,31 +28,34 @@ describe('withRedirect', () => {
 
     await assertRedirect(
       result.children[0],
-      '',
-      { pathname: '/a/123', params: { id: '123' } },
+      { pathname: '/a/123', parentUrl: '', segment: '/a/123', params: { id: '123' } },
       { pathname: '/b/123', params: { id: '123' } }
     )
 
     await assertRedirect(
       result.children[1].children[0],
-      '',
-      { pathname: '/c', params: {} },
-      { pathname: '/d', params: {} }
+      { pathname: '/c', parentUrl: '/c', segment: '', params: {} },
+      { pathname: '/c/d', params: {} }
     )
 
     await assertRedirect(
       result.children[1].children[1].children[0],
-      '',
-      { pathname: '/c/e/f', params: {} },
-      { pathname: '/g', params: {} }
+      { pathname: '/c/e/f', parentUrl: '/c/e', segment: '/f', params: {} },
+      { pathname: '/c/e/g', params: {} }
+    )
+
+    await assertRedirect(
+      result.children[1].children[2],
+      { pathname: '/c/h', parentUrl: '/c', segment: '/h', params: {} },
+      { pathname: '/c/i', params: {} }
     )
   })
 })
 
-async function assertRedirect(config, parentUrl, from, to) {
+async function assertRedirect(config, from, to) {
   await expect(
     config.willActivate(
-      createRoute(createRouteStateTreeNode(config), parentUrl, from.pathname, from.params, {}),
+      createRoute(createRouteStateTreeNode(config), from.parentUrl, from.segment, from.params, {}),
       new Navigation({
         type: 'PUSH',
         to: { pathname: from.pathname }

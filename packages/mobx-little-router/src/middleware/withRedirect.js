@@ -8,6 +8,8 @@ import transformConfig from './transformConfig'
 
 async function NOP(a: *, b: *) {}
 
+const isIndexRoute = (route: Route<*, *>): boolean => route.node.value.path.length === 0
+
 export default transformConfig((config: Config<*>) => {
   if (typeof config.redirectTo === 'string') {
     const _willActivate = typeof config.willActivate === 'function'
@@ -18,9 +20,11 @@ export default transformConfig((config: Config<*>) => {
     const willActivate = (route: Route<*, *>, navigation: Navigation) => {
       _willActivate(route, navigation)
       const url = pattern.stringify(route.params)
-      return navigation.redirectTo(
-        url.startsWith('/') ? url : `${route.parentUrl}/${url}`
-      )
+      const redirectUrl = url.startsWith('/')
+        ? url
+        : `${route.parentUrl}/${url}`
+
+      return navigation.redirectTo(redirectUrl)
     }
     return { ...config, willActivate }
   } else {
