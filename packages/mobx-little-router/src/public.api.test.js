@@ -428,7 +428,7 @@ describe('Public API', () => {
 
     router.push('/a')
 
-    await delay(0)
+    await delay(200)
 
     expect(router.store.location.pathname).toEqual('/a/b/')
 
@@ -456,7 +456,7 @@ describe('Public API', () => {
 
     router.push('/a/c')
 
-    await delay(0)
+    await delay(200)
 
     expect(router.store.location.pathname).toEqual('/a/b/')
 
@@ -487,14 +487,14 @@ describe('Public API', () => {
 
     router.push('/a/c')
 
-    await delay(0)
+    await delay(200)
 
     expect(router.store.location.pathname).toEqual('/a/b/d/')
 
     router.stop()
   })
 
-  test.only('redirectTo inside a dynamic children', async () => {
+  test('redirectTo inside a dynamic children', async () => {
     const middleware = (evt): any => {
       if (evt.type === 'CHILDREN_CONFIG_LOADED') {
         return {
@@ -520,8 +520,8 @@ describe('Public API', () => {
                   loadChildren: () => {
                     return Promise.resolve({
                       routes: [
-                        { path: 'd' }, // 3) End up here
-                        { path: '', redirectTo: 'd' } // 2) Now redirect from here
+                        { path: 'c' }, // 3) End up here
+                        { path: '', redirectTo: 'c' } // 2) Now redirect from here
                       ]
                     })
                   }
@@ -539,9 +539,9 @@ describe('Public API', () => {
 
     router.push('/a/b')
 
-    await delay(100)
+    await delay(200)
 
-    expect(router.store.location.pathname).toEqual('/a/b/d/')
+    expect(router.store.location.pathname).toEqual('/a/b/c/')
 
     router.stop()
   })
