@@ -17,6 +17,7 @@ export default function findPathFromRoot(
   const path = findPath(
     (node: RouteStateTreeNode<*, *>) => {
       const { matched, params, segment, parentUrl, remaining } = node.value.matcher(_remaining, url)
+
       _params = { ..._params, ...params }
       matchedParams[node.value.key] = _params
       matchedParentUrl[node.value.key] = parentUrl

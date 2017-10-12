@@ -57,7 +57,7 @@ export default function createRouteStateTreeNode(
         : null,
       canActivate: config.canActivate || NOP,
       canDeactivate: config.canDeactivate || NOP,
-      willActivate: getWillActivate(config),
+      willActivate: config.willActivate || NOP,
       willDeactivate: config.willDeactivate || NOP,
       willResolve: config.willResolve || NOP,
       onError: config.onError ||  null,
@@ -84,18 +84,4 @@ export function getMatcher(config: Config<*>) {
 
   // Otherwise we default to partial.
   return m.partial
-}
-
-// If a `redirectTo` has been specified on this route config, then the `willActivate`
-// callback will redirect throw with a redirect.
-export function getWillActivate(config: Config<*>) {
-  let f = typeof config.willActivate === 'function' ? config.willActivate : NOP
-  if (typeof config.redirectTo === 'string') {
-    const pattern = new UrlPattern(config.redirectTo)
-    return (route: Route<*, *>, navigation: Navigation) => {
-      f(route, navigation)
-      return navigation.redirectTo(pattern.stringify(route.params))
-    }
-  }
-  return f
 }
