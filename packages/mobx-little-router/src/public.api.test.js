@@ -307,15 +307,6 @@ describe('Public API', () => {
     expect(spy).toHaveBeenCalled()
   })
 
-  test.skip('redirects', async () => {
-    await router.start()
-    await router.push('/a')
-    await delay(0)
-    await delay(0)
-
-    console.log(router.store.location.pathname)
-  })
-
   test('route segments are correct', async () => {
     const router = install({
       history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
