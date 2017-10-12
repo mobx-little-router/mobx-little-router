@@ -80,6 +80,14 @@ router.start(() => {
 For a more comprehensive React example, you can explore the [client](https://github.com/mobx-little-router/mobx-little-router/blob/master/examples/react-client/src/index.js)
 and [server](https://github.com/mobx-little-router/mobx-little-router/blob/master/examples/react-server-side-rendering/index.js) examples.
 
+## Running examples
+
+Install modules by running `yarn`, then run `yarn start` and follow the prompts.
+
+You can also run each example individually by going to the [`examples`](./examples)/[module] folder, and running `yarn start`.
+
+Note: Make sure to run `yarn bootstrap` before starting an example.
+
 ## Learn more
 
 For more information, you may refer to the README files for each of the packages under MobX Little Router.
@@ -112,7 +120,7 @@ Run git clone and install.
 ```
 git clone git@github.com:mobx-router/mobx-router.git mobx-router
 cd mobx-router
-yarn install
+yarn bootstrap
 ```
 
 ### Running tests
