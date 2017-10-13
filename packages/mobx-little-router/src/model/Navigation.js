@@ -1,5 +1,5 @@
 // @flow
-import type { Href, Location } from './types'
+import type { Href, Location, Route } from './types'
 
 /*
  * The transition object encodes information about the type of transition
@@ -22,7 +22,8 @@ export type NavigationDescriptor = {
   sequence?: number,
   to: Location,
   from?: Location,
-  shouldTransition?: boolean
+  shouldTransition?: boolean,
+  leaf?: Route<*, *>
 }
 
 export default class Navigation {
@@ -31,6 +32,7 @@ export default class Navigation {
   from: null | Location
   sequence: number
   shouldTransition: boolean
+  leaf: ?Route<*, *>
 
   static EMPTY = new Navigation({
     type: NavigationTypes.POP,
@@ -64,9 +66,23 @@ export default class Navigation {
   }
 
   redirectTo(href: Href): Promise<void> {
+    const { leaf } = this
+    const to = asLocation(function() {
+      if (typeof href === 'string') {
+        const parentUrl = leaf ? leaf.parentUrl : ''
+        const redirectUrl = href.startsWith('/')
+          ? href
+          : `${parentUrl}/${href}`
+
+        return redirectUrl
+      }
+
+      return href
+    }())
+
     return Promise.reject(this.next({
       type: 'REPLACE',
-      to: asLocation(href)
+      to
     }))
   }
 

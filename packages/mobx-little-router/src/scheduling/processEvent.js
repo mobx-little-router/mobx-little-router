@@ -180,6 +180,9 @@ export async function processEvent(
         store.routes.slice(),
         routes
       )
+      
+      // Add matched leaf to the navigation object so it can be used for redirection
+      navigation.leaf = routes[routes.length - 1]
 
       try {
         // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
@@ -264,7 +267,7 @@ export async function processEvent(
     case EventTypes.NAVIGATION_ERROR: {
       return null
     }
-    case EventTypes.NAVIGATION_CANCELLED:{
+    case EventTypes.NAVIGATION_CANCELLED: {
       return {
         type: EventTypes.EMPTY,
         navigation: evt.navigation,
