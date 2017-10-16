@@ -1,11 +1,15 @@
-// @flow
+/* @flow
+ * This is the public facade over all of the routing interface.
+ * The `Router` is a coordinator of other objects in the system.
+ */
 import { autorun, computed, extendObservable, when } from 'mobx'
+import type { IObservableArray } from 'mobx'
 import QueryString from 'qs'
 import delay from './util/delay'
 import type { Action, History } from 'history'
 import createRouteStateTreeNode from './model/createRouteStateTreeNode'
 import RouterStore from './model/RouterStore'
-import type { Config, Href } from './model/types'
+import type { Config, Href, Location, Route } from './model/types'
 import Scheduler from './scheduling/Scheduler'
 import type { Event } from './events'
 import { EventTypes } from './events'
@@ -13,30 +17,41 @@ import { NavigationTypes } from './model/Navigation'
 import type { IMiddleware } from './middleware/Middleware'
 
 class Router {
+  // Public members
   store: RouterStore
-  scheduler: Scheduler
-  initialChildren: Config<*>[]
-  history: History
-  disposers: Function[]
-  nextNavigation: * // This is computed from Scheduler event observable.
+  location: Location
+  activeRoutes: IObservableArray<Route<*, *>>
+  activeRouteKeys: string[]
+
+  // Private members
+  _scheduler: Scheduler
+  _initialChildren: Config<*>[]
+  _history: History
+  _disposers: Function[]
+  _nextNavigation: * // This is computed from Scheduler event observable.
 
   constructor(
     history: History,
     config: Config<*>[],
-    getContext: void | (() => any),
+    getContext?: void | (() => any),
     middleware: IMiddleware
   ) {
-    this.disposers = []
+    this._disposers = []
 
-    this.history = history
+    this._history = history
     const root = createRouteStateTreeNode({ path: '', match: 'partial' }, getContext) // Initial root.
-    this.initialChildren = config
+    this._initialChildren = config
     this.store = new RouterStore(root)
-    this.scheduler = new Scheduler(this.store, middleware)
+    this._scheduler = new Scheduler(this.store, middleware)
 
     extendObservable(this, {
-      nextNavigation: computed(() => {
-        const { event } = this.scheduler
+      location: computed(() => this.store.location),
+      activeRoutes: computed((): IObservableArray<Route<*, *>> => this.store.routes),
+      activeRouteKeys: computed((): string[] => this.activeRoutes.map(r => r.node.value.key)),
+
+      // Private usage to figure out if an event has a next navigation object.
+      _nextNavigation: computed(() => {
+        const { event } = this._scheduler
         return event !== null
           ? event.nextNavigation !== null ? event.nextNavigation : null
           : null
@@ -50,31 +65,31 @@ class Router {
   async start(callback: ?Function) {
     let error: any = null
     try {
-      this.scheduler.start()
+      this._scheduler.start()
 
       // Loads initial set of children (running through all middleware).
-      this.scheduler.dispatch({
+      this._scheduler.dispatch({
         type: EventTypes.CHILDREN_LOADING,
         leaf: { node: this.store.state.root },
-        children: this.initialChildren
+        children: this._initialChildren
       })
 
       // Look for any next navigation from events and call corresponding method on history.
-      this.disposers.push(autorun(this.handleNextNavigation))
+      this._disposers.push(autorun(this.handleNextNavigation))
       // Initial location.
-      this.disposers.push(this.history.listen(this.handleLocationChange))
+      this._disposers.push(this._history.listen(this.handleLocationChange))
 
       await delay(0)
 
       // Schedule initial nextNavigation.
-      await this.scheduler.schedule(asNavigation(this.history.location))
+      await this._scheduler.schedule(asNavigation(this._history.location))
 
       // Wait until nextNavigation is processed.
       await this.navigated()
 
-      if (this.scheduler.event.done === true) {
-        if (this.scheduler.event.type === EventTypes.NAVIGATION_ERROR) {
-          error = this.scheduler.event.error
+      if (this._scheduler.event.done === true) {
+        if (this._scheduler.event.type === EventTypes.NAVIGATION_ERROR) {
+          error = this._scheduler.event.error
         } else {
           callback && callback(this)
         }
@@ -93,13 +108,13 @@ class Router {
   }
 
   stop() {
-    this.scheduler.stop()
-    this.disposers.forEach(f => f())
+    this._scheduler.stop()
+    this._disposers.forEach(f => f())
   }
 
   subscribeEvent(f: (x: Event) => void): () => void {
     return autorun(() => {
-      const { event } = this.scheduler
+      const { event } = this._scheduler
       if (event !== null) {
         f(event)
       }
@@ -107,17 +122,17 @@ class Router {
   }
 
   push(href: Href) {
-    this.history.push(withSearch(href))
+    this._history.push(withSearch(href))
     return this.navigated()
   }
 
   replace(href: Href) {
-    this.history.replace(withSearch(href))
+    this._history.replace(withSearch(href))
     return this.navigated()
   }
 
   goBack() {
-    this.history.goBack()
+    this._history.goBack()
     return this.navigated()
   }
 
@@ -127,37 +142,37 @@ class Router {
   navigated(): Promise<void> {
     return new Promise(res => {
       when(() => {
-        const { event } = this.scheduler
+        const { event } = this._scheduler
         return event.done === true
       }, res)
     })
   }
 
   handleNextNavigation = () => {
-    const { nextNavigation } = this
+    const { _nextNavigation } = this
 
-    if (!nextNavigation) {
+    if (!_nextNavigation) {
       return
     }
 
     // Do this on next tick so we don't clobber current event.
     // TODO: Move this redirect logic to a middleware.
     setTimeout(() => {
-      switch (nextNavigation.type) {
+      switch (_nextNavigation.type) {
         case NavigationTypes.PUSH:
-          return this.push(nextNavigation.to)
+          return this.push(_nextNavigation.to)
         case NavigationTypes.REPLACE:
-          return this.replace(nextNavigation.to)
+          return this.replace(_nextNavigation.to)
         case NavigationTypes.GO_BACK:
           return this.goBack()
         default:
-          throw new TypeError(`Invalid navigation returned (${nextNavigation.type})`)
+          throw new TypeError(`Invalid navigation returned (${_nextNavigation.type})`)
       }
     })
   }
 
   handleLocationChange = (location: Object, action: ?Action) => {
-    this.scheduler.schedule(asNavigation(location, action))
+    this._scheduler.schedule(asNavigation(location, action))
   }
 }
 

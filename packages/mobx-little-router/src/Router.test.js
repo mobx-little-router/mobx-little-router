@@ -26,39 +26,39 @@ describe('Router', () => {
 
   describe('events', () => {
     test('handling transition events', async () => {
-      router.scheduler.dispatch(
+      router._scheduler.dispatch(
         abortNavigation('PUSH', { pathname: '/' }, { pathname: '/a' })
       )
       await delay(0)
       await delay(0)
 
-      expect(router.store.location.pathname).toEqual('/a/')
+      expect(router.location.pathname).toEqual('/a/')
 
-      router.scheduler.dispatch(abortNavigation('GO_BACK', { pathname: '/' }, null))
+      router._scheduler.dispatch(abortNavigation('GO_BACK', { pathname: '/' }, null))
       await delay(0)
       await delay(0)
 
-      expect(router.store.location.pathname).toEqual('/')
+      expect(router.location.pathname).toEqual('/')
 
-      router.scheduler.dispatch(
+      router._scheduler.dispatch(
         abortNavigation('REPLACE', { pathname: '/' }, { pathname: '/b' })
       )
       await delay(0)
       await delay(0)
 
-      expect(router.store.location.pathname).toEqual('/b/')
+      expect(router.location.pathname).toEqual('/b/')
     })
   })
 
   test('stringify query into query', async () => {
     await router.push({ pathname: '/a', query: { b: '2', c: '3' } })
-    expect(router.store.location.search).toEqual('?b=2&c=3')
+    expect(router.location.search).toEqual('?b=2&c=3')
 
     await router.push({ pathname: '/a', query: {} })
-    expect(router.store.location.search).toEqual('')
+    expect(router.location.search).toEqual('')
 
     await router.push(({ pathname: '/a', query: null }: any)) // In case of dynamic `any` being pushed.
-    expect(router.store.location.search).toEqual('')
+    expect(router.location.search).toEqual('')
   })
 })
 

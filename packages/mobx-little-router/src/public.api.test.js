@@ -35,21 +35,21 @@ describe('Public API', () => {
     const changes = []
     await router.start()
 
-    autorun(() => changes.push(router.store.location.pathname))
+    autorun(() => changes.push(router.location.pathname))
 
     await router.push('/foo')
     await router.push('/bar')
 
-    expect(router.store.location.pathname).toEqual('/bar/')
+    expect(router.location.pathname).toEqual('/bar/')
 
     await router.goBack()
 
-    expect(router.store.location.pathname).toEqual('/foo/')
+    expect(router.location.pathname).toEqual('/foo/')
 
     await router.push('/bar')
     await router.replace('/quux')
 
-    expect(router.store.location.pathname).toEqual('/quux/')
+    expect(router.location.pathname).toEqual('/quux/')
 
     expect(changes).toEqual(['/initial/', '/foo/', '/bar/', '/foo/', '/bar/', '/quux/'])
 
@@ -65,7 +65,7 @@ describe('Public API', () => {
     const changes = []
     await router.start()
 
-    autorun(() => changes.push(router.store.location.pathname))
+    autorun(() => changes.push(router.location.pathname))
 
     router.push('/1')
     router.push('/2')
@@ -93,7 +93,7 @@ describe('Public API', () => {
     router.start(_router => {
       expect(_router).toBe(router)
 
-      autorun(() => changes.push(_router.store.location.pathname))
+      autorun(() => changes.push(_router.location.pathname))
 
       _router.push('/1').then(() => {
         expect(changes).toEqual(['/initial/', '/1/'])
@@ -157,7 +157,7 @@ describe('Public API', () => {
       const changes = []
       await router.start()
 
-      autorun(() => changes.push(router.store.location.pathname))
+      autorun(() => changes.push(router.location.pathname))
 
       await router.push('/a')
       await router.push('/b')
@@ -182,7 +182,7 @@ describe('Public API', () => {
     const changes = []
     await router.start()
 
-    autorun(() => changes.push(router.store.location.pathname))
+    autorun(() => changes.push(router.location.pathname))
 
     await router.push('/404')
 
@@ -257,7 +257,7 @@ describe('Public API', () => {
     await router.start()
     await router.push('/a/b')
 
-    expect(router.store.location).toEqual(
+    expect(router.location).toEqual(
       expect.objectContaining({
         pathname: '/a/b/'
       })
@@ -302,7 +302,7 @@ describe('Public API', () => {
 
     await router.start()
 
-    expect(router.store.location.pathname).toEqual('/')
+    expect(router.location.pathname).toEqual('/')
 
     expect(spy).toHaveBeenCalled()
   })
@@ -310,7 +310,7 @@ describe('Public API', () => {
   test('route segments are correct', async () => {
     const router = install({
       history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
-      getContext: () => { },
+      getContext: () => {},
       routes: [
         {
           path: 'a',
@@ -332,21 +332,21 @@ describe('Public API', () => {
 
     await delay(0)
 
-    expect(router.store.location.pathname).toEqual('/a/')
+    expect(router.location.pathname).toEqual('/a/')
     expect(getLastRoute(router).segment).toBe('/a')
 
     router.push('/a/b')
 
     await delay(0)
 
-    expect(router.store.location.pathname).toEqual('/a/b/')
+    expect(router.location.pathname).toEqual('/a/b/')
     expect(getLastRoute(router).segment).toBe('/b')
 
     router.push('/a/b/c')
 
     await delay(0)
 
-    expect(router.store.location.pathname).toEqual('/a/b/c/')
+    expect(router.location.pathname).toEqual('/a/b/c/')
     expect(getLastRoute(router).segment).toBe('/c')
 
     router.stop()
@@ -355,7 +355,7 @@ describe('Public API', () => {
   test('route parentUrls are correct', async () => {
     const router = install({
       history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
-      getContext: () => { },
+      getContext: () => {},
       routes: [
         {
           path: 'a',
@@ -377,21 +377,21 @@ describe('Public API', () => {
 
     await delay(0)
 
-    expect(router.store.location.pathname).toEqual('/a/')
+    expect(router.location.pathname).toEqual('/a/')
     expect(getLastRoute(router).parentUrl).toBe('')
 
     router.push('/a/b')
 
     await delay(0)
 
-    expect(router.store.location.pathname).toEqual('/a/b/')
+    expect(router.location.pathname).toEqual('/a/b/')
     expect(getLastRoute(router).parentUrl).toBe('/a')
 
     router.push('/a/b/c')
 
     await delay(0)
 
-    expect(router.store.location.pathname).toEqual('/a/b/c/')
+    expect(router.location.pathname).toEqual('/a/b/c/')
     expect(getLastRoute(router).parentUrl).toBe('/a/b')
 
     router.stop()
@@ -400,7 +400,7 @@ describe('Public API', () => {
   test('redirectTo from index route', async () => {
     const router = install({
       history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
-      getContext: () => { },
+      getContext: () => {},
       routes: [
         {
           path: 'a',
@@ -415,13 +415,13 @@ describe('Public API', () => {
 
     await router.start()
 
-    expect(router.store.location.pathname).toEqual('/')
+    expect(router.location.pathname).toEqual('/')
 
     router.push('/a')
 
     await delay(200)
 
-    expect(router.store.location.pathname).toEqual('/a/b/')
+    expect(router.location.pathname).toEqual('/a/b/')
 
     router.stop()
   })
@@ -429,7 +429,7 @@ describe('Public API', () => {
   test('redirectTo from child route', async () => {
     const router = install({
       history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
-      getContext: () => { },
+      getContext: () => {},
       routes: [
         {
           path: 'a',
@@ -443,13 +443,13 @@ describe('Public API', () => {
 
     await router.start()
 
-    expect(router.store.location.pathname).toEqual('/')
+    expect(router.location.pathname).toEqual('/')
 
     router.push('/a/c')
 
     await delay(200)
 
-    expect(router.store.location.pathname).toEqual('/a/b/')
+    expect(router.location.pathname).toEqual('/a/b/')
 
     router.stop()
   })
@@ -457,7 +457,7 @@ describe('Public API', () => {
   test('redirectTo from index route with navigation.redirectTo', async () => {
     const router = install({
       history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
-      getContext: () => { },
+      getContext: () => {},
       routes: [
         {
           path: 'a',
@@ -472,13 +472,13 @@ describe('Public API', () => {
 
     await router.start()
 
-    expect(router.store.location.pathname).toEqual('/')
+    expect(router.location.pathname).toEqual('/')
 
     router.push('/a')
 
     await delay(200)
 
-    expect(router.store.location.pathname).toEqual('/a/b/')
+    expect(router.location.pathname).toEqual('/a/b/')
 
     router.stop()
   })
@@ -486,7 +486,7 @@ describe('Public API', () => {
   test('redirectTo from child route with navigation.redirectTo', async () => {
     const router = install({
       history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
-      getContext: () => { },
+      getContext: () => {},
       routes: [
         {
           path: 'a',
@@ -500,13 +500,13 @@ describe('Public API', () => {
 
     await router.start()
 
-    expect(router.store.location.pathname).toEqual('/')
+    expect(router.location.pathname).toEqual('/')
 
     router.push('/a/c')
 
     await delay(200)
 
-    expect(router.store.location.pathname).toEqual('/a/b/')
+    expect(router.location.pathname).toEqual('/a/b/')
 
     router.stop()
   })
@@ -514,15 +514,18 @@ describe('Public API', () => {
   test('redirectTo multiple redirects', async () => {
     const router = install({
       history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
-      getContext: () => { },
+      getContext: () => {},
       routes: [
         {
           path: 'a',
           children: [
-            { path: 'b', children: [
-              { path: 'd' }, // 3) End up here
-              { path: '', redirectTo: 'd' } // 2) Now redirect from here
-            ]},
+            {
+              path: 'b',
+              children: [
+                { path: 'd' }, // 3) End up here
+                { path: '', redirectTo: 'd' } // 2) Now redirect from here
+              ]
+            },
             { path: 'c', redirectTo: 'b' } // 1) redirect from here first
           ]
         }
@@ -531,13 +534,13 @@ describe('Public API', () => {
 
     await router.start()
 
-    expect(router.store.location.pathname).toEqual('/')
+    expect(router.location.pathname).toEqual('/')
 
     router.push('/a/c')
 
     await delay(200)
 
-    expect(router.store.location.pathname).toEqual('/a/b/d/')
+    expect(router.location.pathname).toEqual('/a/b/d/')
 
     router.stop()
   })
@@ -583,19 +586,32 @@ describe('Public API', () => {
 
     await router.start()
 
-    expect(router.store.location.pathname).toEqual('/')
+    expect(router.location.pathname).toEqual('/')
 
     router.push('/a/b')
 
     await delay(200)
 
-    expect(router.store.location.pathname).toEqual('/a/b/c/')
+    expect(router.location.pathname).toEqual('/a/b/c/')
 
     router.stop()
   })
 
+  test('custom keys and active keys', async () => {
+    router = install({
+      history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
+      getContext: () => ({ message: 'Hello' }),
+      routes: [{ path: 'a', key: 'my-custom-key' }]
+    })
+
+    await router.start()
+
+    expect(router.activeRouteKeys).toEqual(expect.arrayContaining(
+      ['my-custom-key']
+    ))
+  })
 })
 
-const getLastRoute = (router) => {
-  return router.store.routes[router.store.routes.length -1]
+const getLastRoute = router => {
+  return router.store.routes[router.store.routes.length - 1]
 }
