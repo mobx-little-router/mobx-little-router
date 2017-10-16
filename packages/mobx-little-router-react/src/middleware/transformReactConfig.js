@@ -1,3 +1,4 @@
+// @flow
 import { transformConfig } from 'mobx-little-router'
 import { when } from 'mobx'
 
