@@ -9,7 +9,7 @@ import delay from './util/delay'
 import type { Action, History } from 'history'
 import createRouteStateTreeNode from './model/createRouteStateTreeNode'
 import RouterStore from './model/RouterStore'
-import type { Config, Href, Location, Route } from './model/types'
+import type { Config, Href, Location, Route, Query } from './model/types'
 import Scheduler from './scheduling/Scheduler'
 import type { Event } from './events'
 import { EventTypes } from './events'
@@ -129,6 +129,14 @@ class Router {
   replace(href: Href) {
     this._history.replace(withSearch(href))
     return this.navigated()
+  }
+
+  pushQuery(query: Query) {
+    return this.push(`${this.location.pathname}?${QueryString.stringify(query)}`)
+  }
+
+  replaceQuery(query: Query) {
+    return this.replace(`${this.location.pathname}?${QueryString.stringify(query)}`)
   }
 
   goBack() {

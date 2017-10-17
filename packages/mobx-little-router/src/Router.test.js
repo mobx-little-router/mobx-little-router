@@ -60,6 +60,28 @@ describe('Router', () => {
     await router.push(({ pathname: '/a', query: null }: any)) // In case of dynamic `any` being pushed.
     expect(router.location.search).toEqual('')
   })
+
+  test('pushQuery', async () => {
+    await router.pushQuery({ b: '555' })
+    expect(router.location.search).toEqual('?b=555')
+
+    await router.pushQuery({})
+    expect(router.location.search).toEqual('')
+
+    await router.pushQuery(null)
+    expect(router.location.search).toEqual('')
+  })
+
+  test('replaceQuery', async () => {
+    await router.replaceQuery({ b: '111', c: 222 })
+    expect(router.location.search).toEqual('?b=111&c=222')
+
+    await router.replaceQuery({})
+    expect(router.location.search).toEqual('')
+
+    await router.replaceQuery(null)
+    expect(router.location.search).toEqual('')
+  })
 })
 
 function abortNavigation(navigationType: *, from: *, to: *) {
