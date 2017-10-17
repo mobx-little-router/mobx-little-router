@@ -93,5 +93,17 @@ describe('URL matchers', () => {
       parentUrl: '',
       segment: '/whatever',
       remaining: ''
-    })})
+    })
+  })
+
+  test('params keys are always returned', () => {
+    const x = m.full('(:foo)')
+    expect(x('/whatever')).toEqual(expect.objectContaining({
+      params: { foo: 'whatever' }
+    }))
+
+    expect(x('/')).toEqual(expect.objectContaining({
+      params: { foo: null }
+    }))
+  })
 })

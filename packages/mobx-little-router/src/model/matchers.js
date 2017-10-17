@@ -50,10 +50,16 @@ function createMatcher(pattern: UrlPattern) {
       const parentUrl = typeof full === 'string'
         ? full.replace(new RegExp(`${segment}${_ || ''}\/?$`), '')
         : ''
+      const normalizedParams = pattern.names.reduce((acc, k) => {
+        if (k !== '_') {
+          acc[k] = params[k] || null
+        }
+        return acc
+      }, {})
 
       return {
         matched: true,
-        params,
+        params: normalizedParams,
         parentUrl,
         segment,
         remaining: _
