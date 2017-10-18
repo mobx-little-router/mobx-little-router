@@ -47,7 +47,9 @@ class Router {
     extendObservable(this, {
       location: computed(() => this.store.location),
       activeRoutes: computed((): IObservableArray<Route<*, *>> => this.store.routes),
-      activeRouteKeys: computed((): string[] => this.activeRoutes.map(r => r.node.value.key)),
+      activeRouteKeys: computed((): string[] =>
+        this.activeRoutes.map(r => r.node.value.key)
+      ),
 
       // Private usage to figure out if an event has a next navigation object.
       _nextNavigation: computed(() => {
@@ -85,17 +87,12 @@ class Router {
       await this._scheduler.schedule(asNavigation(this._history.location))
 
       // Wait until nextNavigation is processed.
-      await this.navigated()
+      await this.done()
 
-      if (this._scheduler.event.done === true) {
-        if (this._scheduler.event.type === EventTypes.NAVIGATION_ERROR) {
-          error = this._scheduler.event.error
-        } else {
-          callback && callback(this)
-        }
+      if (this._scheduler.event.type === EventTypes.NAVIGATION_ERROR) {
+        error = this._scheduler.event.error
       } else {
-        // TODO: Provide better hint to fix detected errors.
-        error = new Error('Router failed to start for unknown reasons')
+        callback && callback(this)
       }
     } catch (err) {
       error = err
@@ -123,12 +120,12 @@ class Router {
 
   push(href: Href) {
     this._history.push(withSearch(href))
-    return this.navigated()
+    return this.done()
   }
 
   replace(href: Href) {
     this._history.replace(withSearch(href))
-    return this.navigated()
+    return this.done()
   }
 
   pushQuery(query: Query) {
@@ -141,18 +138,15 @@ class Router {
 
   goBack() {
     this._history.goBack()
-    return this.navigated()
+    return this.done()
   }
 
   /* Private helpers */
 
   // Waits for next navigation event to be processed and resolves.
-  navigated(): Promise<void> {
+  done(): Promise<void> {
     return new Promise(res => {
-      when(() => {
-        const { event } = this._scheduler
-        return event.done === true
-      }, res)
+      when(() => this._scheduler.event.done === true, res)
     })
   }
 

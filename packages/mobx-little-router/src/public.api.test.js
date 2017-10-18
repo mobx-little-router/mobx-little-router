@@ -606,9 +606,27 @@ describe('Public API', () => {
 
     await router.start()
 
-    expect(router.activeRouteKeys).toEqual(expect.arrayContaining(
-      ['my-custom-key']
-    ))
+    expect(router.activeRouteKeys).toEqual(expect.arrayContaining(['my-custom-key']))
+  })
+
+  test('router navigation within activation function', async () => {
+    router = install({
+      history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
+      getContext: () => ({ message: 'Hello' }),
+      routes: [
+        {
+          path: 'a',
+          willActivate: async () => {
+            router.replace('/b')
+          }
+        },
+        { path: 'b' }
+      ]
+    })
+
+    await router.start()
+
+    expect(router.location.pathname).toEqual('/b/')
   })
 })
 
