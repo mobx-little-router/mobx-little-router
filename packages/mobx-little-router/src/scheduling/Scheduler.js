@@ -70,7 +70,7 @@ export default class Scheduler {
         type: EventTypes.NAVIGATION_CANCELLED,
         navigation: this.currentNavigation,
         nextNavigation: null,
-        done: false
+        done: true
       })
     }
 

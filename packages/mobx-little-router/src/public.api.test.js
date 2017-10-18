@@ -288,9 +288,10 @@ describe('Public API', () => {
   })
 
   test('dynamic children', async () => {
-    const spy = jest.fn(() => Promise.resolve([{ path: '' }]))
+    const resolveSpy = jest.fn(() => Promise.resolve())
+    const spy = jest.fn(() => Promise.resolve([{ path: '', willResolve: resolveSpy }]))
     const router = install({
-      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+      history: createMemoryHistory({ initialEntries: ['/'] }),
       getContext: () => ({ stores: { a: false, b: 123 } }),
       routes: [
         {
@@ -303,8 +304,10 @@ describe('Public API', () => {
     await router.start()
 
     expect(router.location.pathname).toEqual('/')
+    expect(router._scheduler.event.type).toEqual(EventTypes.NAVIGATION_END)
 
     expect(spy).toHaveBeenCalled()
+    expect(resolveSpy).toHaveBeenCalled()
   })
 
   test('route segments are correct', async () => {
@@ -610,15 +613,14 @@ describe('Public API', () => {
   })
 
   test('router navigation within activation function', async () => {
+    const spy = jest.fn(() => router.replace('/b'))
     router = install({
-      history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
+      history: createMemoryHistory({ initialEntries: ['/a'] }),
       getContext: () => ({ message: 'Hello' }),
       routes: [
         {
           path: 'a',
-          willActivate: async () => {
-            router.replace('/b')
-          }
+          willActivate: spy
         },
         { path: 'b' }
       ]
@@ -626,6 +628,8 @@ describe('Public API', () => {
 
     await router.start()
 
+    expect(router._scheduler.event.type).toEqual(EventTypes.NAVIGATION_END)
+    expect(spy).toHaveBeenCalled()
     expect(router.location.pathname).toEqual('/b/')
   })
 })

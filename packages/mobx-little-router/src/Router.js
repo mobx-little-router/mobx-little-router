@@ -146,7 +146,15 @@ class Router {
   // Waits for next navigation event to be processed and resolves.
   done(): Promise<void> {
     return new Promise(res => {
-      when(() => this._scheduler.event.done === true, res)
+      when(() => {
+        switch (this._scheduler.event.type) {
+          case EventTypes.NAVIGATION_ERROR:
+          case EventTypes.NAVIGATION_END:
+            return true
+          default:
+            return false
+        }
+      }, res)
     })
   }
 

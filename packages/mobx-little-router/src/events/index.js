@@ -21,7 +21,6 @@ export const EventTypes = {
   NAVIGATION_TRANSITION_END: 'NAVIGATION_TRANSITION_END',
   NAVIGATION_CANCELLED: 'NAVIGATION_CANCELLED',
   NAVIGATION_ERROR: 'NAVIGATION_ERROR',
-  NAVIGATION_SUCCESS: 'NAVIGATION_SUCCESS',
   NAVIGATION_END: 'NAVIGATION_END'
 }
 
@@ -46,7 +45,7 @@ export type Empty = {
   type: 'EMPTY',
   navigation: null | Navigation,
   setter?: Setter,
-  done?: false,
+  done?: boolean,
   [other: string]: any
 }
 

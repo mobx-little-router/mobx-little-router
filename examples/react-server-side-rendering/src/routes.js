@@ -15,14 +15,11 @@ export default [
   },
   {
     path: 'about',
-    getData: () => ({ component: About }),
     // We can handle dynamic routes on server side as well!
     loadChildren: () => Promise.resolve([
       {
         path: '',
-        getData: () => ({
-          component: () => null
-        })
+        getData: () => ({ component: About }),
       },
       {
         path: '**',
