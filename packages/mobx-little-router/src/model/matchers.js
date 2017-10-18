@@ -1,7 +1,7 @@
 // @flow
 import UrlPattern from 'url-pattern'
 
-export type MatchFn = (current: string, full?: string) => {
+export type MatchFn = (current: string, full: ?string) => {
   matched: boolean,
   params: null | Object,
   parentUrl: string,
@@ -41,7 +41,7 @@ function normalize(path: string): string {
 }
 
 function createMatcher(pattern: UrlPattern) {
-  return (current: string, full?: string) => {
+  return (current: string, full: ?string) => {
     const result = pattern.match(current)
 
     if (result) {
