@@ -18,7 +18,7 @@ export type Location = HistoryLocation & {
 
 export type LocationShape = $Shape<Location>
 
-export type Href = Location | string
+export type Href = LocationShape | string
 
 export type Config<D> = BasicConfig<D> | RedirectConfig<D>
 
