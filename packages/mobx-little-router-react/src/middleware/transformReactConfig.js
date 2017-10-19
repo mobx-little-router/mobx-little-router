@@ -30,6 +30,7 @@ export default transformConfig(config => {
         return {
           component,
           outlet,
+          transitionState: null,
           ...(typeof config.getData === 'function' ? config.getData(route) : {})
         }
       }
