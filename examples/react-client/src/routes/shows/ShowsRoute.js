@@ -1,7 +1,7 @@
 import React from 'react'
 import { inject, observer } from 'mobx-react'
 import { Link, withRouter } from 'mobx-little-router-react'
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 
 const ShowsRoute = ({ router, route, ShowsStore, className }) =>
   <Container className={className}>
@@ -33,6 +33,36 @@ const Container = styled.div`
   margin: 0 auto;
   max-width: 900px;
   width: 100%;
+`
+
+const spinnerAnimation = keyframes`
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`
+const spinnerRadius = 25
+const spinnerWeight = 4
+
+const Spinner = styled.div`
+  &, &::after {
+    border-radius: 50%;
+    width: ${spinnerRadius*2}px;
+    height: ${spinnerRadius*2}px;
+  }
+
+  margin: 240px auto;
+  font-size: 10px;
+  position: relative;
+  text-indent: -9999em;
+  border-top: ${spinnerWeight}px solid rgba(0, 0, 0, 0.2);
+  border-right: ${spinnerWeight}px solid rgba(0, 0, 0, 0.2);
+  border-bottom: ${spinnerWeight}px solid rgba(0, 0, 0, 0.2);
+  border-left: ${spinnerWeight}px solid rgba(0,0,0,0.5);
+  transform: translateZ(0);
+  animation: 1s ${spinnerAnimation} infinite linear;
 `
 
 const SearchResults = styled.div`
