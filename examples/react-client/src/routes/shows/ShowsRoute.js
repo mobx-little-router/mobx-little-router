@@ -8,7 +8,7 @@ const ShowsRoute = ({ router, route, ShowsStore, className }) =>
     <SearchHeader>
       <SearchInput
         onChange={ev => {
-          router.replaceQuery({ q: encodeURIComponent(ev.target.value) })
+          router.updateQuery({ q: encodeURIComponent(ev.target.value) })
         }}
         defaultValue={route.query.q}
       />

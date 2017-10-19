@@ -128,12 +128,23 @@ class Router {
     return this.done()
   }
 
-  pushQuery(query: Query) {
-    return this.push(`${this.location.pathname}?${QueryString.stringify(query)}`)
-  }
+  updateQuery(
+    query: Query,
+    options: { action?: Action, merge?: boolean } = { action: 'REPLACE', merge: false}
+  ) {
+    const existingQuery = QueryString.parse(this.store.location.search.substr(1))
+    const updatedQuery = options.merge === true ? { ...existingQuery, ...query } : query
+    const queryString = Object.keys(updatedQuery).length > 0 ? `?${QueryString.stringify(updatedQuery)}` : ''
+    const pathname = `${this.location.pathname}${queryString}`
 
-  replaceQuery(query: Query) {
-    return this.replace(`${this.location.pathname}?${QueryString.stringify(query)}`)
+    switch(options.action) {
+      case 'PUSH':
+        return this.push(pathname)
+      
+      default:
+      case 'REPLACE':
+        return this.replace(pathname)
+    }
   }
 
   goBack() {

@@ -61,19 +61,20 @@ describe('Router', () => {
     expect(router.location.search).toEqual('')
   })
 
-  test('pushQuery', async () => {
-    await router.pushQuery({ b: '555' })
-    expect(router.location.search).toEqual('?b=555')
+  test('updateQuery', async () => {
+    await router.updateQuery({ x: '1' })
+    expect(router.location.search).toEqual('?x=1')
 
-    await router.pushQuery({})
-    expect(router.location.search).toEqual('')
-  })
+    await router.updateQuery({ y: '2' }, { merge: true })
+    expect(router.location.search).toEqual('?x=1&y=2')
 
-  test('replaceQuery', async () => {
-    await router.replaceQuery({ b: '111', c: '222' })
-    expect(router.location.search).toEqual('?b=111&c=222')
+    await router.updateQuery({ y: '3' }, { merge: true })
+    expect(router.location.search).toEqual('?x=1&y=3')
 
-    await router.replaceQuery({})
+    await router.updateQuery({ y: '4', z: '5' })
+    expect(router.location.search).toEqual('?y=4&z=5')
+
+    await router.updateQuery({})
     expect(router.location.search).toEqual('')
   })
 })
