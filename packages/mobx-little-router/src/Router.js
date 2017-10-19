@@ -129,7 +129,7 @@ class Router {
   }
 
   updateQuery(
-    query: Query,
+    query: Object,
     options: { action?: Action, merge?: boolean } = { action: 'REPLACE', merge: false}
   ) {
     const existingQuery = QueryString.parse(this.store.location.search.substr(1))
