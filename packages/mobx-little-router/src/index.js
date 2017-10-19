@@ -39,6 +39,7 @@ export type {
   Route,
   Href,
   Location,
+  LocationShape,
   Query,
   Params,
   RouteStateTreeNode,

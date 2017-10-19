@@ -9,7 +9,7 @@ import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
 describe('withRelativePath middleware', () => {
   test('transforms pathname', () => {
     const store = new RouterStore(createRouteStateTreeNode({ path: '' }))
-    store.location = { pathname: '/foo/bar/' }
+    store.location = ({ pathname: '/foo/bar/' }: any)
     const c: NavigationStart = {
       type: EventTypes.NAVIGATION_START,
       navigation: new Navigation({

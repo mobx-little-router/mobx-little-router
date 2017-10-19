@@ -1,5 +1,5 @@
 // @flow
-import type { Href, Location, Route } from './types'
+import type { Href, LocationShape, Route } from './types'
 
 /*
  * The transition object encodes information about the type of transition
@@ -20,16 +20,16 @@ export type NavigationType = $Keys<typeof NavigationTypes>
 export type NavigationDescriptor = {
   type: NavigationType,
   sequence?: number,
-  to: Location,
-  from?: Location,
+  to: LocationShape,
+  from?: LocationShape,
   shouldTransition?: boolean,
   leaf?: Route<*, *>
 }
 
 export default class Navigation {
   type: NavigationType
-  to: Location
-  from: null | Location
+  to: LocationShape
+  from: null | LocationShape
   sequence: number
   shouldTransition: boolean
   leaf: ?Route<*, *>
@@ -91,6 +91,6 @@ export default class Navigation {
   }
 }
 
-function asLocation(href: Href): Location {
+function asLocation(href: Href): LocationShape {
   return typeof href === 'string' ? { pathname: href } : href
 }

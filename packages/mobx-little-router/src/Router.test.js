@@ -7,7 +7,7 @@ import Router from './Router'
 import delay from './util/delay'
 
 describe('Router', () => {
-  let router
+  let router: any
 
   beforeEach(() => {
     router = new Router(

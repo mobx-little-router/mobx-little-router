@@ -10,12 +10,13 @@ export type { MatchFn }
 export type Query = { [key: string]: string }
 export type Params = { [key: string]: string }
 
-export type Location = $Shape<
-  HistoryLocation & {
-    params: Params,
-    query: Query
-  }
->
+
+export type Location = HistoryLocation & {
+  params: Params,
+  query: Query
+}
+
+export type LocationShape = $Shape<Location>
 
 export type Href = Location | string
 

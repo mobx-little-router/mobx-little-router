@@ -177,7 +177,7 @@ describe('RouterStore', () => {
     ]
     store.routes.replace(currRoutes)
 
-    const nextRoutes = store.getNextRoutes(nextPath, {})
+    const nextRoutes = store.getNextRoutes(nextPath, ({}: any))
 
     expect(nextRoutes.length).toEqual(3)
     expect(nextRoutes[0]).not.toBe(store.routes[0])

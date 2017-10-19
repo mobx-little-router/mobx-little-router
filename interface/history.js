@@ -4,10 +4,9 @@ declare module 'history' {
 
   declare type Location = {
     pathname: string,
-    search?: string,
-    hash?: string,
-    state?: Object,
-    key?: string
+    search: string,
+    hash: string,
+    state: ?Object
   }
 
   declare type ListenCallback = (location: Location, action: ?Action) => void
