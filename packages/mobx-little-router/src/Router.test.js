@@ -74,6 +74,9 @@ describe('Router', () => {
     await router.updateQuery({ y: '4', z: '5' })
     expect(router.location.search).toEqual('?y=4&z=5')
 
+    await router.updateQuery({ y: '4', z: undefined }, { merge: true })
+    expect(router.location.search).toEqual('?y=4')
+
     await router.updateQuery({})
     expect(router.location.search).toEqual('')
   })
