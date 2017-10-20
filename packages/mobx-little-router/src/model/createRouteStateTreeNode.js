@@ -1,12 +1,10 @@
 // @flow
 import { observable } from 'mobx'
-import type { Config, Route, RouteStateTreeNode } from './types'
-import type Navigation from './Navigation'
+import type { Config, RouteStateTreeNode } from './types'
 import { TreeNode } from '../util/tree'
 import createKey from '../util/createKey'
 import * as m from './matchers'
 import { array, string, optional, func, createValidator } from '../validation'
-import UrlPattern from 'url-pattern'
 
 async function NOP(a: *, b: *) {}
 
@@ -28,6 +26,11 @@ const validate = process.env.NODE_ENV === 'production'
 
 type GetContext = () => *
 
+const seq = (function() {
+  let count = 0
+  return () => count++
+})()
+
 export default function createRouteStateTreeNode(
   config: Config<*>,
   getContext: ?GetContext
@@ -47,7 +50,7 @@ export default function createRouteStateTreeNode(
 
   return TreeNode(
     observable({
-      key: typeof config.key === 'string' ? config.key : createKey(6),
+      key: typeof config.key === 'string' ? config.key : `${seq()}`,
       path: config.path,
       matcher: matcher(config.path),
       query: typeof config.query !== 'undefined' ? config.query : [],
