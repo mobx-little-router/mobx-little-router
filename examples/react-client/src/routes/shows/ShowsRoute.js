@@ -13,20 +13,33 @@ const ShowsRoute = ({ router, route, ShowsStore, className }) =>
         defaultValue={route.query.q}
       />
     </SearchHeader>
-    <SearchResults>
-      {ShowsStore.shows.map(show =>
-        <Show key={show.id}>
-          <CoverImage
-            to={`/shows/${show.id}?q=${route.query.q}`}
-            style={{ backgroundImage: `url(${show.image && show.image.medium})` }}
-          />
-          <Abstract>
-            <Network>{show.network && show.network.name}</Network>
-            <ShowName to={`/shows/${show.id}?q=${route.query.q}`}>{show.name}</ShowName>
-          </Abstract>
-        </Show>
-      )}
-    </SearchResults>
+    {
+      (() => {
+        switch (route.data.resolveStatus) {
+          case 'PENDING':
+            return <Spinner />
+          case 'FULFILLED':
+            return (
+              <SearchResults>
+                {ShowsStore.shows.map(show =>
+                  <Show key={show.id}>
+                    <CoverImage
+                      to={`/shows/${show.id}?q=${route.query.q}`}
+                      style={{ backgroundImage: `url(${show.image && show.image.medium})` }}
+                    />
+                    <Abstract>
+                      <Network>{show.network && show.network.name}</Network>
+                      <ShowName to={`/shows/${show.id}?q=${route.query.q}`}>{show.name}</ShowName>
+                    </Abstract>
+                  </Show>
+                )}
+              </SearchResults>
+            )
+          default:
+            return null
+        }
+      })()
+    }
   </Container>
 
 const Container = styled.div`

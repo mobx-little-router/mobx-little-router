@@ -5,20 +5,38 @@ export default [
   {
     path: '',
     query: ['q'],
+    getData: () => ({ resolveStatus: null }),
     willResolve: async route => {
       const { ShowsStore } = route.context.stores
       let data
 
-      if (!route.query.q) {
-        data = []
-      } else {
-        const res = await fetch(`https://api.tvmaze.com/search/shows?q=${route.query.q}`)
-        const json = await res.json()
-        data = json.map(({ show }) => show)
-      }
+      (async () => {
+        route.data.resolveStatus = 'INIT'
 
-      // This returns a setter function that will be called by Router (assuming navigation is not cancelled).
-      return () => ShowsStore.load(data)
+        // Wait a threshold before firing the PENDING state, this allows for less flashes on screen when a resolve finishes quickly
+        setTimeout(() => {
+          if (route.data.resolveStatus === 'INIT') {
+            route.data.resolveStatus = 'PENDING'
+          }
+        }, 200)
+
+        try {
+          await delay(1000)
+
+          if (!route.query.q) {
+            data = []
+          } else {
+            const res = await fetch(`https://api.tvmaze.com/search/shows?q=${route.query.q}`)
+            const json = await res.json()
+            data = json.map(({ show }) => show)
+
+            ShowsStore.load(data)
+          }
+          route.data.resolveStatus = 'FULFILLED'
+        } catch (err) {
+          route.data.resolveStatus = 'ERROR'
+        }
+      })()
     },
     component: ShowsRoute,
     children: [
@@ -40,3 +58,8 @@ export default [
     ]
   }
 ]
+
+const delay = ms =>
+  new Promise(resolve => {
+    setTimeout(resolve, ms)
+  })
