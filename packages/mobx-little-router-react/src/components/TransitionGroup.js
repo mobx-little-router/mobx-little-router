@@ -116,18 +116,18 @@ class TransitionGroup extends Component<TransitionGroupProps> {
     }
 
     if (from && isTransitioning) {
-      routes.push({ route: from, className: fromClassName })
+      routes.push({ route: from, key: !!from.node.value.onTransition ? from.key : from.node.value.key, className: fromClassName })
     }
 
     if (to) {
-      routes.push({ route: to, className: toClassName })
+      routes.push({ route: to, key: !!to.node.value.onTransition ? to.key : to.node.value.key, className: toClassName })
     }
 
     return (
       <div className="router-transition-group">
-        {routes.map(({ route, className }) =>
+        {routes.map(({ route, key, className }) =>
           <TransitionItem
-            key={route.key}
+            key={key}
             route={route}
             className={className}
             additionalProps={additionalProps}
