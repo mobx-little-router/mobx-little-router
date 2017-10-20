@@ -43,7 +43,7 @@ class RouterStore {
     })
   }
 
-  _getNextKey(): string {
+  getNextKey = (): string => {
     const key = this.nextKey
     runInAction(() => {
       this.nextKey++
@@ -77,8 +77,7 @@ class RouterStore {
   }
 
   createNode(parent: RouteStateTreeNode<*, *>, config: Config<*>) {
-    config.key = typeof config.key !== 'string' ? this._getNextKey() : config.key
-    return createRouteStateTreeNode(config, parent.value.getContext)
+    return createRouteStateTreeNode(config, parent.value.getContext, this.getNextKey)
   }
 
   /* Mutations */

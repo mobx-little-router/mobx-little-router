@@ -2,7 +2,7 @@
 import { observable } from 'mobx'
 import type { Config, RouteStateTreeNode } from './types'
 import { TreeNode } from '../util/tree'
-import createKey from '../util/createKey'
+import _createKey from '../util/createKey'
 import * as m from './matchers'
 import { array, string, optional, func, createValidator } from '../validation'
 
@@ -26,9 +26,12 @@ const validate = process.env.NODE_ENV === 'production'
 
 type GetContext = () => *
 
+const defaultCreateKey = () => _createKey(6)
+
 export default function createRouteStateTreeNode(
   config: Config<*>,
-  getContext: ?GetContext
+  getContext: ?GetContext,
+  createKey: (() => string) = defaultCreateKey
 ): RouteStateTreeNode<*, *> {
   const matcher = getMatcher(config)
 
@@ -39,13 +42,13 @@ export default function createRouteStateTreeNode(
   const children = typeof config.children !== 'undefined'
     ? config.children.map(x =>
         // Chains the context down to children.
-        createRouteStateTreeNode(x, getContext)
+        createRouteStateTreeNode(x, getContext, createKey)
       )
     : []
 
   return TreeNode(
     observable({
-      key: typeof config.key === 'string' ? config.key : createKey(6),
+      key: typeof config.key === 'string' ? config.key : createKey(),
       path: config.path,
       matcher: matcher(config.path),
       query: typeof config.query !== 'undefined' ? config.query : [],
