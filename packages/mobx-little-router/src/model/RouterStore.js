@@ -1,11 +1,11 @@
 // @flow
 import type { IObservableArray } from 'mobx'
 import { extendObservable, runInAction, observable, computed } from 'mobx'
+import createRouteStateTreeNode from './createRouteStateTreeNode'
 import type { ObservableMap } from 'mobx'
 import createRoute from './createRoute'
 import RouterStateTree from './RouterStateTree'
 import QueryString from 'qs'
-
 import type Navigation from './Navigation'
 import type {
   Location,
@@ -13,7 +13,8 @@ import type {
   Route,
   RouteStateTreeNode,
   PathElement,
-  RouteValue
+  RouteValue,
+  Config,
 } from './types'
 
 type RouteValueChange = $Shape<RouteValue<*, *>>
@@ -21,6 +22,7 @@ type RouteValueChange = $Shape<RouteValue<*, *>>
 class RouterStore {
   location: Location
   state: RouterStateTree
+  nextKey = 0
 
   // Create a map of all nodes in tree so we can perform faster lookup.
   // Instances should be exactly the same as in state tree.
@@ -39,6 +41,14 @@ class RouterStore {
       routes: observable.array([]),
       prevRoutes: observable.array([])
     })
+  }
+
+  _getNextKey(): string {
+    const key = this.nextKey
+    runInAction(() => {
+      this.nextKey++
+    })
+    return `${key}`
   }
 
   /* Queries */
@@ -64,6 +74,11 @@ class RouterStore {
       const existingRoute = this.routes.find(x => x.value === newRoute.value)
       return existingRoute || observable(createRoute(element.node, element.parentUrl, element.segment, element.params, matchedQueryParams))
     })
+  }
+
+  createNode(parent: RouteStateTreeNode<*, *>, config: Config<*>) {
+    config.key = typeof config.key !== 'string' ? this._getNextKey() : config.key
+    return createRouteStateTreeNode(config, parent.value.getContext)
   }
 
   /* Mutations */

@@ -39,7 +39,7 @@ class Router {
     this._disposers = []
 
     this._history = history
-    const root = createRouteStateTreeNode({ path: '', match: 'partial' }, getContext) // Initial root.
+    const root = createRouteStateTreeNode({ key: '@@ROOT', path: '', match: 'partial' }, getContext) // Initial root.
     this._initialChildren = config
     this.store = new RouterStore(root)
     this._scheduler = new Scheduler(this.store, middleware)

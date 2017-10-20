@@ -153,7 +153,7 @@ export async function processEvent(
         root: store.state.root,
         setter: action(() => {
           leaf.node.children.replace(
-            children.map(x => createRouteStateTreeNode(x, leaf.node.value.getContext))
+            children.map(x => store.createNode(leaf.node, x))
           )
           leaf.node.value.loadChildren = null
         })

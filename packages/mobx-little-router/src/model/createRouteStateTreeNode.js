@@ -26,11 +26,6 @@ const validate = process.env.NODE_ENV === 'production'
 
 type GetContext = () => *
 
-const seq = (function() {
-  let count = 0
-  return () => count++
-})()
-
 export default function createRouteStateTreeNode(
   config: Config<*>,
   getContext: ?GetContext
@@ -50,7 +45,7 @@ export default function createRouteStateTreeNode(
 
   return TreeNode(
     observable({
-      key: typeof config.key === 'string' ? config.key : `${seq()}`,
+      key: typeof config.key === 'string' ? config.key : createKey(6),
       path: config.path,
       matcher: matcher(config.path),
       query: typeof config.query !== 'undefined' ? config.query : [],
