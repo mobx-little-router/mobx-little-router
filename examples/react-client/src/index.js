@@ -12,7 +12,9 @@ import {
   ContactRoute,
   TagRoute,
   ActorRoute,
-  AdminRoute
+  AdminRoute,
+  CollectionsRoute,
+  CollectionRoute
 } from './routes'
 import App from './App'
 
@@ -33,6 +35,14 @@ const router = install({
     { path: 'login', component: LoginRoute },
     { path: 'about', component: AboutRoute, animate: true },
     { path: 'contact', component: ContactRoute, animate: true },
+    {
+      path: 'collections',
+      component: CollectionsRoute,
+      children: [
+        { path: ':collectionId', component: CollectionRoute },
+        { path: '', redirectTo: 'a' }
+      ]
+    },
     {
       path: 'shows',
       loadChildren: () => import('./routes/shows')
