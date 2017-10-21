@@ -45,17 +45,6 @@ class Outlet extends Component<OutletProps> {
       : 0
   }
 
-  findRoute(routes) {
-    const { name } = this.props
-    const idx = this.getCurrentIndex()
-
-    if (typeof name === 'string') {
-      return routes.slice().reverse().find(route => route.data.outlet === name)
-    } else {
-      return routes.filter(route => !route.data.outlet)[idx]
-    }
-  }
-
   render() {
     const { router, name, ...rest } = this.props
     const idx = this.getCurrentIndex()
@@ -63,8 +52,8 @@ class Outlet extends Component<OutletProps> {
     const currRoutes = filterRoutes(router.store.routes)
     const prevRoutes = filterRoutes(router.store.prevRoutes)
 
-    const to = this.findRoute(currRoutes)
-    const from = this.findRoute(prevRoutes)
+    const to = findRoute(currRoutes, idx, name)
+    const from = findRoute(prevRoutes, idx, name)
 
     const isTransitioning =
       prevRoutes.length > 0 &&
@@ -90,7 +79,13 @@ class Outlet extends Component<OutletProps> {
 }
 
 const filterRoutes = routes => routes.filter(route => route.data.component)
-
+const findRoute = (routes, outletIdx, outletName) => {
+  if (typeof outletName === 'string') {
+    return routes.slice().reverse().find(route => route.data.outlet === outletName)
+  } else {
+    return routes.filter(route => !route.data.outlet)[outletIdx]
+  }
+}
 const canTransition = node => (node ? typeof node.onTransition === 'function' : false)
 
 export default withRouter(observer(Outlet))
