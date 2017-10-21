@@ -69,7 +69,7 @@ class Outlet extends Component<OutletProps> {
       <div className={`outlet`} {...dataProps}>
         <TransitionGroup
           to={to}
-          from={from}
+          from={isTransitioning ? from : undefined}
           isTransitioning={isTransitioning}
           additionalProps={rest}
         />

@@ -115,7 +115,7 @@ class TransitionGroup extends Component<TransitionGroupProps> {
       }
     }
 
-    if (from && isTransitioning) {
+    if (from) {
       routes.push({ route: from, key: getKey(from), className: fromClassName })
     }
 
@@ -146,23 +146,6 @@ type TransitionItemProps = {
   innerRef: Function
 }
 
-const getKey = (route) => {
-  if (!!route.node.value.onTransition) {
-    return route.key
-  } else {
-    // return route.node.value.key
-    return componentId(route.data.component)
-  }
-}
-
-const componentId = (() => {
-  let idx = 0
-
-  return (component) => {
-    return component.$$componentId || (component.$$componentId = `component:${++idx}`)
-  }
-})()
-
 // Need to wrap the item so we can properly set the innerRef
 class TransitionItem extends Component<TransitionItemProps> {
   render() {
@@ -179,5 +162,22 @@ class TransitionItem extends Component<TransitionItemProps> {
     )
   }
 }
+
+const getKey = (route) => {
+  if (!!route.node.value.onTransition) {
+    return route.key
+  } else {
+    // return route.node.value.key
+    return componentId(route.data.component)
+  }
+}
+
+const componentId = (() => {
+  let idx = 0
+
+  return (component) => {
+    return component.$$componentId || (component.$$componentId = `component:${++idx}`)
+  }
+})()
 
 export default observer(TransitionGroup)
