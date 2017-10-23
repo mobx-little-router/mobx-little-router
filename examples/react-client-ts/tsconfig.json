@@ -1,0 +1,29 @@
+{
+  "version": "2.5.3",
+  "compilerOptions": {
+    "target": "es5",
+    "sourceMap": false,
+    "declaration": true,
+    "module": "commonjs",
+    "removeComments": false,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "noImplicitUseStrict": true,
+    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "jsx": "react",
+    "outDir": "dist",
+    "lib": [
+      "dom",
+      "es2015"
+    ],
+    "plugins": [
+      { "name": "typescript-styled-plugin" }
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
