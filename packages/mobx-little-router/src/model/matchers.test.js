@@ -3,7 +3,7 @@ import * as m from './matchers'
 
 describe('URL matchers', () => {
   test('partial', () => {
-    expect(m.partial('shows/:id')('/shows/1/edit')).toEqual({
+    expect(m.partial('shows/:id').match('/shows/1/edit')).toEqual({
       matched: true,
       params: { id: '1' },
       parentUrl: '',
@@ -11,7 +11,7 @@ describe('URL matchers', () => {
       remaining: '/edit'
     })
 
-    expect(m.partial('/shows/:id')('/shows/2/edit')).toEqual({
+    expect(m.partial('/shows/:id').match('/shows/2/edit')).toEqual({
       matched: true,
       params: { id: '2' },
       parentUrl: '',
@@ -19,7 +19,7 @@ describe('URL matchers', () => {
       remaining: '/edit'
     })
 
-    expect(m.partial('')('/shows/2')).toEqual({
+    expect(m.partial('').match('/shows/2')).toEqual({
       matched: true,
       params: {},
       parentUrl: '',
@@ -27,7 +27,7 @@ describe('URL matchers', () => {
       remaining: '/shows/2'
     })
 
-    expect(m.partial('/')('/shows/2')).toEqual({
+    expect(m.partial('/').match('/shows/2')).toEqual({
       matched: true,
       params: {},
       parentUrl: '',
@@ -35,7 +35,7 @@ describe('URL matchers', () => {
       remaining: '/shows/2'
     })
 
-    expect(m.partial('/shows/:id')('/nope')).toEqual({
+    expect(m.partial('/shows/:id').match('/nope')).toEqual({
       matched: false,
       params: null,
       parentUrl: '',
@@ -45,7 +45,7 @@ describe('URL matchers', () => {
   })
 
   test('full', () => {
-    expect(m.full('shows/:id')('/shows/1')).toEqual({
+    expect(m.full('shows/:id').match('/shows/1')).toEqual({
       matched: true,
       params: { id: '1' },
       parentUrl: '',
@@ -53,7 +53,7 @@ describe('URL matchers', () => {
       remaining: undefined
     })
 
-    expect(m.full('/shows/:id')('/shows/2')).toEqual({
+    expect(m.full('/shows/:id').match('/shows/2')).toEqual({
       matched: true,
       params: { id: '2' },
       parentUrl: '',
@@ -61,7 +61,7 @@ describe('URL matchers', () => {
       remaining: undefined
     })
 
-    expect(m.full('/')('/')).toEqual({
+    expect(m.full('/').match('/')).toEqual({
       matched: true,
       params: {},
       parentUrl: '',
@@ -69,7 +69,7 @@ describe('URL matchers', () => {
       remaining: undefined
     })
 
-    expect(m.full('')('/')).toEqual({
+    expect(m.full('').match('/')).toEqual({
       matched: true,
       params: {},
       parentUrl: '',
@@ -77,7 +77,7 @@ describe('URL matchers', () => {
       remaining: undefined
     })
 
-    expect(m.full('')('/shows/1')).toEqual({
+    expect(m.full('').match('/shows/1')).toEqual({
       matched: false,
       params: null,
       parentUrl: '',
@@ -87,7 +87,7 @@ describe('URL matchers', () => {
   })
 
   test('any', () => {
-    expect(m.any('')('/whatever')).toEqual({
+    expect(m.any('').match('/whatever')).toEqual({
       matched: true,
       params: null,
       parentUrl: '',
@@ -98,12 +98,21 @@ describe('URL matchers', () => {
 
   test('params keys are always returned', () => {
     const x = m.full('(:foo)')
-    expect(x('/whatever')).toEqual(expect.objectContaining({
+    expect(x.match('/whatever')).toEqual(expect.objectContaining({
       params: { foo: 'whatever' }
     }))
 
-    expect(x('/')).toEqual(expect.objectContaining({
+    expect(x.match('/')).toEqual(expect.objectContaining({
       params: { foo: null }
     }))
+  })
+
+  test('stringify', () => {
+    const x = m.full('(:foo)')
+    const y = m.partial('(:foo)')
+    const z = m.any('whatever')
+    expect(x.stringify({ foo: '1' })).toEqual('/1')
+    expect(y.stringify({ foo: '2' })).toEqual('/2')
+    expect(() => z.stringify({})).toThrow(/Cannot/)
   })
 })

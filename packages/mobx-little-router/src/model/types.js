@@ -2,10 +2,10 @@
 import type { History, Location as HistoryLocation } from 'history'
 import type { ITreeNode } from '../util/tree'
 import type { TransitionFn } from '../transition/types'
-import type { MatchFn } from './matchers'
+import type { MatchFn, Matcher } from './matchers'
 import type Navigation from './Navigation'
 
-export type { MatchFn }
+export type { MatchFn, Matcher }
 
 export type Query = { [key: string]: string }
 export type Params = { [key: string]: string }
@@ -86,7 +86,7 @@ export type RouteValue<C: Object, D: Object> = {
   // Original path provided to this route node.
   path: string,
   query: Array<string>,
-  matcher: MatchFn,
+  matcher: Matcher,
   loadChildren?: null | LoadChildrenRouteStateTreeNode,
   canActivate: GuardFn,
   canDeactivate: GuardFn,
