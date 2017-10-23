@@ -123,6 +123,8 @@ class TransitionGroup extends Component<TransitionGroupProps> {
       routes.push({ route: to, key: getKey(to), className: toClassName })
     }
 
+    console.log("-- Transition Group Render", to, from)
+
     return (
       <div className="router-transition-group">
         {routes.map(({ route, key, className }) =>
