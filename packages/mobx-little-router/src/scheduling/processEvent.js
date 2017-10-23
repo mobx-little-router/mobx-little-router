@@ -152,9 +152,7 @@ export async function processEvent(
         leaf,
         root: store.state.root,
         setter: action(() => {
-          leaf.node.children.replace(
-            children.map(x => store.createNode(leaf.node, x))
-          )
+          leaf.node.children.replace(children.map(x => store.createNode(leaf.node, x)))
           leaf.node.value.loadChildren = null
         })
       }
@@ -180,22 +178,24 @@ export async function processEvent(
         store.routes.slice(),
         routes
       )
-      
+
       // Add matched leaf to the navigation object so it can be used for redirection
       navigation.leaf = routes[routes.length - 1]
 
       try {
-        // Make sure we can deactivate nodes first. We need to map deactivating nodes to a MatchResult object.
-        await assertTransitionOk('canDeactivate', deactivating, navigation)
-        await assertTransitionOk('canActivate', activating, navigation)
-
-        // If guards have passed, call the before hooks to give each node a chance to cancel the transition.
-        await assertTransitionOk('willDeactivate', deactivating, navigation)
-        await assertTransitionOk('willActivate', activating, navigation)
-
-        const setter: void | Function = await assertTransitionOk(
-          'willResolve',
-          entering,
+        await evalTransitionsForRoutes(
+          ['canDeactivate', 'willDeactivate'],
+          deactivating,
+          navigation
+        )
+        const s1 = await evalTransitionsForRoutes(
+          ['canActivate', 'willActivate', 'willResolve'],
+          activating,
+          navigation
+        )
+        const s2: Function = await evalTransitionsForRoutes(
+          ['willResolve'],
+          entering.filter(x => !activating.includes(x)), // Don't run `willResolve` if activation ran it already.
           navigation
         )
         return {
@@ -204,7 +204,10 @@ export async function processEvent(
           entering,
           exiting,
           routes,
-          setter
+          setter: () => {
+            s1()
+            s2()
+          }
         }
       } catch (err) {
         if (err instanceof TransitionFailure) {
@@ -325,37 +328,61 @@ function diffRoutes(currRoutes: Route<*, *>[], nextRoutes: Route<*, *>[]) {
   return { activating, deactivating, entering, exiting }
 }
 
-// Runs guards (if they exist) on each node until they all pass.
-// If one guard fails, then the entire function rejects.
-async function assertTransitionOk(
-  type:
-    | 'canDeactivate'
-    | 'canActivate'
-    | 'willDeactivate'
-    | 'willActivate'
-    | 'willResolve',
+type TransitionType =
+  | 'canDeactivate'
+  | 'canActivate'
+  | 'willDeactivate'
+  | 'willActivate'
+  | 'willResolve'
+
+async function evalTransition(
+  type: TransitionType,
+  route: Route<*, *>,
+  navigation: Navigation
+): Promise<void | Function> {
+  const { value } = route.node
+  const result = typeof value[type] === 'function' ? value[type](route, navigation) : true
+
+  // If the guard results in `false` or a rejected promise then mark transition as failed.
+  try {
+    if (false === result) {
+      await navigation.goBack() // TODO: This `goBack` will not work if this is the first navigation in the system.
+    } else if (typeof result.then === 'function') {
+      const x = await result
+      if (typeof x === 'function') {
+        return x
+      }
+    }
+  } catch (e) {
+    throw new TransitionFailure(route, e instanceof Navigation ? e : null)
+  }
+}
+
+async function evalTransitions(
+  types: TransitionType[],
+  route: Route<*, *>,
+  navigation: Navigation
+) {
+  const setters = []
+  for (const type of types) {
+    const setter = await evalTransition(type, route, navigation)
+    if (typeof setter === 'function') {
+      setters.push(setter)
+    }
+  }
+  return () => setters.forEach(f => f())
+}
+
+async function evalTransitionsForRoutes(
+  types: TransitionType[],
   routes: Route<*, *>[],
   navigation: Navigation
-): Promise<void | Setter> {
+) {
   const setters = []
   for (const route of routes) {
-    const { value } = route.node
-    const result = typeof value[type] === 'function'
-      ? value[type](route, navigation)
-      : true
-
-    // If the guard results in `false` or a rejected promise then mark transition as failed.
-    try {
-      if (false === result) {
-        await navigation.goBack()
-      } else if (typeof result.then === 'function') {
-        const x = await result
-        if (typeof x === 'function') {
-          setters.push(x)
-        }
-      }
-    } catch (e) {
-      throw new TransitionFailure(route, e instanceof Navigation ? e : null)
+    const setter = await evalTransitions(types, route, navigation)
+    if (typeof setter === 'function') {
+      setters.push(setter)
     }
   }
   return () => setters.forEach(f => f())
@@ -376,9 +403,15 @@ function findCatchAllPath(matchedPath, leaf) {
     idx--
   }
   if (catchAll) {
-    return matchedPath
-      .slice(0, idx)
-      .concat([{ node: catchAll, parentUrl: leaf.parentUrl, segment: leaf.remaining, remaining: '', params: {} }])
+    return matchedPath.slice(0, idx).concat([
+      {
+        node: catchAll,
+        parentUrl: leaf.parentUrl,
+        segment: leaf.remaining,
+        remaining: '',
+        params: {}
+      }
+    ])
   }
   return []
 }
