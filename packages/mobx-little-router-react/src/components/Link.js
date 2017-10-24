@@ -15,7 +15,9 @@ type Props =  {
   children?: Element<*>,
   exact?: boolean,
   reload?: boolean,
-  onClick: Function
+  onClick: Function,
+  onMouseEnter: Function,
+  onMouseLeave: Function
 }
 
 class Link extends Component<Props> {
