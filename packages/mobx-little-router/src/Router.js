@@ -118,6 +118,14 @@ class Router {
     })
   }
 
+  createHref(href: Href) {
+    if (typeof href === 'string') {
+      return this._history.createHref({ pathname: href })
+    } else {
+      return this._history.createHref(href)
+    }
+  }
+
   push(href: Href) {
     this._history.push(withSearch(href))
     return this.done()

@@ -15,6 +15,18 @@ describe('Link', () => {
     router.stop()
   })
 
+  test('delegates to router to create href', () => {
+    (router: any).createHref = jest.fn(() => '/whatever')
+
+    const wrapper = mountInProvider(router)(
+      <div>
+        <Link className="index" to="/">Index</Link>
+      </div>
+    )
+
+    expect(wrapper.html()).toMatch(/whatever/)
+  })
+
   test('handles clicks', async () => {
     const wrapper = mountInProvider(router)(
       <div>

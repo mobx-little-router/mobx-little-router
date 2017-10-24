@@ -26,6 +26,8 @@ declare module 'history' {
     replace(path: string, state: ?Object): void,
     replace(location: Location): void,
 
+    createHref(location: $Shape<Location> | string): string,
+
     go(n: number): void,
     goBack(): void,
     goForward(): void,
