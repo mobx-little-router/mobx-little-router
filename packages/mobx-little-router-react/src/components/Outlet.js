@@ -2,6 +2,7 @@
 import React, { Component } from 'react'
 import withRouter from '../hoc/withRouter'
 import { observer } from 'mobx-react'
+import { computed, extendObservable } from 'mobx'
 import type { Router } from 'mobx-little-router'
 import { areRoutesEqual } from 'mobx-little-router'
 import { OutletType } from '../propTypes'
@@ -31,6 +32,29 @@ class Outlet extends Component<OutletProps> {
     outlet: OutletType
   }
 
+  currRoutes: any
+  prevRoutes: any
+  to: any
+  from: any
+  isTransitioning: boolean
+
+  componentWillMount() {
+    const { router, name } = this.props    
+    const idx = this.getCurrentIndex()
+
+    extendObservable(this, {
+      currRoutes: computed(() => filterRoutes(router.store.routes)),
+      prevRoutes: computed(() => filterRoutes(router.store.prevRoutes)),
+      to: computed(() => findRoute(this.currRoutes, idx, name)),
+      from: computed(() => findRoute(this.prevRoutes, idx, name)),
+      isTransitioning: computed(() =>
+        this.prevRoutes.length > 0 &&
+        !areRoutesEqual(this.to, this.from) &&
+        (canTransition(this.to) || canTransition(this.from))
+      )
+    })
+  }
+
   getChildContext() {
     return {
       outlet: {
@@ -49,17 +73,6 @@ class Outlet extends Component<OutletProps> {
     const { router, name, ...rest } = this.props
     const idx = this.getCurrentIndex()
 
-    const currRoutes = filterRoutes(router.store.routes)
-    const prevRoutes = filterRoutes(router.store.prevRoutes)
-
-    const to = findRoute(currRoutes, idx, name)
-    const from = findRoute(prevRoutes, idx, name)
-
-    const isTransitioning =
-      prevRoutes.length > 0 &&
-      !areRoutesEqual(to, from) &&
-      (canTransition(to) || canTransition(from))
-
     const dataProps = {
       'data-depth': idx,
       'data-name': name
@@ -68,9 +81,9 @@ class Outlet extends Component<OutletProps> {
     return (
       <div className={`outlet`} {...dataProps}>
         <TransitionGroup
-          to={to}
-          from={isTransitioning ? from : undefined}
-          isTransitioning={isTransitioning}
+          to={this.to}
+          from={this.isTransitioning ? this.from : undefined}
+          isTransitioning={this.isTransitioning}
           additionalProps={rest}
         />
       </div>
