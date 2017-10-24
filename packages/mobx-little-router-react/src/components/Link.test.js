@@ -42,7 +42,7 @@ describe('Link', () => {
 
     wrapper.find('.index').simulate('click')
     await delay(0)
-    
+
     expect(router.store.location.pathname).toEqual('/')
   })
 
@@ -68,6 +68,34 @@ describe('Link', () => {
     )
 
     wrapper.find('.foo').simulate('click')
+    await delay(0)
+
+    expect(spy).toHaveBeenCalled()
+  })
+
+  test('supports onMouseEnter prop', async () => {
+    const spy = jest.fn()
+    const wrapper = mountInProvider(router)(
+      <div>
+        <Link onMouseEnter={spy} className="foo" to="/foo">Foo</Link>
+      </div>
+    )
+
+    wrapper.find('.foo').simulate('mouseenter')
+    await delay(0)
+
+    expect(spy).toHaveBeenCalled()
+  })
+
+  test('supports onMouseLeave prop', async () => {
+    const spy = jest.fn()
+    const wrapper = mountInProvider(router)(
+      <div>
+        <Link onMouseLeave={spy} className="foo" to="/foo">Foo</Link>
+      </div>
+    )
+
+    wrapper.find('.foo').simulate('mouseleave')
     await delay(0)
 
     expect(spy).toHaveBeenCalled()
