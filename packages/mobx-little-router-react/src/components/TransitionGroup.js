@@ -21,20 +21,12 @@ type TransitionGroupProps = {
 }
 
 class TransitionGroup extends Component<TransitionGroupProps> {
-  transitionState: string
   innerRefs: Object = {}
-
-  constructor(props) {
-    super(props)
-
-    extendObservable(this, {
-      transitionState: 'stopped'
-    })
-  }
 
   start = action(() => {
     const { to, from } = this.props
     const routes = [to, from]
+    const afterCallbacks = []
 
     Object.keys(this.innerRefs).forEach(key => {
       const el = findDOMNode(this.innerRefs[key])
@@ -48,27 +40,32 @@ class TransitionGroup extends Component<TransitionGroupProps> {
         if (el instanceof window.HTMLElement) {
           // Find element with data-transition-ref attribute to add transitionend event listener
           const target = el.querySelector('[data-transition-ref]')
-
-          const finishTransition = () => {
-            runInAction(() => {
-              route.data.transitionState = route === to ? 'entered' : 'exited'
-            })
-          }
+          const inner = el.firstChild
 
           if (target) {
             const handleTransitionEnd = (ev) => {
-              finishTransition()
+              runInAction(() => {
+                route.data.transitionState = route === to ? 'entered' : 'exited'
+              })
 
               target.removeEventListener('transitionend', handleTransitionEnd)
             }
 
             target.addEventListener('transitionend', handleTransitionEnd, false)
           }
+
+          afterCallbacks.push(() => {
+            // Force repaint
+            inner.scrollTop
+
+            // Add ephemeral classname to trigger animation
+            inner.classList.add(route === to ? classNames.enterActive : classNames.exitActive)
+          })
         }
       }
     })
 
-    this.transitionState = 'started'
+    afterCallbacks.forEach(cb => cb())
   })
 
   stop = action(() => {
@@ -80,16 +77,14 @@ class TransitionGroup extends Component<TransitionGroupProps> {
 
     // Clear out refs
     this.innerRefs = {}
-
-    this.transitionState = 'stopped'
   })
 
   componentDidUpdate() {
     const { isTransitioning } = this.props
 
-    if (isTransitioning && this.transitionState === 'stopped') {
-      setTimeout(() => { this.start() })
-    } else if (!isTransitioning && this.transitionState === 'started') {
+    if (isTransitioning) {
+      this.start()
+    } else {
       this.stop()
     }
   }
@@ -98,29 +93,20 @@ class TransitionGroup extends Component<TransitionGroupProps> {
     const { from, to, isTransitioning, additionalProps } = this.props
     const routes = []
 
-    let fromClassName = ''
-    let toClassName = ''
-
-    if (isTransitioning) {
-      if (from) {
-        fromClassName = `${classNames.transitioning} ${classNames.exit}`
-      }
-      if (to) {
-        toClassName = `${classNames.transitioning} ${classNames.enter}`
-      }
-
-      if (this.transitionState === 'started') {
-        from && (fromClassName += ` ${classNames.exitActive}`)
-        to && (toClassName += ` ${classNames.enterActive}`)
-      }
-    }
-
     if (from) {
-      routes.push({ route: from, key: getKey(from), className: fromClassName })
+      routes.push({
+        route: from,
+        key: getKey(from),
+        className: isTransitioning ? `${classNames.transitioning} ${classNames.exit}` : ''
+      })
     }
 
     if (to) {
-      routes.push({ route: to, key: getKey(to), className: toClassName })
+      routes.push({
+        route: to,
+        key: getKey(to),
+        className: isTransitioning ? `${classNames.transitioning} ${classNames.enter}` : ''
+      })
     }
 
     return (
@@ -164,17 +150,15 @@ class TransitionItem extends Component<TransitionItemProps> {
 }
 
 const getKey = (route) => {
-  if (!!route.node.value.onTransition) {
+  if (typeof route.node.value.onTransition === 'function') {
     return route.key
   } else {
-    // return route.node.value.key
     return componentId(route.data.component)
   }
 }
 
 const componentId = (() => {
   let idx = 0
-
   return (component) => {
     return component.$$componentId || (component.$$componentId = `component:${++idx}`)
   }
