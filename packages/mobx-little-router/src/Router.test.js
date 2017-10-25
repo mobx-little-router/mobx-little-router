@@ -12,7 +12,29 @@ describe('Router', () => {
   beforeEach(() => {
     router = new Router(
       createMemoryHistory(),
-      [{ path: '', match: 'full' }, { path: 'a' }, { path: 'b' }, { path: 'c' }],
+      [
+        { path: '', match: 'full' },
+        {
+          path: 'a',
+          children: [
+            {
+              path: 'a2',
+              children: [
+                {
+                  path: 'a3',
+                  children: [
+                    {
+                      path: 'a4'
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        { path: 'b' },
+        { path: 'c' }
+      ],
       () => ({ message: 'Hello' }),
       Middleware.EMPTY
     )
@@ -79,6 +101,31 @@ describe('Router', () => {
 
     await router.updateQuery({})
     expect(router.location.search).toEqual('')
+  })
+
+  test('relativePath', async () => {
+    await router.push('/a/a2/a3/a4/')
+
+    expect(router.relativePath('/a')).toBe('/a/')
+    expect(router.relativePath('/a/')).toBe('/a/')
+    expect(router.relativePath('/a/../b')).toBe('/b/')
+    expect(router.relativePath('/a/./b')).toBe('/a/b/')
+
+    expect(router.relativePath('a5')).toBe('/a/a2/a3/a4/a5/')
+
+    expect(router.relativePath('../')).toBe('/a/a2/a3/')
+    expect(router.relativePath('../b4')).toBe('/a/a2/a3/b4/')
+    expect(router.relativePath('../../b3')).toBe('/a/a2/b3/')
+    expect(router.relativePath('../../../b2')).toBe('/a/b2/')
+    expect(router.relativePath('../../../../b')).toBe('/b/')
+
+    expect(router.relativePath('./')).toBe('/a/a2/a3/a4/')
+    expect(router.relativePath('./b5')).toBe('/a/a2/a3/a4/b5/')
+    expect(router.relativePath('./b5/b6')).toBe('/a/a2/a3/a4/b5/b6/')
+    expect(router.relativePath('./b5/../c5')).toBe('/a/a2/a3/a4/c5/')
+
+    // Can't go past the root
+    expect(router.relativePath('../../../../../../../../../b')).toBe('/b/') 
   })
 })
 

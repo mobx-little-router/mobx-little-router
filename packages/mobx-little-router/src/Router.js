@@ -166,6 +166,28 @@ class Router {
     return this.done()
   }
 
+  relativePath(path: string) {
+    const parts = path[0] === '/'
+      ? path.split('/')
+      : this.location.pathname.split('/').concat(path.split('/'))
+
+    const result = parts.reduce((acc, p) => {
+      if (p && p !== '.') {
+        if (p === '..') {
+          if (acc.length && acc[acc.length - 1] !== '..') {
+            acc.pop()
+          }
+        } else {
+          acc.push(p)
+        }
+      }
+
+      return acc
+    }, [])
+
+    return normalizePath(`/${result.join('/')}`)
+  }
+
   /* Private helpers */
 
   // Waits for next navigation event to be processed and resolves.
