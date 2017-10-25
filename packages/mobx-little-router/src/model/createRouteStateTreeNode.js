@@ -6,7 +6,9 @@ import _createKey from '../util/createKey'
 import * as m from './matchers'
 import { array, string, optional, func, createValidator } from '../validation'
 
-async function NOP(a: *, b: *) {}
+function NOP(a: *, b: *) {
+  return Promise.resolve()
+}
 
 // Don't run validators in production bundle
 const validate = process.env.NODE_ENV === 'production'

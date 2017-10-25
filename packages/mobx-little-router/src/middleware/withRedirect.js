@@ -6,7 +6,9 @@ import type { Config, Route } from '../model/types'
 import Navigation from '../model/Navigation'
 import transformConfig from './transformConfig'
 
-async function NOP(a: *, b: *) {}
+function NOP(a: *, b: *) {
+  return Promise.resolve()
+}
 
 export default transformConfig((config: Config<*>) => {
   if (typeof config.redirectTo === 'string') {

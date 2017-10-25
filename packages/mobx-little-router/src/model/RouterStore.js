@@ -5,7 +5,7 @@ import createRouteStateTreeNode from './createRouteStateTreeNode'
 import type { ObservableMap } from 'mobx'
 import createRoute from './createRoute'
 import RouterStateTree from './RouterStateTree'
-import QueryString from 'qs'
+import qs from 'querystring'
 import type Navigation from './Navigation'
 import type {
   Location,
@@ -145,7 +145,7 @@ class RouterStore {
 }
 
 function getQueryParams(location: Location): Query {
-  return location.search != null ? QueryString.parse(location.search.substr(1)) : {}
+  return location.search != null ? qs.parse(location.search.substr(1)) : {}
 }
 
 export default RouterStore

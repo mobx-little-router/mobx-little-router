@@ -2,15 +2,17 @@
 import type { TransitionType, Transitionable } from './types'
 
 export default {
-  async run(type: TransitionType, targets: Transitionable[]) {
-    for (const target of targets) {
+  run(type: TransitionType, targets: Transitionable[]): Promise<*> {
+    return targets.reduce((curr, target) => {
       const { onTransition } = target
       if (typeof onTransition === 'function') {
-        await onTransition({
+        return curr.then(() => onTransition({
           type,
           target
-        })
+        }))
+      } else {
+        return curr
       }
-    }
+    }, Promise.resolve())
   }
 }

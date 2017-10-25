@@ -19,7 +19,6 @@
     "mobx": "^3.0.0"
   },
   "dependencies": {
-    "qs": "^6.5.0",
     "url-pattern": "^1.0.3"
   }
 }

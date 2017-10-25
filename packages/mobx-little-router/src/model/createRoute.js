@@ -1,6 +1,6 @@
 // @flow
 import { observable } from 'mobx'
-import qs from 'qs'
+import qs from 'querystring'
 import createRouteKey from './createRouteKey'
 import type { Params, Query, Route, RouteStateTreeNode } from './types'
 

@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 import type { LocationShape } from 'mobx-little-router'
 import { RouterType } from '../propTypes'
 import cx from 'classnames'
-import QueryString from 'qs'
+import qs from 'querystring'
 
 type Props =  {
   to: string | LocationShape,
@@ -53,7 +53,7 @@ class Link extends Component<Props> {
 }
 
 const locationToHref = (location: LocationShape) => {
-  const queryString = QueryString.stringify(location.query)
+  const queryString = qs.stringify(location.query)
   const hash = location.hash || ''
   const search = (queryString ? `?${queryString}` : location.search) || ''
 

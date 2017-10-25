@@ -4,6 +4,7 @@ import replace from 'rollup-plugin-replace'
 import commonjs from 'rollup-plugin-commonjs'
 import resolve from 'rollup-plugin-node-resolve'
 import visualizer from 'rollup-plugin-visualizer'
+import builtins from 'rollup-plugin-node-builtins'
 import { minify } from 'uglify-es'
 
 const config = {
@@ -31,6 +32,7 @@ const config = {
     visualizer({
       filename: './stats.html'
     }),
+    builtins(),
     babel({
       exclude: 'node_modules/**'
     }),

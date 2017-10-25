@@ -4,7 +4,7 @@
  */
 import { autorun, computed, extendObservable, when } from 'mobx'
 import type { IObservableArray } from 'mobx'
-import QueryString from 'qs'
+import querystring from 'querystring'
 import delay from './util/delay'
 import type { Action, History } from 'history'
 import createRouteStateTreeNode from './model/createRouteStateTreeNode'
@@ -64,44 +64,44 @@ class Router {
   // We may want the start to take in a callback with the router instance as the parameter.
   // This means we can do `.start(router => {/* do stuff with router */})`, as opposed
   // to `.start().then(() => {/* do stuff with router in original scope */})`
-  async start(callback: ?Function) {
-    let error: any = null
-    try {
-      this._scheduler.start()
+  start(callback: ?Function) {
+    return new Promise((res, rej) => {
+      try {
+        this._scheduler.start()
 
-      // Loads initial set of children (running through all middleware).
-      this._scheduler.dispatch({
-        type: EventTypes.CHILDREN_LOADING,
-        leaf: { node: this.store.state.root },
-        children: this._initialChildren
-      })
+        // Loads initial set of children (running through all middleware).
+        this._scheduler.dispatch({
+          type: EventTypes.CHILDREN_LOADING,
+          leaf: { node: this.store.state.root },
+          children: this._initialChildren
+        })
 
-      // Look for any next navigation from events and call corresponding method on history.
-      this._disposers.push(autorun(this.handleNextNavigation))
-      // Initial location.
-      this._disposers.push(this._history.listen(this.handleLocationChange))
+        // Look for any next navigation from events and call corresponding method on history.
+        this._disposers.push(autorun(this.handleNextNavigation))
 
-      await delay(0)
+        // Initial location.
+        this._disposers.push(this._history.listen(this.handleLocationChange))
 
-      // Schedule initial nextNavigation.
-      await this._scheduler.schedule(asNavigation(this._history.location))
-
-      // Wait until nextNavigation is processed.
-      await this.done()
-
-      if (this._scheduler.event.type === EventTypes.NAVIGATION_ERROR) {
-        error = this._scheduler.event.error
-      } else {
-        callback && callback(this)
+        res()
+      } catch (err) {
+        rej(err)
       }
-    } catch (err) {
-      error = err
-    }
-
-    if (error) {
-      this.stop()
-      throw error
-    }
+    }).then(() => delay(0)).then(() => {
+        // Schedule initial nextNavigation.
+        this._scheduler.schedule(asNavigation(this._history.location))
+        // Wait until nextNavigation is processed.
+        return this.done().then(() => {
+          if (this._scheduler.event.type === EventTypes.NAVIGATION_ERROR) {
+            throw this._scheduler.event.error
+          } else {
+            callback && callback(this)
+          }
+        })
+      })
+      .catch(error => {
+        this.stop()
+        throw error
+      })
   }
 
   stop() {
@@ -140,9 +140,9 @@ class Router {
     query: Object,
     options: { action?: Action, merge?: boolean } = { action: 'REPLACE', merge: false}
   ) {
-    const existingQuery = QueryString.parse(this.store.location.search.substr(1))
+    const existingQuery = querystring.parse(this.store.location.search.substr(1))
     const updatedQuery = options.merge === true ? { ...existingQuery, ...query } : query
-    const queryString = Object.keys(updatedQuery).length > 0 ? `?${QueryString.stringify(updatedQuery)}` : ''
+    const queryString = Object.keys(updatedQuery).length > 0 ? `?${querystring.stringify(updatedQuery)}` : ''
     const pathname = `${this.location.pathname}${queryString}`
 
     switch(options.action) {
@@ -223,7 +223,7 @@ function withSearch(href: Href) {
   if (typeof href === 'string') {
     return href
   } else {
-    const qs = href.query ? QueryString.stringify(href.query) : ''
+    const qs = href.query ? querystring.stringify(href.query) : ''
     return {
       ...href,
       search: qs ? `?${qs}` : qs
