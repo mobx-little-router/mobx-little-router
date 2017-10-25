@@ -634,18 +634,21 @@ describe('Public API', () => {
   })
 
   test('router starts with rejection if guard fails', async () => {
-    router = install({
-      history: createMemoryHistory({ initialEntries: ['/'] }),
-      getContext: () => ({}),
-      routes: [
-        {
-          path: '',
-          willResolve: () => Promise.reject('Nope')
-        },
-      ]
-    })
+    const types = ['willResolve', 'willActivate', 'canActivate']
+    for (const type of types) {
+      router = install({
+        history: createMemoryHistory({ initialEntries: ['/'] }),
+        getContext: () => ({}),
+        routes: [
+          {
+            path: '',
+            [type]: () => Promise.reject('Nope')
+          },
+        ]
+      })
 
-    await expect(router.start()).rejects.toEqual(expect.anything())
+      await expect(router.start()).rejects.toEqual(expect.anything())
+    }
   })
 })
 
