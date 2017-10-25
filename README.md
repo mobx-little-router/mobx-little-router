@@ -80,6 +80,73 @@ router.start(() => {
 For a more comprehensive React example, you can explore the [client](https://github.com/mobx-little-router/mobx-little-router/blob/master/examples/react-client/src/index.js)
 and [server](https://github.com/mobx-little-router/mobx-little-router/blob/master/examples/react-server-side-rendering/index.js) examples.
 
+## UMD build
+
+You can play around with the UMD version of the router by including three scripts:
+
+- https://unpkg.com/history@4.x.x/umd/history.js
+- https://unpkg.com/mobx@3.x.x/lib/mobx.umd.js
+- https://unpkg.com/mobx-little-router@canary/umd/mobx-little-router.js
+
+e.g.
+
+HTML
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+  <script src="https://unpkg.com/history@4.x.x/umd/history.js"></script>
+  <script src="https://unpkg.com/mobx@3.x.x/lib/mobx.umd.js"></script>
+  <script src="https://unpkg.com/mobx-little-router@canary/umd/mobx-little-router.js"></script>
+</head>
+<body>
+</body>
+</html>
+```
+
+JS
+
+```js
+let h = History.createMemoryHistory({
+  initialEntries: ['/a']
+})
+
+let router = mobxLittleRouter.install({
+  history: h,
+  getContext: function() { return {} },
+  routes: [
+    { path: 'a' },
+    { path: 'b' },
+    { path: 'c' }
+  ]
+})
+
+mobx.autorun(() => {
+  console.log(`pathname is ${router.location.pathname}`)
+})
+
+router.start(() =>
+  router.push('/b').then(() =>
+    router.push('/c')
+  )
+)
+```
+
+Output:
+
+```
+"pathname is undefined"
+"pathname is /a/"
+"pathname is /b/"
+"pathname is /c/"
+```
+
+Live example: [http://jsbin.com/hahehodajo/edit?html,js,console](http://jsbin.com/hahehodajo/edit?html,js,console)
+
 ## Running examples
 
 Install modules by running `yarn`, then run `yarn start` and follow the prompts.
