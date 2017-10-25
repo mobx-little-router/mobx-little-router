@@ -90,7 +90,7 @@ You can play around with the UMD version of the router by including three script
 
 e.g.
 
-HTML
+HTML:
 
 ```html
 <!DOCTYPE html>
@@ -108,7 +108,7 @@ HTML
 </html>
 ```
 
-JS
+JS:
 
 ```js
 let h = History.createMemoryHistory({
