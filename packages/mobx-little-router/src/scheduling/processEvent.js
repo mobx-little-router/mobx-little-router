@@ -2,7 +2,7 @@
 import { action } from 'mobx'
 import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
 import type RouterStore from '../model/RouterStore'
-import { NoMatch, TransitionFailure } from '../errors'
+import { NoMatch } from '../errors'
 import Navigation from '../model/Navigation'
 import type { Route, Setter } from '../model/types'
 import differenceWith from '../util/differenceWith'
@@ -210,12 +210,13 @@ export async function processEvent(
           }
         }
       } catch (err) {
-        if (err instanceof TransitionFailure) {
-          // Navigation error may be thrown by a guard or lifecycle hook.
+        // Navigation error may be thrown by a guard or lifecycle hook.
+        // If so, mark the current navigation as cancelled, and use the error Navigation as next.
+        if (err instanceof Navigation) {
           return {
             type: EventTypes.NAVIGATION_CANCELLED,
             navigation: evt.navigation,
-            nextNavigation: err.navigation,
+            nextNavigation: err,
             done: true
           }
         } else {
@@ -344,17 +345,13 @@ async function evalTransition(
   const result = typeof value[type] === 'function' ? value[type](route, navigation) : true
 
   // If the guard results in `false` or a rejected promise then mark transition as failed.
-  try {
-    if (false === result) {
-      await navigation.goBack() // TODO: This `goBack` will not work if this is the first navigation in the system.
-    } else if (typeof result.then === 'function') {
-      const x = await result
-      if (typeof x === 'function') {
-        return x
-      }
+  if (false === result) {
+    await navigation.goBack() // TODO: This `goBack` will not work if this is the first navigation in the system.
+  } else if (typeof result.then === 'function') {
+    const x = await result
+    if (typeof x === 'function') {
+      return x
     }
-  } catch (e) {
-    throw new TransitionFailure(route, e instanceof Navigation ? e : null)
   }
 }
 

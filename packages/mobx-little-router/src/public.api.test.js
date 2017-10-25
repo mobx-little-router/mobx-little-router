@@ -632,6 +632,21 @@ describe('Public API', () => {
     expect(spy).toHaveBeenCalled()
     expect(router.location.pathname).toEqual('/b/')
   })
+
+  test('router starts with rejection if guard fails', async () => {
+    router = install({
+      history: createMemoryHistory({ initialEntries: ['/'] }),
+      getContext: () => ({}),
+      routes: [
+        {
+          path: '',
+          willResolve: () => Promise.reject('Nope')
+        },
+      ]
+    })
+
+    await expect(router.start()).rejects.toEqual(expect.anything())
+  })
 })
 
 const getLastRoute = router => {

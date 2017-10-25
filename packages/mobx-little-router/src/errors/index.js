@@ -1,15 +1,4 @@
 // @flow
-import type { Route } from '../model/types'
-import Navigation from '../model/Navigation'
-
-export class TransitionFailure  {
-  route: Route<*, *>
-  navigation: null | Navigation
-  constructor(route: Route<*, *>, navigation: ?Navigation) {
-    this.route = route
-    this.navigation = navigation || null
-  }
-}
 
 export class NoMatch  {
   url: string
