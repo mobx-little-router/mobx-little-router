@@ -216,13 +216,9 @@ function asNavigation(location: Object, action: ?Action) {
     type: action || 'POP',
     to: {
       ...location,
-      pathname: normalizePath(location.pathname)
+      pathname: location.pathname
     }
   }
-}
-
-function normalizePath(x: string) {
-  return x.endsWith('/') ? x : `${x}/`
 }
 
 function withSearch(href: Href) {

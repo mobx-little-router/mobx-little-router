@@ -32,7 +32,7 @@ describe('Router', () => {
       await delay(0)
       await delay(0)
 
-      expect(router.location.pathname).toEqual('/a/')
+      expect(router.location.pathname).toEqual('/a')
 
       router._scheduler.dispatch(abortNavigation('GO_BACK', { pathname: '/' }, null))
       await delay(0)
@@ -46,7 +46,7 @@ describe('Router', () => {
       await delay(0)
       await delay(0)
 
-      expect(router.location.pathname).toEqual('/b/')
+      expect(router.location.pathname).toEqual('/b')
     })
   })
 

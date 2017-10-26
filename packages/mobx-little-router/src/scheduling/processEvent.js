@@ -54,11 +54,15 @@ export default function maybeProcessEvent(
   }
 }
 
+function normalizePath(x: string) {
+  return x.endsWith('/') ? x : `${x}/`
+}
+
 export function processEvent(evt: Event, store: RouterStore): Promise<null | Event> {
   switch (evt.type) {
     case EventTypes.NAVIGATION_START: {
       const { navigation } = evt
-      const matchedPath = store.state.pathFromRoot(navigation.to.pathname)
+      const matchedPath = store.state.pathFromRoot(normalizePath(navigation.to.pathname))
       return Promise.resolve({
         type: EventTypes.NAVIGATION_RESULT_MATCHED,
         navigation,

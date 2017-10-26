@@ -123,7 +123,7 @@ describe('processEvent', () => {
               node: expect.objectContaining({
                 value: expect.objectContaining({ path: '**' })
               }),
-              segment: '/c'
+              segment: '/c/'
             })
           ])
         })

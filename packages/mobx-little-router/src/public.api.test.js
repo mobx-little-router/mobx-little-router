@@ -40,18 +40,18 @@ describe('Public API', () => {
     await router.push('/foo')
     await router.push('/bar')
 
-    expect(router.location.pathname).toEqual('/bar/')
+    expect(router.location.pathname).toEqual('/bar')
 
     await router.goBack()
 
-    expect(router.location.pathname).toEqual('/foo/')
+    expect(router.location.pathname).toEqual('/foo')
 
     await router.push('/bar')
     await router.replace('/quux')
 
-    expect(router.location.pathname).toEqual('/quux/')
+    expect(router.location.pathname).toEqual('/quux')
 
-    expect(changes).toEqual(['/initial/', '/foo/', '/bar/', '/foo/', '/bar/', '/quux/'])
+    expect(changes).toEqual(['/initial', '/foo', '/bar', '/foo', '/bar', '/quux'])
 
     expect(router.store.routes.map(route => route.node.value.path)).toEqual([
       '',
@@ -78,7 +78,7 @@ describe('Public API', () => {
     router.push('/9')
     await router.push('/10')
 
-    expect(changes).toEqual(['/initial/', '/10/'])
+    expect(changes).toEqual(['/initial', '/10'])
 
     expect(router.store.routes.map(route => route.node.value.path)).toEqual([
       '',
@@ -96,7 +96,7 @@ describe('Public API', () => {
       autorun(() => changes.push(_router.location.pathname))
 
       _router.push('/1').then(() => {
-        expect(changes).toEqual(['/initial/', '/1/'])
+        expect(changes).toEqual(['/initial', '/1'])
 
         expect(_router.store.routes.map(route => route.node.value.path)).toEqual([
           '',
@@ -136,7 +136,7 @@ describe('Public API', () => {
         spy.mock.calls.map(
           x => x[0].navigation && x[0].navigation.to && x[0].navigation.to.pathname
         )
-      ).toEqual(expect.arrayContaining(['/initial/', '/bar/']))
+      ).toEqual(expect.arrayContaining(['/initial', '/bar']))
 
       dispose()
     })
@@ -166,7 +166,7 @@ describe('Public API', () => {
 
       await delay(MAX_DURATION * 4)
 
-      expect(changes).toEqual(['/initial/', '/a/', '/b/', '/c/', '/d/'])
+      expect(changes).toEqual(['/initial', '/a', '/b', '/c', '/d'])
 
       router.stop()
     })
@@ -186,7 +186,7 @@ describe('Public API', () => {
 
     await router.push('/404')
 
-    expect(changes).toEqual(['/a/', '/404/'])
+    expect(changes).toEqual(['/a', '/404'])
 
     router.stop()
   })
@@ -259,7 +259,7 @@ describe('Public API', () => {
 
     expect(router.location).toEqual(
       expect.objectContaining({
-        pathname: '/a/b/'
+        pathname: '/a/b'
       })
     )
   })
@@ -335,21 +335,21 @@ describe('Public API', () => {
 
     await delay(0)
 
-    expect(router.location.pathname).toEqual('/a/')
+    expect(router.location.pathname).toEqual('/a')
     expect(getLastRoute(router).segment).toBe('/a')
 
     router.push('/a/b')
 
     await delay(0)
 
-    expect(router.location.pathname).toEqual('/a/b/')
+    expect(router.location.pathname).toEqual('/a/b')
     expect(getLastRoute(router).segment).toBe('/b')
 
     router.push('/a/b/c')
 
     await delay(0)
 
-    expect(router.location.pathname).toEqual('/a/b/c/')
+    expect(router.location.pathname).toEqual('/a/b/c')
     expect(getLastRoute(router).segment).toBe('/c')
 
     router.stop()
@@ -380,21 +380,21 @@ describe('Public API', () => {
 
     await delay(0)
 
-    expect(router.location.pathname).toEqual('/a/')
+    expect(router.location.pathname).toEqual('/a')
     expect(getLastRoute(router).parentUrl).toBe('')
 
     router.push('/a/b')
 
     await delay(0)
 
-    expect(router.location.pathname).toEqual('/a/b/')
+    expect(router.location.pathname).toEqual('/a/b')
     expect(getLastRoute(router).parentUrl).toBe('/a')
 
     router.push('/a/b/c')
 
     await delay(0)
 
-    expect(router.location.pathname).toEqual('/a/b/c/')
+    expect(router.location.pathname).toEqual('/a/b/c')
     expect(getLastRoute(router).parentUrl).toBe('/a/b')
 
     router.stop()
@@ -424,7 +424,7 @@ describe('Public API', () => {
 
     await delay(200)
 
-    expect(router.location.pathname).toEqual('/a/b/')
+    expect(router.location.pathname).toEqual('/a/b')
 
     router.stop()
   })
@@ -452,7 +452,7 @@ describe('Public API', () => {
 
     await delay(200)
 
-    expect(router.location.pathname).toEqual('/a/b/')
+    expect(router.location.pathname).toEqual('/a/b')
 
     router.stop()
   })
@@ -481,7 +481,7 @@ describe('Public API', () => {
 
     await delay(200)
 
-    expect(router.location.pathname).toEqual('/a/b/')
+    expect(router.location.pathname).toEqual('/a/b')
 
     router.stop()
   })
@@ -509,7 +509,7 @@ describe('Public API', () => {
 
     await delay(200)
 
-    expect(router.location.pathname).toEqual('/a/b/')
+    expect(router.location.pathname).toEqual('/a/b')
 
     router.stop()
   })
@@ -543,7 +543,7 @@ describe('Public API', () => {
 
     await delay(200)
 
-    expect(router.location.pathname).toEqual('/a/b/d/')
+    expect(router.location.pathname).toEqual('/a/b/d')
 
     router.stop()
   })
@@ -595,7 +595,7 @@ describe('Public API', () => {
 
     await delay(200)
 
-    expect(router.location.pathname).toEqual('/a/b/c/')
+    expect(router.location.pathname).toEqual('/a/b/c')
 
     router.stop()
   })
@@ -630,7 +630,7 @@ describe('Public API', () => {
 
     expect(router._scheduler.event.type).toEqual(EventTypes.NAVIGATION_END)
     expect(spy).toHaveBeenCalled()
-    expect(router.location.pathname).toEqual('/b/')
+    expect(router.location.pathname).toEqual('/b')
   })
 
   test('router starts with rejection if guard fails', async () => {

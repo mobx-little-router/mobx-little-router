@@ -38,7 +38,7 @@ describe('Link', () => {
     wrapper.find('.foo').simulate('click')
     await delay(0)
 
-    expect(router.store.location.pathname).toEqual('/foo/')
+    expect(router.store.location.pathname).toEqual('/foo')
 
     wrapper.find('.index').simulate('click')
     await delay(0)
@@ -121,7 +121,7 @@ describe('Link', () => {
     await delay(0)
 
     expect(spy).toHaveBeenCalled()
-    expect(router.store.location.pathname).toEqual('/foo/')
+    expect(router.store.location.pathname).toEqual('/foo')
     expect(router.store.location.hash).toEqual('#hey')
     expect(router.store.location.query).toEqual({ a: '1', b: '2' })
     expect(router.store.location.search).toEqual('?a=1&b=2')
@@ -154,7 +154,7 @@ describe('Link', () => {
     await delay(0)
 
     expect(spy).toHaveBeenCalled()
-    expect(router.store.location.pathname).toEqual('/foo/')
+    expect(router.store.location.pathname).toEqual('/foo')
 
     const state = router.store.location.state || {}
 
