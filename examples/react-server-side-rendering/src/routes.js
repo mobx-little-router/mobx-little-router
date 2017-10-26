@@ -1,17 +1,17 @@
 import { action } from 'mobx'
 import fetch from 'node-fetch'
 
-import Home from './Home'
-import About from './About'
-import AboutNotFound from './AboutNotFound'
-import Gif from './Gif'
-import NotFound from './NotFound'
+import Home from './pages/Home'
+import About from './pages/About'
+import AboutNotFound from './pages/AboutNotFound'
+import Gif from './pages/Gif'
+import NotFound from './pages/NotFound'
 
 export default [
   {
     path: '',
     match: 'full',
-    getData: () => ({ component: Home })
+    component: Home
   },
   {
     path: 'about',
@@ -19,7 +19,7 @@ export default [
     loadChildren: () => Promise.resolve([
       {
         path: '',
-        getData: () => ({ component: About }),
+        component: About,
       },
       {
         path: '**',
@@ -27,15 +27,13 @@ export default [
           route.context.status = 404
           return Promise.resolve()
         },
-        getData: () => ({
-          component: AboutNotFound
-        })
+        component: AboutNotFound
       }
     ])
   },
   {
     path: 'gif/:topic',
-    getData: () => ({ component: Gif }),
+    component: Gif,
     willActivate: (route) => {
       return new Promise(res => {
         const topic = route.params.topic
@@ -67,8 +65,6 @@ export default [
       route.context.status = 404
       return Promise.resolve()
     }),
-    getData: () => ({
-      component: NotFound
-    })
+    component: NotFound
   }
 ]
