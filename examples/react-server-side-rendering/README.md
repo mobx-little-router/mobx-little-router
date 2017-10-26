@@ -4,3 +4,19 @@ This example shows off the Router's ability to render in both the server and cli
 
 All data resolution can be handled within the router so that `await router.start()` guarantees that the application
 can be rendered in a single pass.
+
+## Running the app
+
+Build:
+
+```
+yarn build
+```
+
+Run server:
+
+```
+yarn start
+```
+
+Note, dev server, hot-reloading, etc. are not provided. They can be set up with more work.
