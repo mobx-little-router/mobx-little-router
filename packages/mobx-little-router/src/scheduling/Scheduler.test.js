@@ -519,8 +519,10 @@ describe('Scheduler', () => {
     })
   })
 
-  function updateNode(node: *, props: Object) {
-    store.updateNode(node, props)
+  function updateNode(node: any, updates: any) {
+    runInAction(() => {
+      Object.assign(node.value, updates)
+    })
   }
 
   function updateLocation(location: *, nodes: *) {
@@ -533,7 +535,7 @@ function createStore() {
   const store = new RouterStore(
     createRouteStateTreeNode({ path: '', match: 'partial' }, () => ({ message: 'Hello' }))
   )
-  store.replaceChildren(store.state.root, [
+  replaceChildren(store.state.root, [
     createRouteStateTreeNode({
       path: '',
       children: [
@@ -565,4 +567,18 @@ function expectEventTimes(type, times, events) {
 
 function nextTick() {
   return delay(0)
+}
+
+function replaceChildren(parent: any, nodes: any) {
+  nodes.forEach(x => {
+    runInAction(() => {
+      x.value.getContext = parent.value.getContext
+    })
+  })
+  runInAction(() => {
+    parent.children.replace(nodes)
+    nodes.forEach(child => {
+      replaceChildren(child, child.children.slice())
+    })
+  })
 }

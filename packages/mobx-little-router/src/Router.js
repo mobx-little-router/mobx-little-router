@@ -2,14 +2,14 @@
  * This is the public facade over all of the routing interface.
  * The `Router` is a coordinator of other objects in the system.
  */
-import { autorun, computed, extendObservable, when } from 'mobx'
 import type { IObservableArray } from 'mobx'
+import { autorun, computed, extendObservable, when } from 'mobx'
 import querystring from 'querystring'
 import delay from './util/delay'
 import type { Action, History } from 'history'
 import createRouteStateTreeNode from './model/createRouteStateTreeNode'
 import RouterStore from './model/RouterStore'
-import type { Config, Href, Location, Route, Query } from './model/types'
+import type { Config, Href, Location, Route, RouteStateTreeNode } from './model/types'
 import Scheduler from './scheduling/Scheduler'
 import type { Event } from './events'
 import { EventTypes } from './events'
@@ -189,8 +189,9 @@ class Router {
     return `/${result.join('/')}${endsWithSlash ? '/' : ''}`
   }
 
-  getTreeNode(key: string) {
-    return this._store.getNodeByKey(key)
+  // Note: This will not return any dynamic nodes unless they have already loaded.
+  getNode(key: string): null | RouteStateTreeNode<*, *> {
+    return this._store.getNode(key)
   }
 
   /* Private helpers */

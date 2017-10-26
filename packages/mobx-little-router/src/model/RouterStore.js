@@ -10,14 +10,21 @@ import type Navigation from './Navigation'
 import type {
   Location,
   Query,
+  Params,
   Route,
   RouteStateTreeNode,
   PathElement,
-  RouteValue,
   Config,
 } from './types'
 
-type RouteValueChange = $Shape<RouteValue<*, *>>
+type TreeNodeMetaData<C, D> = {
+  node: RouteStateTreeNode<C, D>,
+  parent: null | RouteStateTreeNode<C, D>
+}
+
+type RouteStateTreeNodeWithStringify<C, D> = RouteStateTreeNode<C, D> & {
+  stringify: (x: Params) => string
+}
 
 class RouterStore {
   location: Location
@@ -26,7 +33,7 @@ class RouterStore {
 
   // Create a map of all nodes in tree so we can perform faster lookup.
   // Instances should be exactly the same as in state tree.
-  cache: ObservableMap<RouteStateTreeNode<*, *>>
+  cache: ObservableMap<TreeNodeMetaData<*, *>>
   // Keep a list of activated nodes so we can track differences when transitioning to a new state.
   routes: IObservableArray<Route<*, *>>
   prevRoutes: IObservableArray<Route<*, *>>
@@ -53,20 +60,6 @@ class RouterStore {
 
   /* Queries */
 
-  // Ensures we always get the matched copy from state.
-  getNode(x: RouteStateTreeNode<*, *>): RouteStateTreeNode<*, *> {
-    const existing = this.cache.get(x.value.key)
-    if (existing) {
-      return existing
-    } else {
-      throw new Error('Node not found in state tree.')
-    }
-  }
-
-  getNodeByKey(key: string): null | RouteStateTreeNode<*, *> {
-    return this.cache.get(key) || null
-  }
-
   // Returns a list of the next routes from the matched path.
   // If the route is not currently active or has changed, then it will be created from factory function.
   getNextRoutes(path: PathElement<*, *>[], location: Location): Route<*, *>[] {
@@ -80,34 +73,43 @@ class RouterStore {
     })
   }
 
+  // All nodes should be created using this method.
   createNode(parent: RouteStateTreeNode<*, *>, config: Config<*>) {
-    return createRouteStateTreeNode(config, parent.value.getContext, this.getNextKey)
+    const node = createRouteStateTreeNode(config, parent.value.getContext, this.getNextKey)
+    this.storeInCache(parent, node)
+    return node
+  }
+
+  storeInCache(parent: RouteStateTreeNode<*, *>, node: RouteStateTreeNode<*, *>) {
+    this.cache.set(node.value.key, { node: node, parent })
+    node.children.forEach(child => this.storeInCache(node, child))
+  }
+
+  getNode(key: string): null | RouteStateTreeNodeWithStringify<*, *> {
+    const x = this.cache.get(key)
+    if (x) {
+      const { node, parent } = x
+      return {
+        ...node,
+        stringify: (x: Params) => {
+          const paths = []
+          let curr = node
+          let prev = parent
+          while (curr !== null) {
+            paths.unshift(curr.value.matcher.stringify(x))
+            const y = prev ? this.cache.get(prev.value.key) : null
+            curr = prev
+            prev = y ? (y.parent || null) : null
+          }
+          return paths.join('')
+        }
+      }
+    } else {
+      return null
+    }
   }
 
   /* Mutations */
-
-  replaceChildren(parent: RouteStateTreeNode<*, *>, nodes: RouteStateTreeNode<*, *>[]) {
-    const existing = this.getNode(parent)
-    nodes.forEach(x => {
-      runInAction(() => {
-        x.value.getContext = parent.value.getContext
-      })
-    })
-    runInAction(() => {
-      existing.children.replace(nodes)
-      nodes.forEach(child => {
-        this.cache.set(child.value.key, child)
-        this.replaceChildren(child, child.children.slice())
-      })
-    })
-  }
-
-  updateNode(node: RouteStateTreeNode<*, *>, updates: RouteValueChange) {
-    const existing = this.getNode(node)
-    runInAction(() => {
-      Object.assign(existing.value, updates)
-    })
-  }
 
   updateRoutes(routes: Route<*, *>[]) {
     runInAction(() => {

@@ -16,13 +16,20 @@ describe('Public API', () => {
       routes: [
         {
           path: 'a',
+          key: 'a',
           children: [
             { path: '', redirectTo: 'c' },
             { path: 'b', redirectTo: 'c' },
             { path: 'c' }
           ]
         },
-        { path: ':whatever', key: 'whatever' }
+        {
+          path: ':whatever',
+          key: 'whatever',
+          children: [
+            { path: ':thing', key: 'thing' }
+          ]
+        }
       ]
     })
   })
@@ -643,7 +650,7 @@ describe('Public API', () => {
           {
             path: '',
             [type]: () => Promise.reject('Nope')
-          },
+          }
         ]
       })
 
@@ -651,9 +658,12 @@ describe('Public API', () => {
     }
   })
 
-  test.skip('looking up and stringify URL', async () => {
-    const node = router.getTreeNode('whatever')
+  test('looking up and stringify URL', async () => {
     await router.start()
+    const a: any = router.getNode('whatever')
+    const b: any = router.getNode('thing')
+    expect(a.stringify({ whatever: 'abc' })).toEqual('/abc')
+    expect(b.stringify({ whatever: 'abc', thing: '123' })).toEqual('/abc/123')
   })
 })
 
