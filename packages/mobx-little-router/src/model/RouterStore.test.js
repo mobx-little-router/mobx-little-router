@@ -144,7 +144,7 @@ describe('RouterStore', () => {
     const a = createRouteStateTreeNode({ path: 'a', getData: () => dataSpy('a') })
     const b = createRouteStateTreeNode({ path: 'b', getData: () => dataSpy('b') })
     const c = createRouteStateTreeNode({ path: 'c', getData: () => dataSpy('c') })
-    const currRoutes: Route<*, *>[] = [
+    const currRoutes: any[] = [
       {
         key: `${a.value.key}/a/1`,
         value: `${a.value.key}/a/1?`,

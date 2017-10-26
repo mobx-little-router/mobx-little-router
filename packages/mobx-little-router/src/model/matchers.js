@@ -16,17 +16,19 @@ export type MatchFn = (current: string, full: ?string) => {
 }
 
 export function partial(path: string): Matcher {
-  path = normalize(path)
-  const pattern = new UrlPattern(path === '/' ? '*' : `${path}*`)
+  path = withLeadingSlash(path)
+  const pattern = new UrlPattern(path === '/' ? '*' : `${path}/*`)
   return {
     type: 'partial',
     match: createMatcher(pattern),
-    stringify: (params: Object) => pattern.stringify({ _: '', ...params })
+    stringify: (params: Object) => {
+      return withoutTrailingSlash(pattern.stringify({ _: '', ...params }))
+    }
   }
 }
 
 export function full(path: string): Matcher {
-  path = normalize(path)
+  path = withLeadingSlash(path)
   const pattern = new UrlPattern(path === '/' ? '(/)' : `${path}(/)`)
   return {
     type: 'full',
@@ -53,13 +55,9 @@ export function any(path: string): Matcher {
   }
 }
 
-function normalize(path: string): string {
-  return path.startsWith('/') ? path : `/${path}`
-}
-
 function createMatcher(pattern: UrlPattern) {
-  return (current: string, full: ?string) => {
-    const result = pattern.match(current)
+  return (current: ?string, full: ?string) => {
+    const result = pattern.match(typeof current ==='string' ? withTrailingSlash(current) : current)
 
     if (result) {
       const { _, ...params } = result
@@ -78,8 +76,8 @@ function createMatcher(pattern: UrlPattern) {
         matched: true,
         params: normalizedParams,
         parentUrl,
-        segment,
-        remaining: _
+        segment: withoutTrailingSlash(segment),
+        remaining: _ ? withLeadingSlash(_) : _
       }
     } else {
       return {
@@ -87,8 +85,21 @@ function createMatcher(pattern: UrlPattern) {
         params: null,
         parentUrl: '',
         segment: '',
-        remaining: current
+        remaining: current || ''
       }
     }
   }
+}
+
+function withLeadingSlash(path: string): string {
+  return path.startsWith('/') ? path : `/${path}`
+}
+
+function withTrailingSlash(path: string): string {
+  return path.endsWith('/') ? path : `${path}/`
+}
+
+function withoutTrailingSlash(x: string) {
+  const match = x.match(/(.*?)\/?$/)
+  return match ? match[1] : x
 }
