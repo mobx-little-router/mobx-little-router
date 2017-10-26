@@ -166,13 +166,13 @@ class Router {
     return this.done()
   }
 
-  relativePath(path: string) {
+  resolvePath(path: string, cwd: string = this.location.pathname) {
     const endsWithSlash = path.endsWith('/')
-    const parts = path[0] === '/'
+    const segments = path[0] === '/'
       ? path.split('/')
-      : this.location.pathname.split('/').concat(path.split('/'))
+      : cwd.split('/').concat(path.split('/'))
 
-    const result = parts.reduce((acc, p) => {
+    const result = segments.reduce((acc, p) => {
       if (p && p !== '.') {
         if (p === '..') {
           if (acc.length && acc[acc.length - 1] !== '..') {

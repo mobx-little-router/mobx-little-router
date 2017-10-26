@@ -103,29 +103,60 @@ describe('Router', () => {
     expect(router.location.search).toEqual('')
   })
 
-  test('relativePath', async () => {
+  test('resolvePath', async () => {
     await router.push('/a/a2/a3/a4/')
 
-    expect(router.relativePath('/a')).toBe('/a')
-    expect(router.relativePath('/a/')).toBe('/a/')
-    expect(router.relativePath('/a/../b')).toBe('/b')
-    expect(router.relativePath('/a/./b')).toBe('/a/b')
+    // expect(router.relativePath('/a')).toBe('/a')
+    // expect(router.relativePath('/a/')).toBe('/a/')
+    // expect(router.relativePath('/a/../b')).toBe('/b')
+    // expect(router.relativePath('/a/./b')).toBe('/a/b')
 
-    expect(router.relativePath('a5')).toBe('/a/a2/a3/a4/a5')
+    // expect(router.relativePath('a5')).toBe('/a/a2/a3/a4/a5')
 
-    expect(router.relativePath('../')).toBe('/a/a2/a3/')
-    expect(router.relativePath('../b4')).toBe('/a/a2/a3/b4')
-    expect(router.relativePath('../../b3')).toBe('/a/a2/b3')
-    expect(router.relativePath('../../../b2')).toBe('/a/b2')
-    expect(router.relativePath('../../../../b')).toBe('/b')
+    // expect(router.relativePath('../')).toBe('/a/a2/a3/')
+    // expect(router.relativePath('../b4')).toBe('/a/a2/a3/b4')
+    // expect(router.relativePath('../../b3')).toBe('/a/a2/b3')
+    // expect(router.relativePath('../../../b2')).toBe('/a/b2')
+    // expect(router.relativePath('../../../../b')).toBe('/b')
 
-    expect(router.relativePath('./')).toBe('/a/a2/a3/a4/')
-    expect(router.relativePath('./b5')).toBe('/a/a2/a3/a4/b5')
-    expect(router.relativePath('./b5/b6')).toBe('/a/a2/a3/a4/b5/b6')
-    expect(router.relativePath('./b5/../c5')).toBe('/a/a2/a3/a4/c5')
+    // expect(router.relativePath('./')).toBe('/a/a2/a3/a4/')
+    // expect(router.relativePath('./b5')).toBe('/a/a2/a3/a4/b5')
+    // expect(router.relativePath('./b5/b6')).toBe('/a/a2/a3/a4/b5/b6')
+    // expect(router.relativePath('./b5/../c5')).toBe('/a/a2/a3/a4/c5')
+
+    // // Can't go past the root
+    // expect(router.relativePath('../../../../../../../../../b')).toBe('/b')
+
+    expect(router.resolvePath('/a')).toBe('/a')
+    expect(router.resolvePath('/a/')).toBe('/a/')
+    expect(router.resolvePath('/a/../b')).toBe('/b')
+    expect(router.resolvePath('/a/./b')).toBe('/a/b')
+
+    expect(router.resolvePath('a5')).toBe('/a/a2/a3/a4/a5')
+
+    expect(router.resolvePath('..')).toBe('/a/a2/a3')
+    expect(router.resolvePath('../')).toBe('/a/a2/a3/')
+    expect(router.resolvePath('../b4')).toBe('/a/a2/a3/b4')
+    expect(router.resolvePath('../../b3')).toBe('/a/a2/b3')
+    expect(router.resolvePath('../../../b2')).toBe('/a/b2')
+    expect(router.resolvePath('../../../../b')).toBe('/b')
+
+    expect(router.resolvePath('./')).toBe('/a/a2/a3/a4/')
+    expect(router.resolvePath('./b5')).toBe('/a/a2/a3/a4/b5')
+    expect(router.resolvePath('./b5/b6')).toBe('/a/a2/a3/a4/b5/b6')
+    expect(router.resolvePath('./b5/../c5')).toBe('/a/a2/a3/a4/c5')
 
     // Can't go past the root
-    expect(router.relativePath('../../../../../../../../../b')).toBe('/b')
+    expect(router.resolvePath('../../../../../../../../../b')).toBe('/b')
+
+    // Optional cwd argument (defaults to router.location.pathname)
+    expect(router.resolvePath('../', '/a/a2/a3/a4')).toBe('/a/a2/a3/')
+    expect(router.resolvePath('../', '/a/a2/a3/a4/')).toBe('/a/a2/a3/')
+    expect(router.resolvePath('..', '/a/a2/a3/a4')).toBe('/a/a2/a3')
+    expect(router.resolvePath('..', '/a/a2/a3/a4/')).toBe('/a/a2/a3')
+    expect(router.resolvePath('../../', '/a/a2/a3/a4/')).toBe('/a/a2/')
+    expect(router.resolvePath('../b4', '/a/a2/a3/a4/')).toBe('/a/a2/a3/b4')
+    expect(router.resolvePath('./b5', '/a/a2/a3/a4/')).toBe('/a/a2/a3/a4/b5')
   })
 })
 
