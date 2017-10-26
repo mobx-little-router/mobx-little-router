@@ -29,4 +29,22 @@ describe('createRouteStateTreeNode', () => {
       })
     )
   })
+
+  test('stringify', () => {
+    const route = createRoute(
+      createRouteStateTreeNode(
+        {
+          path: ':id',
+          children: []
+        },
+        () => ({})
+      ),
+      '/1',
+      '/1',
+      { id: '1' },
+      {}
+    )
+
+    expect(route.stringify({ id: '2' })).toEqual('/2')
+  })
 })

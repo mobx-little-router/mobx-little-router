@@ -16,6 +16,7 @@ export default function createRoute<C: Object, D: Object>(node: RouteStateTreeNo
     query,
     context: observable.ref(node.value.getContext()),
     data: node.value.getData(),
-    onTransition: node.value.onTransition
+    onTransition: node.value.onTransition,
+    stringify: observable.ref(node.value.matcher.stringify)
   })
 }

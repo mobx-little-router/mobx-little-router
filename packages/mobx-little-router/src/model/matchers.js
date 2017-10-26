@@ -1,6 +1,12 @@
 // @flow
 import UrlPattern from 'url-pattern'
 
+export type Matcher = {
+  type: string,
+  match: MatchFn,
+  stringify: (params: Object) => string
+}
+
 export type MatchFn = (current: string, full: ?string) => {
   matched: boolean,
   params: null | Object,
@@ -9,31 +15,42 @@ export type MatchFn = (current: string, full: ?string) => {
   remaining: string
 }
 
-export function partial(path: string): MatchFn {
+export function partial(path: string): Matcher {
   path = normalize(path)
-  return tag('partial', createMatcher(new UrlPattern(path === '/' ? '*' : `${path}*`)))
+  const pattern = new UrlPattern(path === '/' ? '*' : `${path}*`)
+  return {
+    type: 'partial',
+    match: createMatcher(pattern),
+    stringify: (params: Object) => pattern.stringify({ _: '', ...params })
+  }
 }
 
-export function full(path: string): MatchFn {
+export function full(path: string): Matcher {
   path = normalize(path)
-  return tag('full', createMatcher(new UrlPattern(path === '/' ? '(/)' : `${path}(/)`)))
+  const pattern = new UrlPattern(path === '/' ? '(/)' : `${path}(/)`)
+  return {
+    type: 'full',
+    match: createMatcher(pattern),
+    stringify: (params: Object) => pattern.stringify(params)
+  }
 }
 
-export function any(path: string): MatchFn {
-  return tag('any', (url: string) => {
-    return {
-      matched: true,
-      params: null,
-      parentUrl: '',
-      segment: url,
-      remaining: ''
+export function any(path: string): Matcher {
+  return {
+    type: 'any',
+    match: (url: string) => {
+      return {
+        matched: true,
+        params: null,
+        parentUrl: '',
+        segment: url,
+        remaining: ''
+      }
+    },
+    stringify: (params: Object) => {
+      throw new Error('Cannot stringify `any` URL')
     }
-  })
-}
-
-function tag(t, f) {
-  f.type = t
-  return f
+  }
 }
 
 function normalize(path: string): string {

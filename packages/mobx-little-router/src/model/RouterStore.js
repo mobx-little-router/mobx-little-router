@@ -63,6 +63,10 @@ class RouterStore {
     }
   }
 
+  getNodeByKey(key: string): null | RouteStateTreeNode<*, *> {
+    return this.cache.get(key) || null
+  }
+
   // Returns a list of the next routes from the matched path.
   // If the route is not currently active or has changed, then it will be created from factory function.
   getNextRoutes(path: PathElement<*, *>[], location: Location): Route<*, *>[] {

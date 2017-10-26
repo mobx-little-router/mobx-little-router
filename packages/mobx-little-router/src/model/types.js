@@ -2,13 +2,13 @@
 import type { History, Location as HistoryLocation } from 'history'
 import type { ITreeNode } from '../util/tree'
 import type { TransitionFn } from '../transition/types'
-import type { MatchFn } from './matchers'
+import type { MatchFn, Matcher } from './matchers'
 import type Navigation from './Navigation'
 
-export type { MatchFn }
+export type { MatchFn, Matcher }
 
 export type Query = { [key: string]: string }
-export type Params = { [key: string]: string }
+export type Params = { [key: string]: string | number | boolean | null | void }
 
 
 export type Location = HistoryLocation & {
@@ -86,7 +86,7 @@ export type RouteValue<C: Object, D: Object> = {
   // Original path provided to this route node.
   path: string,
   query: Array<string>,
-  matcher: MatchFn,
+  matcher: Matcher,
   loadChildren?: null | LoadChildrenRouteStateTreeNode,
   canActivate: GuardFn,
   canDeactivate: GuardFn,
@@ -120,5 +120,6 @@ export type Route<C,D> = {
   query: Query,
   segment: string, // This is the matched segment from URL. e.g. "/123" for ":id"
   parentUrl: string,
-  onTransition: null | TransitionFn
+  onTransition: null | TransitionFn,
+  stringify: (x: Params) => string
 }

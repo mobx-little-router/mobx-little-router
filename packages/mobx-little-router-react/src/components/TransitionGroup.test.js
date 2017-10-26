@@ -10,11 +10,11 @@ describe('TransitionGroup', () => {
   
   const updateRoutes = (wrapper) => {
     let to, from
-    if (router.store.routes.length > 1) { to = router.store.routes[1] }
-    if (router.store.prevRoutes.length > 1) { from = router.store.prevRoutes[1] }
+    if (router._store.routes.length > 1) { to = router._store.routes[1] }
+    if (router._store.prevRoutes.length > 1) { from = router._store.prevRoutes[1] }
 
     const isTransitioning =
-      router.store.prevRoutes.length > 0 &&
+      router._store.prevRoutes.length > 0 &&
       !areRoutesEqual(to, from) &&
       (canTransition(to) || canTransition(from))
 
@@ -66,7 +66,7 @@ describe('TransitionGroup', () => {
 
     // Then the animation is initialized with the active class
     expect(wrapper.childAt(0).childAt(0).hasClass('enter-active')).toBe(true)
-    expect(router.store.routes[1].data.transitionState).toBe('entering')
+    expect(router._store.routes[1].data.transitionState).toBe('entering')
 
     // Wait for transition to complete
     await delay(150)
@@ -75,7 +75,7 @@ describe('TransitionGroup', () => {
     // Our transition has settled and transitioning class removed 
     expect(wrapper.childAt(0).childAt(0).hasClass('transitioning')).toBe(false)
     expect(wrapper.childAt(0).childAt(0).hasClass('enter-active')).toBe(false)
-    expect(router.store.routes[1].data.transitionState).toBe('entered')
+    expect(router._store.routes[1].data.transitionState).toBe('entered')
 
     router.push('/contact')
     await delay(0)
@@ -93,8 +93,8 @@ describe('TransitionGroup', () => {
     // Then the animation is initialized with the active class
     expect(wrapper.childAt(0).childAt(0).hasClass('exit-active')).toBe(true)
     expect(wrapper.childAt(1).childAt(0).hasClass('enter-active')).toBe(true)
-    expect(router.store.routes[1].data.transitionState).toBe('entering')
-    expect(router.store.prevRoutes[1].data.transitionState).toBe('exiting')
+    expect(router._store.routes[1].data.transitionState).toBe('entering')
+    expect(router._store.prevRoutes[1].data.transitionState).toBe('exiting')
 
     // Wait for the transition to complete
     await delay(150)

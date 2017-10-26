@@ -10,7 +10,7 @@ class App extends Component {
       <div>
         <Header />
         <Viewport>
-          <p>pathname: <b>{JSON.stringify(this.props.router.store.location.pathname)}</b></p>
+          <p>pathname: <b>{JSON.stringify(this.props.router._store.location.pathname)}</b></p>
           <Outlet key="main"/>
           <Outlet name="modal" />
         </Viewport>
