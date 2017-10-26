@@ -2,9 +2,9 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { createBrowserHistory } from 'history'
 import { install } from 'mobx-little-router-react'
-import App from './src/App'
-import routes from './src/routes'
-import DataStore from './src/DataStore'
+import App from './App'
+import homeRoutes from './routes/home/index'
+import DataStore from './DataStore'
 
 const dataStore = new DataStore()
 const ctx = {
@@ -13,7 +13,7 @@ const ctx = {
 }
 const router = install({
   history: createBrowserHistory(),
-  routes,
+  routes: homeRoutes,
   getContext: () => ctx
 })
 

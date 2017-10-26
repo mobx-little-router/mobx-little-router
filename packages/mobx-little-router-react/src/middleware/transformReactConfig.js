@@ -20,11 +20,6 @@ const handleAnimatedTransition = ({ type, target }) => {
 export default transformConfig(config => {
   const { component, outlet, animate } = config
 
-  // Delete custom properties
-  delete config.component
-  delete config.outlet
-  delete config.animate
-
   const getData = component || outlet
     ? (route) => {
         return {

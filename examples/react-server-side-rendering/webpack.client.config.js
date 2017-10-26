@@ -1,11 +1,14 @@
 const webpack = require('webpack')
 
 module.exports = {
-  context: __dirname,
-  entry: "./client",
+  context: __dirname + '/src',
+  entry: [
+    './client'
+  ],
   output: {
-    path: __dirname + "/dist",
-    filename: "bundle.js"
+    publicPath: '/',
+    path: __dirname + '/dist',
+    filename: 'client.js'
   },
   module: {
     rules: [

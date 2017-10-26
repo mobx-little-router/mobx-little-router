@@ -6,6 +6,7 @@
   "license": "MIT",
   "dependencies": {
     "babel-cli": "^6.24.1",
+    "babel-plugin-dynamic-import-webpack": "^1.0.1",
     "express": "^4.15.4",
     "history": "^4.7.2",
     "mobx": "^3.0.0",
@@ -18,13 +19,19 @@
     "webpack": "^3.5.1"
   },
   "scripts": {
-    "build": "webpack client.js",
-    "start": "yarn build && ./node_modules/.bin/babel-node server"
+    "build": "yarn build:client && yarn build:server",
+    "build:client": "webpack --config webpack.client.config.js",
+    "build:server": "webpack --config webpack.server.config.js",
+    "start": "node dist/server"
   },
   "devDependencies": {
+    "babel-plugin-syntax-dynamic-import": "^6.18.0",
     "babel-preset-react": "^6.24.1"
   },
   "babel": {
-    "presets": ["es2015", "react"]
+    "presets": [
+      "es2015",
+      "react"
+    ]
   }
 }
