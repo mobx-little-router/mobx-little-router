@@ -13,7 +13,7 @@ import devTools from './middleware/devTools'
 export type InstallOptions = {
   history: History,
   routes: Config<*>[],
-  getContext: () => any,
+  getContext?: () => any,
   middleware?: IMiddleware
 }
 
@@ -21,7 +21,7 @@ export function install(opts: InstallOptions): Router {
   return new Router(
     opts.history,
     opts.routes,
-    opts.getContext || (() => ({})),
+    opts.getContext,
     withQueryMiddleware
       .concat(opts.middleware || Middleware.EMPTY)
       .concat(withRedirect)
