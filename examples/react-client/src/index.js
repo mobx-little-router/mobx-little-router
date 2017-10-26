@@ -91,7 +91,7 @@ const router = install({
   ]
 })
 
-window.store = router.store
+window.store = router._store
 window.router = router
 window.mobx = mobx
 

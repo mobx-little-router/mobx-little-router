@@ -18,12 +18,12 @@ import type { IMiddleware } from './middleware/Middleware'
 
 class Router {
   // Public members
-  store: RouterStore
   location: Location
   activeRoutes: IObservableArray<Route<*, *>>
   activeRouteKeys: string[]
 
   // Private members
+  _store: RouterStore
   _scheduler: Scheduler
   _initialChildren: Config<*>[]
   _history: History
@@ -41,12 +41,12 @@ class Router {
     this._history = history
     const root = createRouteStateTreeNode({ key: '@@ROOT', path: '', match: 'partial' }, getContext) // Initial root.
     this._initialChildren = config
-    this.store = new RouterStore(root)
-    this._scheduler = new Scheduler(this.store, middleware)
+    this._store = new RouterStore(root)
+    this._scheduler = new Scheduler(this._store, middleware)
 
     extendObservable(this, {
-      location: computed(() => this.store.location),
-      activeRoutes: computed((): IObservableArray<Route<*, *>> => this.store.routes),
+      location: computed(() => this._store.location),
+      activeRoutes: computed((): IObservableArray<Route<*, *>> => this._store.routes),
       activeRouteKeys: computed((): string[] =>
         this.activeRoutes.map(r => r.node.value.key)
       ),
@@ -72,7 +72,7 @@ class Router {
         // Loads initial set of children (running through all middleware).
         this._scheduler.dispatch({
           type: EventTypes.CHILDREN_LOADING,
-          leaf: { node: this.store.state.root },
+          leaf: { node: this._store.state.root },
           children: this._initialChildren
         })
 
@@ -140,7 +140,7 @@ class Router {
     query: Object,
     options: { action?: Action, merge?: boolean } = { action: 'REPLACE', merge: false}
   ) {
-    const existingQuery = querystring.parse(this.store.location.search.substr(1))
+    const existingQuery = querystring.parse(this._store.location.search.substr(1))
     let updatedQuery = options.merge === true ? { ...existingQuery, ...query } : query
     updatedQuery = Object.keys(updatedQuery).reduce((acc, k) => {
       if (typeof updatedQuery[k] !== 'undefined') {
@@ -164,6 +164,10 @@ class Router {
   goBack() {
     this._history.goBack()
     return this.done()
+  }
+
+  getTreeNode(key: string) {
+    return this._store.getNodeByKey(key)
   }
 
   /* Private helpers */

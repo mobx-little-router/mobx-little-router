@@ -22,13 +22,13 @@ describe('Public API', () => {
             { path: 'c' }
           ]
         },
-        { path: ':whatever' }
+        { path: ':whatever', key: 'whatever' }
       ]
     })
   })
 
   test('context chain', () => {
-    expect(router.store.state.root.value.getContext()).toEqual({ message: 'Hello' })
+    expect(router._store.state.root.value.getContext()).toEqual({ message: 'Hello' })
   })
 
   test('reaction to push navigation', async () => {
@@ -53,7 +53,7 @@ describe('Public API', () => {
 
     expect(changes).toEqual(['/initial', '/foo', '/bar', '/foo', '/bar', '/quux'])
 
-    expect(router.store.routes.map(route => route.node.value.path)).toEqual([
+    expect(router._store.routes.map(route => route.node.value.path)).toEqual([
       '',
       ':whatever'
     ])
@@ -80,7 +80,7 @@ describe('Public API', () => {
 
     expect(changes).toEqual(['/initial', '/10'])
 
-    expect(router.store.routes.map(route => route.node.value.path)).toEqual([
+    expect(router._store.routes.map(route => route.node.value.path)).toEqual([
       '',
       ':whatever'
     ])
@@ -98,7 +98,7 @@ describe('Public API', () => {
       _router.push('/1').then(() => {
         expect(changes).toEqual(['/initial', '/1'])
 
-        expect(_router.store.routes.map(route => route.node.value.path)).toEqual([
+        expect(_router._store.routes.map(route => route.node.value.path)).toEqual([
           '',
           ':whatever'
         ])
@@ -650,8 +650,13 @@ describe('Public API', () => {
       await expect(router.start()).rejects.toEqual(expect.anything())
     }
   })
+
+  test.skip('looking up and stringify URL', async () => {
+    const node = router.getTreeNode('whatever')
+    await router.start()
+  })
 })
 
 const getLastRoute = router => {
-  return router.store.routes[router.store.routes.length - 1]
+  return router._store.routes[router._store.routes.length - 1]
 }

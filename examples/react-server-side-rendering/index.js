@@ -27,7 +27,7 @@ app.get('*', (req, res) => {
     )
 
     if (ctx.status > 300 && ctx.status < 400) {
-      res.redirect(ctx.status, router.store.location.pathname)
+      res.redirect(ctx.status, router._store.location.pathname)
     } else {
       res.status(ctx.status)
       res.write('<!doctype html><html><body>')

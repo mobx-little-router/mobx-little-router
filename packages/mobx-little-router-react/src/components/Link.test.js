@@ -38,12 +38,12 @@ describe('Link', () => {
     wrapper.find('.foo').simulate('click')
     await delay(0)
 
-    expect(router.store.location.pathname).toEqual('/foo')
+    expect(router._store.location.pathname).toEqual('/foo')
 
     wrapper.find('.index').simulate('click')
     await delay(0)
 
-    expect(router.store.location.pathname).toEqual('/')
+    expect(router._store.location.pathname).toEqual('/')
   })
 
   test('supports reload prop to skip router', async () => {
@@ -56,7 +56,7 @@ describe('Link', () => {
     wrapper.find('.foo').simulate('click')
     await delay(0)
 
-    expect(router.store.location.pathname).toEqual('/')
+    expect(router._store.location.pathname).toEqual('/')
   })
 
   test('supports onClick prop', async () => {
@@ -121,10 +121,10 @@ describe('Link', () => {
     await delay(0)
 
     expect(spy).toHaveBeenCalled()
-    expect(router.store.location.pathname).toEqual('/foo')
-    expect(router.store.location.hash).toEqual('#hey')
-    expect(router.store.location.query).toEqual({ a: '1', b: '2' })
-    expect(router.store.location.search).toEqual('?a=1&b=2')
+    expect(router._store.location.pathname).toEqual('/foo')
+    expect(router._store.location.hash).toEqual('#hey')
+    expect(router._store.location.query).toEqual({ a: '1', b: '2' })
+    expect(router._store.location.search).toEqual('?a=1&b=2')
   })
 
   test('supports Location objects with state', async () => {
@@ -154,9 +154,9 @@ describe('Link', () => {
     await delay(0)
 
     expect(spy).toHaveBeenCalled()
-    expect(router.store.location.pathname).toEqual('/foo')
+    expect(router._store.location.pathname).toEqual('/foo')
 
-    const state = router.store.location.state || {}
+    const state = router._store.location.state || {}
 
     expect(state.scrollTo).toEqual({ x: 0, y: 50 })
     expect(state.after()).toEqual(50)

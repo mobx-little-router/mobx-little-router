@@ -8,7 +8,7 @@ import type Navigation from './Navigation'
 export type { MatchFn, Matcher }
 
 export type Query = { [key: string]: string }
-export type Params = { [key: string]: string }
+export type Params = { [key: string]: string | number | boolean | null | void }
 
 
 export type Location = HistoryLocation & {
@@ -120,5 +120,6 @@ export type Route<C,D> = {
   query: Query,
   segment: string, // This is the matched segment from URL. e.g. "/123" for ":id"
   parentUrl: string,
-  onTransition: null | TransitionFn
+  onTransition: null | TransitionFn,
+  stringify: (x: Params) => string
 }
