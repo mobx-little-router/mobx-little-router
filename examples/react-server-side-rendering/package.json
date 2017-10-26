@@ -14,9 +14,17 @@
     "mobx-react": "^4.0.0",
     "node-fetch": "^1.7.2",
     "react": "^16.0.0",
-    "react-dom": "^16.0.0"
+    "react-dom": "^16.0.0",
+    "webpack": "^3.5.1"
   },
   "scripts": {
-    "start": "./node_modules/.bin/babel-node index"
+    "build": "webpack client.js",
+    "start": "yarn build && ./node_modules/.bin/babel-node server"
+  },
+  "devDependencies": {
+    "babel-preset-react": "^6.24.1"
+  },
+  "babel": {
+    "presets": ["es2015", "react"]
   }
 }

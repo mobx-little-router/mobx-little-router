@@ -1,5 +1,6 @@
 import express from 'express'
 import React from 'react'
+import path from 'path'
 import ReactDOM from 'react-dom/server'
 import { createMemoryHistory } from 'history'
 import { install } from 'mobx-little-router-react'
@@ -8,6 +9,8 @@ import routes from './src/routes'
 import DataStore from './src/DataStore'
 
 const app = express()
+
+app.use('/dist/', express.static(path.join(__dirname, 'dist'), { maxAge: 31536000000 }))
 
 app.get('*', (req, res) => {
   const dataStore = new DataStore()
@@ -30,10 +33,10 @@ app.get('*', (req, res) => {
       res.redirect(ctx.status, router._store.location.pathname)
     } else {
       res.status(ctx.status)
-      res.write('<!doctype html><html><body>')
+      res.write('<!doctype html><html><body><div id="root">')
       stream.pipe(res, { end: false })
       stream.on('end', () => {
-        res.write('</body></html>')
+        res.write(`</div><script src="/dist/bundle.js"></script></body></html>`)
         res.end()
       })
     }
