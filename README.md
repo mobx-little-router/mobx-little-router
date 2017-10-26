@@ -86,7 +86,7 @@ You can play around with the UMD version of the router by including three script
 
 - https://unpkg.com/history@4.x.x/umd/history.js
 - https://unpkg.com/mobx@3.x.x/lib/mobx.umd.js
-- https://unpkg.com/mobx-little-router@canary/umd/mobx-little-router.js
+- https://unpkg.com/mobx-little-router@latest/umd/mobx-little-router.js
 
 e.g.
 
