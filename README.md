@@ -28,7 +28,7 @@ Here are what you get from `mobx-little-router` out of the box.
 
 - [Middleware](./packages/mobx-little-router/docs/advanced/middleware.md) layer that provides *extensibility* to the router.
 
-- Server-side rendering support (SSR) and integration with express server.
+- [Server-side rendering support](./examples/react-server-side-rendering) (SSR) and integration with express server.
 
 - View-agnostic routing capabilities. This means adapters other than React can be created by hooking
   into the router state.
@@ -117,7 +117,6 @@ let h = History.createMemoryHistory({
 
 let router = mobxLittleRouter.install({
   history: h,
-  getContext: function() { return {} },
   routes: [
     { path: 'a' },
     { path: 'b' },
