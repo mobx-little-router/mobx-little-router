@@ -6,7 +6,7 @@ import styled from 'styled-components'
 
 class CollectionsRoute extends Component {
   render() {
-    const { className, route } = this.props
+    const { className } = this.props
 
     return (
       <Container className={className}>

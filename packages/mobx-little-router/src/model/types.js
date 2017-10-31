@@ -37,6 +37,8 @@ export type BasicConfig<D: Object> = {
   willResolve?: LifecycleFn,
   onError?: ErrorHandler,
   onTransition?: TransitionFn,
+  onEnter?: LifecycleEndFn,
+  onExit?: LifecycleEndFn,
   etc?: any
 }
 
@@ -55,6 +57,8 @@ export type RedirectConfig<D: Object> = {
   willResolve?: empty,
   onError?: empty,
   onTransition?: empty,
+  onEnter?: empty,
+  onExit?: empty,
   etc?: any
 }
 
@@ -69,6 +73,10 @@ export type LifecycleFn = (
   route: Route<*, *>,
   nav: Navigation
 ) => Promise<void>
+
+export type LifecycleEndFn = (
+  route: Route<*, *>
+) => void
 
 export type Setter = () => void
 
@@ -95,6 +103,8 @@ export type RouteValue<C: Object, D: Object> = {
   willResolve: ResolveFn,
   onError: null | ErrorHandler,
   onTransition: null | TransitionFn,
+  onEnter: null | LifecycleEndFn,
+  onExit: null | LifecycleEndFn,
   getContext: () => C,
   getData: () => D,
   etc: Object

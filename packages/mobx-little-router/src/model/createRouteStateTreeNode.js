@@ -21,6 +21,8 @@ const validate = process.env.NODE_ENV === 'production'
       canActivate: optional(func),
       canDeactivate: optional(func),
       onTransition: optional(func),
+      onEnter: optional(func),
+      onExit: optional(func),
       willActivate: optional(func),
       willDeactivate: optional(func),
       willResolve: optional(func)
@@ -65,6 +67,8 @@ export default function createRouteStateTreeNode(
       willResolve: observable.ref(config.willResolve || NOP),
       onError: observable.ref(config.onError ||  null),
       onTransition: observable.ref(config.onTransition || null),
+      onEnter: observable.ref(config.onEnter || null),
+      onExit: observable.ref(config.onExit || null),
       getContext,
       getData: observable.ref(config.getData || (() => ({}))),
       // This prop is meant for middleware to add annotations that it may need to perform its task.

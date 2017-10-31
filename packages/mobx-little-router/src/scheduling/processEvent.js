@@ -242,6 +242,7 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
     }
     case EventTypes.NAVIGATION_ACTIVATED: {
       const { navigation, routes, exiting, entering } = evt
+
       return Promise.resolve({
         type: EventTypes.NAVIGATION_TRANSITION_START,
         navigation: evt.navigation,
@@ -276,6 +277,11 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
       }))
     }
     case EventTypes.NAVIGATION_TRANSITION_END: {
+      const { exiting, entering } = evt
+
+      exiting.forEach(route => typeof route.node.value.onExit === 'function' && route.node.value.onExit(route))
+      entering.forEach(route => typeof route.node.value.onEnter === 'function' && route.node.value.onEnter(route))
+
       return Promise.resolve({
         type: EventTypes.NAVIGATION_END,
         navigation: evt.navigation,

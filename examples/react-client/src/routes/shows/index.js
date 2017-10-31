@@ -51,6 +51,12 @@ export default [
           const data = await res.json()
           ShowsStore.loadDetails(route.params.id, data)
         },
+        onEnter: route => {
+          console.log("entered", route.segment)
+        },
+        onExit: route => {
+          console.log("exited", route.segment)
+        },
         component: ShowRoute,
         outlet: 'modal',
         animate: true
