@@ -234,6 +234,56 @@ describe('Public API', () => {
     router.stop()
   })
 
+  test('Resolving and Entering properly', async () => {
+    const willResolveSpy1 = jest.fn(() => Promise.resolve())
+    const willResolveSpy2 = jest.fn(() => Promise.resolve())
+    const willResolveSpy3 = jest.fn(() => Promise.resolve())
+    const onEnterSpy1 = jest.fn()
+    const onEnterSpy2 = jest.fn()
+    const onEnterSpy3 = jest.fn()
+
+    const router = install({
+      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+      routes: [
+        {
+          path: ':username',
+          willResolve: willResolveSpy1,
+          onEnter: onEnterSpy1,
+          children: [{
+            path: '',
+            willResolve: willResolveSpy2,
+            onEnter: onEnterSpy2,
+            children: [{
+              path: 'settings',
+              willResolve: willResolveSpy3,
+              onEnter: onEnterSpy3
+            }]
+          }]
+        }
+      ]
+    })
+
+    await router.start()
+    await router.push('/joe')
+
+    expect(willResolveSpy1.mock.calls.length).toBe(1)
+    expect(willResolveSpy2.mock.calls.length).toBe(1)
+    
+    expect(onEnterSpy1.mock.calls.length).toBe(1)
+    expect(onEnterSpy2.mock.calls.length).toBe(1)
+    
+    await router.push('/lenny')
+
+    expect(willResolveSpy1.mock.calls.length).toBe(2)
+    expect(willResolveSpy2.mock.calls.length).toBe(2) // Error here
+
+    expect(onEnterSpy1.mock.calls.length).toBe(2)
+    expect(onEnterSpy2.mock.calls.length).toBe(2)
+
+    router.stop()
+  })
+
+
   test('middleware', async () => {
     const middleware = (evt): any => {
       if (evt.type === 'CHILDREN_CONFIG_LOADED') {
