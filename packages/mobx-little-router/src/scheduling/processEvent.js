@@ -322,29 +322,43 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
  */
 
 function diffRoutes(currRoutes: Route<*, *>[], nextRoutes: Route<*, *>[]) {
+  let parentWillResolve
+
   // Exiting this specific route instance
-  const exiting = differenceWith(areRoutesEqual, currRoutes, nextRoutes).reverse()
+  const exiting = currRoutes.reduce((acc, x, idx) => {
+    const y = nextRoutes.length > idx ? nextRoutes[idx] : undefined
+    if (acc.length > 0 || !areRoutesEqual(x, y)) {
+      acc.push(x)
+    }
+    return acc
+  }, []).reverse()
 
   // Entering this specific route instance
   const entering = nextRoutes.reduce((acc, x, idx) => {
-    if (acc.length > 0 || !areRoutesEqual(x, currRoutes[idx])) {
+    const y = currRoutes.length > idx ? currRoutes[idx] : undefined
+    if (acc.length > 0 || !areRoutesEqual(x, y)) {
       acc.push(x)
     }
     return acc
   }, [])
 
-  // Deactivating this route state tree node
-  const deactivating = differenceWith(
-    (a, b) => {
-      return a.node === b.node
-    },
-    currRoutes,
-    nextRoutes
-  ).reverse()
 
-  let parentWillResolve = false
+
+  // Deactivating this route state tree node
+  parentWillResolve = false
+  const deactivating = currRoutes.reduce((acc, x, idx) => {
+    const y = nextRoutes.length > idx ? nextRoutes[idx] : undefined
+    if (acc.length > 0 || parentWillResolve || x.node !== (y && y.node)) {
+      acc.push(x)
+    }
+    if (!areRoutesEqual(x, y)) { parentWillResolve = true }
+    return acc
+  }, []).reverse()
+
+  // Activating this route state tree node
+  parentWillResolve = false
   const activating = nextRoutes.reduce((acc, x, idx) => {
-    const y = currRoutes[idx]
+    const y = currRoutes.length > idx ? currRoutes[idx] : undefined
     if (acc.length > 0 || parentWillResolve || x.node !== (y && y.node)) {
       acc.push(x)      
     }
