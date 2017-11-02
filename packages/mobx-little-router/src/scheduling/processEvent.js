@@ -183,9 +183,11 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
     case EventTypes.NAVIGATION_ACTIVATING: {
       const { navigation, routes } = evt
 
+      const currRoutes = store.routes.slice()
+
       // We've found a match or unmatched error has been handled.
       const { activating, deactivating, entering, exiting } = diffRoutes(
-        store.routes.slice(),
+        currRoutes,
         routes
       )
 
@@ -193,54 +195,50 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
       navigation.leaf = routes[routes.length - 1]
 
       return evalTransitionsForRoutes(
-        ['canDeactivate', 'willDeactivate'],
+        [
+          { type: 'canDeactivate' },
+          { type: 'willDeactivate' }
+        ],
         deactivating,
         navigation
-      )
-        .then(() =>
-          evalTransitionsForRoutes(
-            ['canActivate', 'willActivate', 'willResolve'],
-            activating,
-            navigation
-          ).then(s1 =>
-            evalTransitionsForRoutes(
-              ['willResolve'],
-              entering.filter(x => !activating.includes(x)), // Don't run `willResolve` if activation ran it already.
-              navigation
-            ).then((s2: Function) => ({
-              type: EventTypes.NAVIGATION_ACTIVATED,
-              navigation,
-              activating,
-              deactivating,
-              entering,
-              exiting,
-              routes,
-              setter: () => {
-                s1()
-                s2()
-              }
-            }))
-          )
-        )
-        .catch(err => {
-          // Navigation error may be thrown by a guard or lifecycle hook.
-          // If so, mark the current navigation as cancelled, and use the error Navigation as next.
-          if (err instanceof Navigation) {
-            return {
-              type: EventTypes.NAVIGATION_CANCELLED,
-              navigation: evt.navigation,
-              nextNavigation: err,
-              done: true
-            }
-          } else {
-            return {
-              type: EventTypes.NAVIGATION_ERROR,
-              navigation,
-              error: err,
-              done: true
-            }
+      ).then(() =>
+        evalTransitionsForRoutes(
+          [
+            { type: 'canActivate', includes: activating },
+            { type: 'willActivate', includes: activating },
+            { type: 'willResolve', includes: entering }
+          ],
+          routes,
+          navigation
+        ).then((setter: Function) => ({
+          type: EventTypes.NAVIGATION_ACTIVATED,
+          navigation,
+          activating,
+          deactivating,
+          entering,
+          exiting,
+          routes,
+          setter
+        }))
+      ).catch(err => {
+        // Navigation error may be thrown by a guard or lifecycle hook.
+        // If so, mark the current navigation as cancelled, and use the error Navigation as next.
+        if (err instanceof Navigation) {
+          return {
+            type: EventTypes.NAVIGATION_CANCELLED,
+            navigation: evt.navigation,
+            nextNavigation: err,
+            done: true
           }
-        })
+        } else {
+          return {
+            type: EventTypes.NAVIGATION_ERROR,
+            navigation,
+            error: err,
+            done: true
+          }
+        }
+      })
     }
     case EventTypes.NAVIGATION_ACTIVATED: {
       const { navigation, routes, exiting, entering } = evt
@@ -342,8 +340,6 @@ function diffRoutes(currRoutes: Route<*, *>[], nextRoutes: Route<*, *>[]) {
     return acc
   }, [])
 
-
-
   // Deactivating this route state tree node
   parentWillResolve = false
   const deactivating = currRoutes.reduce((acc, x, idx) => {
@@ -369,21 +365,33 @@ function diffRoutes(currRoutes: Route<*, *>[], nextRoutes: Route<*, *>[]) {
   return { activating, deactivating, entering, exiting }
 }
 
-type TransitionType =
+type HookType =
   | 'canDeactivate'
   | 'canActivate'
   | 'willDeactivate'
   | 'willActivate'
   | 'willResolve'
 
+type Operation = {
+  type: HookType,
+  includes?: Route<*, *>[]
+}
+
+function isIncluded(route: Route<*, *>, routes: ?Route<*, *>[]) {
+  return routes ? routes.includes(route) : true
+}
+
 function evalTransition(
-  type: TransitionType,
+  operation: Operation,
   route: Route<*, *>,
   navigation: Navigation
 ): Promise<void | Function> {
   const { value } = route.node
-  const result = typeof value[type] === 'function' ? value[type](route, navigation) : true
-
+  const { type, includes } = operation
+  const result = typeof value[type] === 'function' && isIncluded(route, includes)
+    ? value[type](route, navigation)
+    : true
+  
   // If the guard results in `false` or a rejected promise then mark transition as failed.
   if (false === result) {
     return navigation.goBack() // TODO: This `goBack` will not work if this is the first navigation in the system.
@@ -399,14 +407,14 @@ function evalTransition(
 }
 
 function evalTransitions(
-  types: TransitionType[],
+  operations: Operation[],
   route: Route<*, *>,
   navigation: Navigation
 ) {
   const setters = []
-  return types
-    .reduce((curr, type) => {
-      return curr.then(() => evalTransition(type, route, navigation)).then(setter => {
+  return operations
+    .reduce((curr, operation) => {
+      return curr.then(() => evalTransition(operation, route, navigation)).then(setter => {
         if (typeof setter === 'function') {
           setters.push(setter)
         }
@@ -416,14 +424,15 @@ function evalTransitions(
 }
 
 function evalTransitionsForRoutes(
-  types: TransitionType[],
+  operations: Operation[],
   routes: Route<*, *>[],
   navigation: Navigation
 ) {
   const setters = []
+  
   return routes
     .reduce((curr, route) => {
-      return curr.then(() => evalTransitions(types, route, navigation)).then(setter => {
+      return curr.then(() => evalTransitions(operations, route, navigation)).then(setter => {
         if (typeof setter === 'function') {
           setters.push(setter)
         }

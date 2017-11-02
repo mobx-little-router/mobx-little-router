@@ -235,9 +235,19 @@ describe('Public API', () => {
   })
 
   test('Resolving and Entering properly', async () => {
-    const willResolveSpy1 = jest.fn(() => Promise.resolve())
-    const willResolveSpy2 = jest.fn(() => Promise.resolve())
-    const willResolveSpy3 = jest.fn(() => Promise.resolve())
+    let resolveStack = []
+    const willResolveSpy1 = jest.fn(() => {
+      resolveStack.push(1)
+      return Promise.resolve()
+    })
+    const willResolveSpy2 = jest.fn(() => {
+      resolveStack.push(2)
+      return Promise.resolve()
+    })
+    const willResolveSpy3 = jest.fn(() => {
+      resolveStack.push(3)
+      return Promise.resolve()
+    })
     const onEnterSpy1 = jest.fn()
     const onEnterSpy2 = jest.fn()
     const onEnterSpy3 = jest.fn()
@@ -291,6 +301,11 @@ describe('Public API', () => {
 
     expect(onEnterSpy3.mock.calls.length).toBe(1)
 
+    resolveStack.forEach((value, idx) => {
+      expect(value).toBeGreaterThan(resolveStack[idx - 1] || 0)
+    })
+    resolveStack = []
+
     // Changing the username will not reactivate the username route
     // but it should trigger reactivation of everything after that
     // It should also rerun all resolvers
@@ -306,6 +321,11 @@ describe('Public API', () => {
     expect(onEnterSpy1.mock.calls.length).toBe(2)
     expect(onEnterSpy2.mock.calls.length).toBe(2)
     expect(onEnterSpy3.mock.calls.length).toBe(2)
+
+    resolveStack.forEach((value, idx) => {
+      expect(value).toBeGreaterThan(resolveStack[idx - 1] || 0)
+    })
+    resolveStack = []
 
     router.stop()
   })
