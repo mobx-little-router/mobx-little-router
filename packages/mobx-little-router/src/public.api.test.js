@@ -289,6 +289,8 @@ describe('Public API', () => {
 
     await router.push('/joe/settings')
 
+    expect(router._store.routes[2].params.username).toBe('joe')
+
     expect(activating.length).toBe(3)
     expect(entering.length).toBe(3)
 
@@ -310,6 +312,8 @@ describe('Public API', () => {
     // but it should trigger reactivation of everything after that
     // It should also rerun all resolvers
     await router.push('/lenny/settings')
+
+    expect(router._store.routes[2].params.username).toBe('lenny')
 
     expect(activating.length).toBe(2)
     expect(entering.length).toBe(3)
