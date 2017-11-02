@@ -263,22 +263,49 @@ describe('Public API', () => {
       ]
     })
 
+    let activating = [], entering = []
+    const dispose = router.subscribeEvent((ev) => {
+      if (ev.type === EventTypes.NAVIGATION_ACTIVATED) {
+        activating = ev.activating
+        entering = ev.entering
+      }
+    })
+
+    // The root
     await router.start()
-    await router.push('/joe')
+
+    expect(activating.length).toBe(1)
+    expect(entering.length).toBe(1)
+
+    await router.push('/joe/settings')
+
+    expect(activating.length).toBe(3)
+    expect(entering.length).toBe(3)
 
     expect(willResolveSpy1.mock.calls.length).toBe(1)
     expect(willResolveSpy2.mock.calls.length).toBe(1)
-    
+    expect(willResolveSpy3.mock.calls.length).toBe(1)
+
     expect(onEnterSpy1.mock.calls.length).toBe(1)
     expect(onEnterSpy2.mock.calls.length).toBe(1)
-    
-    await router.push('/lenny')
+
+    expect(onEnterSpy3.mock.calls.length).toBe(1)
+
+    // Changing the username will not reactivate the username route
+    // but it should trigger reactivation of everything after that
+    // It should also rerun all resolvers
+    await router.push('/lenny/settings')
+
+    expect(activating.length).toBe(2)
+    expect(entering.length).toBe(3)
 
     expect(willResolveSpy1.mock.calls.length).toBe(2)
     expect(willResolveSpy2.mock.calls.length).toBe(2) // Error here
+    expect(willResolveSpy3.mock.calls.length).toBe(2) // Error here
 
     expect(onEnterSpy1.mock.calls.length).toBe(2)
     expect(onEnterSpy2.mock.calls.length).toBe(2)
+    expect(onEnterSpy3.mock.calls.length).toBe(2)
 
     router.stop()
   })

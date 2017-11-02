@@ -210,6 +210,8 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
             ).then((s2: Function) => ({
               type: EventTypes.NAVIGATION_ACTIVATED,
               navigation,
+              activating,
+              deactivating,
               entering,
               exiting,
               routes,
@@ -320,6 +322,17 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
  */
 
 function diffRoutes(currRoutes: Route<*, *>[], nextRoutes: Route<*, *>[]) {
+  // Exiting this specific route instance
+  const exiting = differenceWith(areRoutesEqual, currRoutes, nextRoutes).reverse()
+
+  // Entering this specific route instance
+  const entering = nextRoutes.reduce((acc, x, idx) => {
+    if (acc.length > 0 || !areRoutesEqual(x, currRoutes[idx])) {
+      acc.push(x)
+    }
+    return acc
+  }, [])
+
   // Deactivating this route state tree node
   const deactivating = differenceWith(
     (a, b) => {
@@ -329,22 +342,15 @@ function diffRoutes(currRoutes: Route<*, *>[], nextRoutes: Route<*, *>[]) {
     nextRoutes
   ).reverse()
 
-  // Activating this route state tree node
-  const activating = nextRoutes.filter(x => {
-    return !currRoutes.some(y => {
-      return x.node === y.node
-    })
-  })
-
-  // Exiting this specific route instance
-  const exiting = differenceWith(areRoutesEqual, currRoutes, nextRoutes).reverse()
-
-  // Entering this specific route instance
-  const entering = nextRoutes.filter(x => {
-    return !currRoutes.some(y => {
-      return areRoutesEqual(x, y)
-    })
-  })
+  let parentWillResolve = false
+  const activating = nextRoutes.reduce((acc, x, idx) => {
+    const y = currRoutes[idx]
+    if (acc.length > 0 || parentWillResolve || x.node !== (y && y.node)) {
+      acc.push(x)      
+    }
+    if (!areRoutesEqual(x, y)) { parentWillResolve = true }
+    return acc
+  }, [])
 
   return { activating, deactivating, entering, exiting }
 }
