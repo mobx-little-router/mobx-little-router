@@ -140,7 +140,8 @@ class Router {
     query: Object,
     options: { action?: Action, merge?: boolean } = { action: 'REPLACE', merge: false}
   ) {
-    const existingQuery = querystring.parse(this._store.location.search.substr(1))
+    const search = this._store.location.search
+    const existingQuery = search ? querystring.parse(search.substr(1)) : {}
     let updatedQuery = options.merge === true ? { ...existingQuery, ...query } : query
     updatedQuery = Object.keys(updatedQuery).reduce((acc, k) => {
       if (typeof updatedQuery[k] !== 'undefined') {
