@@ -234,6 +234,48 @@ describe('Public API', () => {
     router.stop()
   })
 
+  test('willResolve hook rejecting', async () => {
+    let isAuthenticated = false
+    const willResolveSpy = jest.fn(() => isAuthenticated ? Promise.resolve() : Promise.reject())
+    const willResolveChildSpy = jest.fn(() => Promise.resolve())
+
+    const router = install({
+      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+      getContext: () => ({}),
+      routes: [
+        {
+          path: 'a/:id',
+          query: ['q'],
+          willResolve: willResolveSpy,
+          children: [
+            {
+              path: 'child',
+              willResolve: willResolveChildSpy
+            }
+          ]
+        }
+      ]
+    })
+
+    await router.start()
+
+    await router.push('/a/2/child')
+
+    expect(router.location.pathname).toBe('/')
+    expect(willResolveSpy.mock.calls.length).toBe(1)
+    expect(willResolveChildSpy.mock.calls.length).toBe(0)
+
+    isAuthenticated = true
+
+    await router.push('/a/2/child')
+
+    expect(router.location.pathname).toBe('/a/2/child')
+    expect(willResolveSpy.mock.calls.length).toBe(2)
+    expect(willResolveChildSpy.mock.calls.length).toBe(1)
+
+    router.stop()
+  })
+
   test('Resolving and Entering properly', async () => {
     let resolveStack = []
     const willResolveSpy1 = jest.fn(() => {
