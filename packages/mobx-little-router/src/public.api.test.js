@@ -199,6 +199,7 @@ describe('Public API', () => {
   })
 
   test('willResolve hook', async () => {
+    const stack = []
     const willActivateSpy = jest.fn(() => Promise.resolve())
     const willResolveSpy = jest.fn(() => Promise.resolve())
     const willDeactivateSpy = jest.fn(() => Promise.resolve())
@@ -277,17 +278,44 @@ describe('Public API', () => {
   })
 
   test('Resolving and Entering properly', async () => {
-    let resolveStack = []
+    let stack = []
+
+    const canActivateSpy1 = jest.fn(() => {
+      stack.push('canActivate1')
+      return Promise.resolve()
+    })
+    const canActivateSpy2 = jest.fn(() => {
+      stack.push('canActivate2')
+      return Promise.resolve()
+    })
+    const canActivateSpy3 = jest.fn(() => {
+      stack.push('canActivate3')
+      return Promise.resolve()
+    })
+
+    const willActivateSpy1 = jest.fn(() => {
+      stack.push('willActivate1')
+      return Promise.resolve()
+    })
+    const willActivateSpy2 = jest.fn(() => {
+      stack.push('willActivate2')
+      return Promise.resolve()
+    })
+    const willActivateSpy3 = jest.fn(() => {
+      stack.push('willActivate3')
+      return Promise.resolve()
+    })
+
     const willResolveSpy1 = jest.fn(() => {
-      resolveStack.push(1)
+      stack.push('willResolve1')
       return Promise.resolve()
     })
     const willResolveSpy2 = jest.fn(() => {
-      resolveStack.push(2)
+      stack.push('willResolve2')
       return Promise.resolve()
     })
     const willResolveSpy3 = jest.fn(() => {
-      resolveStack.push(3)
+      stack.push('willResolve3')
       return Promise.resolve()
     })
     const onEnterSpy1 = jest.fn()
@@ -299,14 +327,20 @@ describe('Public API', () => {
       routes: [
         {
           path: ':username',
+          canActivate: canActivateSpy1,
+          willActivate: willActivateSpy1,
           willResolve: willResolveSpy1,
           onEnter: onEnterSpy1,
           children: [{
             path: '',
+            canActivate: canActivateSpy2,
+            willActivate: willActivateSpy2,
             willResolve: willResolveSpy2,
             onEnter: onEnterSpy2,
             children: [{
               path: 'settings',
+              canActivate: canActivateSpy3,
+              willActivate: willActivateSpy3,
               willResolve: willResolveSpy3,
               onEnter: onEnterSpy3
             }]
@@ -345,10 +379,19 @@ describe('Public API', () => {
 
     expect(onEnterSpy3.mock.calls.length).toBe(1)
 
-    resolveStack.forEach((value, idx) => {
-      expect(value).toBeGreaterThan(resolveStack[idx - 1] || 0)
-    })
-    resolveStack = []
+    expect(stack).toEqual([
+      'canActivate1',
+      'willActivate1',
+      'willResolve1',
+      'canActivate2',
+      'willActivate2',
+      'willResolve2',
+      'canActivate3',
+      'willActivate3',
+      'willResolve3'
+    ])
+
+    stack = []
 
     // Changing the username will not reactivate the username route
     // but it should trigger reactivation of everything after that
@@ -368,10 +411,16 @@ describe('Public API', () => {
     expect(onEnterSpy2.mock.calls.length).toBe(2)
     expect(onEnterSpy3.mock.calls.length).toBe(2)
 
-    resolveStack.forEach((value, idx) => {
-      expect(value).toBeGreaterThan(resolveStack[idx - 1] || 0)
-    })
-    resolveStack = []
+
+    expect(stack).toEqual([
+      'willResolve1',
+      'canActivate2',
+      'willActivate2',
+      'willResolve2',
+      'canActivate3',
+      'willActivate3',
+      'willResolve3'
+    ])
 
     router.stop()
   })
