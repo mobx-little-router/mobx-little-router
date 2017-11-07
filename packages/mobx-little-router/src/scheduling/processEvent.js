@@ -381,10 +381,16 @@ function isIncluded(route: Route<*, *>, routes: ?Route<*, *>[]) {
   return routes ? routes.includes(route) : true
 }
 
+type EvalState = {
+  caughtError: boolean,
+  setters: Array<any>
+}
+
 function evalTransition(
   operation: Operation,
   route: Route<*, *>,
-  navigation: Navigation
+  navigation: Navigation,
+  state: EvalState
 ): Promise<void | Function> {
   const { value } = route.node
   const { type, includes } = operation
@@ -398,8 +404,19 @@ function evalTransition(
   } else if (typeof result.then === 'function') {
     return result.then(x => {
       if (typeof x === 'function') {
-        return x
+        state.setters.push(x)
       }
+    })
+    .catch(err => {
+      if (typeof route.node.value.onError === 'function') {
+        const result = route.node.value.onError(route, navigation, err)
+        if (typeof result.then === 'function') {
+          return result.then(() => {
+            state.caughtError = true
+          })
+        }
+      }
+      return Promise.reject(err)
     })
   } else {
     return Promise.resolve()
@@ -409,18 +426,15 @@ function evalTransition(
 function evalTransitions(
   operations: Operation[],
   route: Route<*, *>,
-  navigation: Navigation
+  navigation: Navigation,
+  state: EvalState
 ) {
-  const setters = []
   return operations
     .reduce((curr, operation) => {
-      return curr.then(() => evalTransition(operation, route, navigation)).then(setter => {
-        if (typeof setter === 'function') {
-          setters.push(setter)
-        }
-      })
+      return state.caughtError
+        ? Promise.resolve()
+        : curr.then(() => evalTransition(operation, route, navigation, state))
     }, Promise.resolve())
-    .then(() => () => setters.forEach(f => f()))
 }
 
 function evalTransitionsForRoutes(
@@ -428,17 +442,18 @@ function evalTransitionsForRoutes(
   routes: Route<*, *>[],
   navigation: Navigation
 ) {
-  const setters = []
-  
+  const state = {
+    caughtError: false,
+    setters: []
+  }
+
   return routes
     .reduce((curr, route) => {
-      return curr.then(() => evalTransitions(operations, route, navigation)).then(setter => {
-        if (typeof setter === 'function') {
-          setters.push(setter)
-        }
-      })
+      return state.caughtError
+        ? Promise.resolve()
+        : curr.then(() => evalTransitions(operations, route, navigation, state))
     }, Promise.resolve())
-    .then(() => () => setters.forEach(f => f()))
+    .then(() => () => state.setters.forEach(f => f()))
 }
 
 function findCatchAllPath(matchedPath, leaf) {

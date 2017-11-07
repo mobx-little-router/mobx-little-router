@@ -65,7 +65,7 @@ export default function createRouteStateTreeNode(
       willActivate: observable.ref(config.willActivate || NOP),
       willDeactivate: observable.ref(config.willDeactivate || NOP),
       willResolve: observable.ref(config.willResolve || NOP),
-      onError: observable.ref(config.onError ||  null),
+      onError: observable.ref(config.onError || null),
       onTransition: observable.ref(config.onTransition || null),
       onEnter: observable.ref(config.onEnter || null),
       onExit: observable.ref(config.onExit || null),

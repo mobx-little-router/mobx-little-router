@@ -85,7 +85,7 @@ export type ResolveFn = (
   nav: Navigation
 ) => Promise<void | Setter>
 
-export type ErrorHandler = (route: RouteStateTreeNode<*, *>, context: Object) => Promise<void>
+export type ErrorHandler = (route: Route<*, *>, navigation: Navigation, err: Error) => Promise<any>
 
 export type LoadChildrenRouteStateTreeNode = () => Promise<any>
 

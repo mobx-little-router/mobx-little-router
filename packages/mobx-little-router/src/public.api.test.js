@@ -437,6 +437,86 @@ describe('Public API', () => {
     expect(stores.b).toEqual(123)
   })
 
+  test('onError can recover from route error', async () => {
+    const ARouteHandler = () => 'ARouteHandler'
+    const BRouteHandler = () => 'BRouteHandler'
+
+    const willResolveSpy = jest.fn(() => Promise.resolve())
+
+    const router = install({
+      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+      routes: [
+        {
+          path: 'a',
+          getData: () => ({
+            component: ARouteHandler
+          }),
+          willResolve: () => Promise.reject(),
+          onError: (route, navigation, err) => {
+            return Promise.resolve()
+          },
+          children: [
+            {
+              path: 'b',
+              getData: () => ({
+                component: BRouteHandler
+              }),
+              willResolve: willResolveSpy
+            }
+          ]
+        }
+      ]
+    })
+
+    await router.start()
+
+    await router.push('/a/b')
+
+    expect(router.location.pathname).toBe('/a/b')
+
+    expect(router._store.routes[1].data.component).toBe(ARouteHandler)
+    expect(router._store.routes[2].data.component).toBe(BRouteHandler)
+    expect(willResolveSpy.mock.calls.length).toBe(0)
+
+    router.stop()
+  })
+
+  test('onError can redirect on route error', async () => {
+    const ARouteHandler = () => 'ARouteHandler'
+    const BRouteHandler = () => 'BRouteHandler'
+
+    let isAuthenticated = false
+
+    const willResolveSpy = jest.fn(() => Promise.resolve())
+
+    const router = install({
+      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+      routes: [
+        {
+          path: 'a',
+          willResolve: () => Promise.reject(),
+          onError: (route, navigation, err) => {
+            return navigation.redirectTo('b')
+          },
+        },
+        {
+          path: 'b',
+          willResolve: willResolveSpy
+        }
+      ]
+    })
+
+    await router.start()
+
+    await router.push('/a')
+
+    expect(router.location.pathname).toBe('/b')
+
+    expect(willResolveSpy.mock.calls.length).toBe(1)
+
+    router.stop()
+  })
+
   test('dynamic children', async () => {
     const resolveSpy = jest.fn(() => Promise.resolve())
     const spy = jest.fn(() => Promise.resolve([{ path: '', willResolve: resolveSpy }]))
