@@ -35,25 +35,25 @@ describe('Link', () => {
       </div>
     )
 
-    wrapper.find('.foo').simulate('click')
+    wrapper.find('.foo').simulate('click', { button: 0 })
     await delay(0)
 
     expect(router._store.location.pathname).toEqual('/foo')
 
-    wrapper.find('.index').simulate('click')
+    wrapper.find('.index').simulate('click', { button: 0 })
     await delay(0)
 
     expect(router._store.location.pathname).toEqual('/')
   })
 
-  test('supports reload prop to skip router', async () => {
+  test('supports target prop to skip router', async () => {
     const wrapper = mountInProvider(router)(
       <div>
-        <Link reload className="foo" to="/foo">Foo</Link>
+        <Link target="_self" className="foo" to="/foo">Foo</Link>
       </div>
     )
 
-    wrapper.find('.foo').simulate('click')
+    wrapper.find('.foo').simulate('click', { button: 0 })
     await delay(0)
 
     expect(router._store.location.pathname).toEqual('/')
@@ -67,7 +67,7 @@ describe('Link', () => {
       </div>
     )
 
-    wrapper.find('.foo').simulate('click')
+    wrapper.find('.foo').simulate('click', { button: 0 })
     await delay(0)
 
     expect(spy).toHaveBeenCalled()
@@ -117,7 +117,7 @@ describe('Link', () => {
       </div>
     )
 
-    wrapper.find('.foo').simulate('click')
+    wrapper.find('.foo').simulate('click', { button: 0 })
     await delay(0)
 
     expect(spy).toHaveBeenCalled()
@@ -150,7 +150,7 @@ describe('Link', () => {
       </div>
     )
 
-    wrapper.find('.foo').simulate('click')
+    wrapper.find('.foo').simulate('click', { button: 0 })
     await delay(0)
 
     expect(spy).toHaveBeenCalled()

@@ -14,7 +14,7 @@ type Props =  {
   style?: Object,
   children?: Element<*>,
   exact?: boolean,
-  reload?: boolean,
+  target?: string,
   onClick: Function
 }
 
@@ -23,22 +23,25 @@ class Link extends Component<Props> {
     router: RouterType
   }
 
-  onClick = (evt: Event) => {
-    const { to, reload, onClick } = this.props
-
-    if (reload === true) {
-      return
-    }
-
-    evt.preventDefault()
-    this.context.router.push(to)
-
+  onClick = (evt: MouseEvent) => {
+    const { to, target, onClick } = this.props
     onClick && onClick(evt)
+
+    // Taken from react-router to match their Link logic
+    if (
+      !evt.defaultPrevented && // onClick prevented default
+      evt.button === 0 && // ignore everything but left clicks
+      target == null && // let browser handle "target=_blank" etc.
+      !isModifiedEvent(evt) // ignore clicks with modifier keys
+    ) {
+      evt.preventDefault()
+      this.context.router.push(to)
+    }
   }
 
   render() {
     const { router } = this.context
-    const { to, className, activeClassName, style, children, exact, reload, onClick, ...rest } = this.props
+    const { to, className, activeClassName, style, children, exact, onClick, ...rest } = this.props
     const href = typeof to === 'object'
       ? locationToHref(to)
       : to
@@ -59,5 +62,7 @@ const locationToHref = (location: LocationShape) => {
 
   return `${location.pathname}${hash}${search}`
 }
+
+const isModifiedEvent = (event: MouseEvent) => !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
 
 export default observer(Link)
