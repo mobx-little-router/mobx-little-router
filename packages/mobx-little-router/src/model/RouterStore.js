@@ -71,8 +71,6 @@ class RouterStore {
       const existingRoute = this.routes.find(x => x.value === newRoute.value)
       
       if (existingRoute) {
-        // Ensure existingRoutes have the proper params set
-        existingRoute.params = element.params
         return existingRoute
       } else {
         return observable(createRoute(element.node, element.parentUrl, element.segment, element.params, matchedQueryParams))

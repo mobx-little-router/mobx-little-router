@@ -70,50 +70,43 @@ describe('RouterStore', () => {
   })
 
   test('Building routes from path', () => {
-    const spy = jest.fn(() => Promise.resolve())
     const dataSpy = jest.fn(() => Promise.resolve())
     const a = createRouteStateTreeNode({ path: 'a', getData: () => dataSpy('a') })
     const b = createRouteStateTreeNode({ path: 'b', getData: () => dataSpy('b') })
     const c = createRouteStateTreeNode({ path: 'c', getData: () => dataSpy('c') })
-    const currRoutes: any[] = [
-      {
-        key: `${a.value.key}/a/1`,
-        value: `${a.value.key}/a/1?`,
-        node: a,
-        context: {},
-        data: {},
-        params: { x: '1' },
-        query: {},
-        onTransition: spy,
-        segment: '/a/1',
-        parentUrl: ''
-      },
-      {
-        key: `${b.value.key}/b/2`,
-        value: `${b.value.key}/b/2?`,
-        node: b,
-        context: {},
-        data: {},
-        params: { y: '2' },
-        query: {},
-        onTransition: spy,
-        segment: '/b/2',
-        parentUrl: ''
-      }
-    ]
-    const nextPath: PathElement<*, *>[] = [
-      { node: a, params: { x: '3' }, parentUrl: '', segment: '/a/3', remaining: '/b/2/c/4' },
-      { node: b, params: { y: '2' }, parentUrl: '', segment: '/b/2', remaining: '/c/4' },
-      { node: c, params: { z: '4' }, parentUrl: '', segment: '/c/4', remaining: '' }
-    ]
+
+    const aRoute = createRoute(a, '', '/a/1', { x: '1' }, {})
+    const bRoute = createRoute(b, '/a/1', '/b/1', { y: '1' }, {})
+
+    const currRoutes = [aRoute, bRoute]
+
     store.routes.replace(currRoutes)
 
-    const nextRoutes = store.getNextRoutes(nextPath, ({}: any))
+    const nextPath1: PathElement<*, *>[] = [
+      { node: a, params: { x: '1' }, parentUrl: '', segment: '/a/1', remaining: '/b/1/c/1' },
+      { node: b, params: { y: '1' }, parentUrl: '/a/1', segment: '/b/1', remaining: '/c/1' },
+      { node: c, params: { z: '1' }, parentUrl: '/a/1/b/1', segment: '/c/1', remaining: '' }
+    ]
 
-    expect(nextRoutes.length).toEqual(3)
-    expect(nextRoutes[0]).not.toBe(store.routes[0])
-    expect(nextRoutes[1]).toBe(store.routes[1])
-    expect(nextRoutes[2]).toBeDefined() // Newly created route.
+    const nextRoutes1 = store.getNextRoutes(nextPath1, ({}: any))
+
+    expect(nextRoutes1.length).toEqual(3)
+    expect(nextRoutes1[0]).toBe(store.routes[0])
+    expect(nextRoutes1[1]).toBe(store.routes[1])
+    expect(nextRoutes1[2]).toBeDefined() // Newly created route.
+
+    const nextPath2: PathElement<*, *>[] = [
+      { node: a, params: { x: '2' }, parentUrl: '', segment: '/a/2', remaining: '/b/1/c/1' },
+      { node: b, params: { y: '1' }, parentUrl: '/a/2', segment: '/b/1', remaining: '/c/1' },
+      { node: c, params: { z: '1' }, parentUrl: '/a/2/b/1', segment: '/c/1', remaining: '' }
+    ]
+
+    const nextRoutes2 = store.getNextRoutes(nextPath2, ({}: any))
+
+    expect(nextRoutes2.length).toEqual(3)
+    expect(nextRoutes2[0]).not.toBe(store.routes[0]) // Params Changed so different route
+    expect(nextRoutes2[1]).not.toBe(store.routes[1]) // Parant params changed so this changes too
+    expect(nextRoutes2[2]).toBeDefined() // Newly created route.
   })
 
   test('Routes with query params', () => {

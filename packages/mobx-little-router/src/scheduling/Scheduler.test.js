@@ -123,7 +123,7 @@ describe('Scheduler', () => {
       // Deactivation rejection blocks remaining nodes up the path.
       expect(rootSpy).not.toHaveBeenCalled()
       expect(viewSpy).toHaveBeenCalledTimes(1)
-      expect(viewSpy.mock.calls[0][0].key).toEqual(todosView.value.key)
+      expect(viewSpy.mock.calls[0][0].node.value.key).toEqual(todosView.value.key)
     })
 
     test('Deactivation successful', async () => {
@@ -146,8 +146,8 @@ describe('Scheduler', () => {
       expect(spy).toHaveBeenCalledTimes(2)
 
       // Deactivation is called in bottom-up order.
-      expect(spy.mock.calls[0][0].key).toEqual(todosView.value.key)
-      expect(spy.mock.calls[1][0].key).toEqual(todosRoot.value.key)
+      expect(spy.mock.calls[0][0].node.value.key).toEqual(todosView.value.key)
+      expect(spy.mock.calls[1][0].node.value.key).toEqual(todosRoot.value.key)
 
       // Nodes are marked as active
       expect(store.routes.length).toEqual(2)
