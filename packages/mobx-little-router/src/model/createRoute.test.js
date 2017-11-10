@@ -8,7 +8,7 @@ describe('createRouteStateTreeNode', () => {
   beforeEach(() => {
     node = createRouteStateTreeNode(
       {
-        path: '',
+        path: '/a/:a/b/:b',
         children: [],
         getData: () => ({ message: 'Hello' })
       },
@@ -19,10 +19,12 @@ describe('createRouteStateTreeNode', () => {
   })
 
   test('Sets the params, context and data', () => {
-    expect(createRoute(node, '/1', '/1', { id: '1' }, { q: 'hey' })).toEqual(
+    expect(createRoute(node, '/root', '/a/1/b/2', { a: '1', b: '2' }, { q: 'hey' })).toEqual(
       expect.objectContaining({
-        segment: '/1',
-        params: { id: '1' },
+        parentUrl: '/root',
+        value: `1/root/a/1/b/2?q=hey`,
+        segment: '/a/1/b/2',
+        params: { a: '1', b: '2' },
         query: { q: 'hey' },
         data: expect.objectContaining({ message: 'Hello' }),
         context: { user: 'Alice' }
