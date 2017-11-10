@@ -2,7 +2,7 @@
 import { observable } from 'mobx'
 import type { Config, RouteStateTreeNode } from './types'
 import { TreeNode } from '../util/tree'
-import _createKey from '../util/createKey'
+import defaultCreateKey from '../util/createKey'
 import * as m from './matchers'
 import { array, string, optional, func, createValidator } from '../validation'
 
@@ -29,8 +29,6 @@ const validate = process.env.NODE_ENV === 'production'
     })
 
 type GetContext = () => *
-
-const defaultCreateKey = () => _createKey(6)
 
 export default function createRouteStateTreeNode(
   config: Config<*>,

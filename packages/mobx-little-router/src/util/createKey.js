@@ -1,5 +1,7 @@
 // @flow
 
-export default function createKey(keyLength: number) {
-  return Math.random().toString(36).substr(2, keyLength)
+// Predictable keys for testing
+let nextKey = 1
+export default function getNextKey() {
+  return `${nextKey++}`
 }
