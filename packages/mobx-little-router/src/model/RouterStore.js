@@ -6,6 +6,7 @@ import type { ObservableMap } from 'mobx'
 import createRoute from './createRoute'
 import RouterStateTree from './RouterStateTree'
 import qs from 'querystring'
+import areRoutesEqual from './util/areRoutesEqual'
 import type Navigation from './Navigation'
 import type {
   Location,
@@ -68,7 +69,7 @@ class RouterStore {
     return path.map(element => {
       const matchedQueryParams = this.getMatchedQueryParams(element.node, query)
       const newRoute = createRoute(element.node, element.parentUrl, element.segment, element.params, query)
-      const existingRoute = this.routes.find(x => x.value === newRoute.value)
+      const existingRoute = this.routes.find(x => areRoutesEqual(x, newRoute))
       
       if (existingRoute) {
         return existingRoute

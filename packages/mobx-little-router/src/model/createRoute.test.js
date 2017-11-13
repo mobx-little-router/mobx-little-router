@@ -22,8 +22,8 @@ describe('createRouteStateTreeNode', () => {
     expect(createRoute(node, '/root', '/a/1/b/2', { a: '1', b: '2' }, { q: 'hey' })).toEqual(
       expect.objectContaining({
         parentUrl: '/root',
-        value: `1/root/a/1/b/2?q=hey`,
         segment: '/a/1/b/2',
+        value: `/root/a/1/b/2?q=hey`,
         params: { a: '1', b: '2' },
         query: { q: 'hey' },
         data: expect.objectContaining({ message: 'Hello' }),

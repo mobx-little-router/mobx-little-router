@@ -11,7 +11,7 @@ export default function createRoute<C: Object, D: Object>(node: RouteStateTreeNo
   return observable({
     node: node,
     key,
-    value: `${node.value.key}${url}?${qs.stringify(query)}`,
+    value: `${url}?${qs.stringify(query)}`,
     parentUrl,
     segment,
     params,
