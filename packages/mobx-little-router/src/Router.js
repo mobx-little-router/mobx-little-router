@@ -21,6 +21,7 @@ class Router {
   location: Location
   activeRoutes: IObservableArray<Route<*, *>>
   activeRouteKeys: string[]
+  isNavigating: boolean
 
   // Private members
   _store: RouterStore
@@ -57,6 +58,10 @@ class Router {
         return event !== null
           ? event.nextNavigation !== null ? event.nextNavigation : null
           : null
+      }),
+      isNavigating: computed(() => {
+        const { event: { type } } = this._scheduler
+        return type !== EventTypes.NAVIGATION_ERROR && type !== EventTypes.NAVIGATION_END
       })
     })
   }
@@ -89,6 +94,7 @@ class Router {
     }).then(() => delay(0)).then(() => {
         // Schedule initial nextNavigation.
         this._scheduler.schedule(asNavigation(this._history.location))
+
         // Wait until nextNavigation is processed.
         return this.done().then(() => {
           if (this._scheduler.event.type === EventTypes.NAVIGATION_ERROR) {
@@ -200,15 +206,7 @@ class Router {
   // Waits for next navigation event to be processed and resolves.
   done(): Promise<void> {
     return new Promise(res => {
-      when(() => {
-        switch (this._scheduler.event.type) {
-          case EventTypes.NAVIGATION_ERROR:
-          case EventTypes.NAVIGATION_END:
-            return true
-          default:
-            return false
-        }
-      }, res)
+      when(() => !this.isNavigating, res)
     })
   }
 
