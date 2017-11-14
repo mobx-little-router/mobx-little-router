@@ -38,7 +38,9 @@ class Outlet extends Component<OutletProps> {
   from: any
   isTransitioning: boolean
 
-  componentWillMount() {
+  constructor(props, context) {
+    super(props, context)
+
     const { router, name } = this.props    
     const idx = this.getCurrentIndex()
 
