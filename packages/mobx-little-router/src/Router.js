@@ -9,7 +9,7 @@ import delay from './util/delay'
 import type { Action, History } from 'history'
 import createRouteStateTreeNode from './model/createRouteStateTreeNode'
 import RouterStore from './model/RouterStore'
-import type { Config, Href, Location, Route, RouteStateTreeNode } from './model/types'
+import type { Config, Href, Location, LocationShape, Route, RouteStateTreeNode } from './model/types'
 import Scheduler from './scheduling/Scheduler'
 import type { Event } from './events'
 import { EventTypes } from './events'
@@ -125,11 +125,7 @@ class Router {
   }
 
   createHref(href: Href) {
-    if (typeof href === 'string') {
-      return this._history.createHref({ pathname: href })
-    } else {
-      return this._history.createHref(href)
-    }
+    return this._history.createHref(asLocation(href))
   }
 
   push(href: Href) {
@@ -236,6 +232,10 @@ class Router {
   handleLocationChange = (location: Object, action: ?Action) => {
     this._scheduler.schedule(asNavigation(location, action))
   }
+}
+
+function asLocation(href: Href): LocationShape {
+  return typeof href === 'string' ? { pathname: href } : { ...href }
 }
 
 function asNavigation(location: Object, action: ?Action) {

@@ -92,5 +92,5 @@ export default class Navigation {
 }
 
 function asLocation(href: Href): LocationShape {
-  return typeof href === 'string' ? { pathname: href } : href
+  return typeof href === 'string' ? { pathname: href } : { ...href }
 }

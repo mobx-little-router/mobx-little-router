@@ -51,7 +51,7 @@ class Link extends Component<Props> {
     const matcher = new RegExp(`${matchPrefix}${typeof href === 'string' ? href.replace(/(\?.*)?$/, '') : ''}${matchSuffix}`)
     const isActive = matcher.test(this.context.router._store.location.pathname)
 
-    return <a href={router.createHref(href)} className={cx(className, typeof activeClassName ==='string' && { [activeClassName]: isActive })} style={style} onClick={this.onClick} {...rest}>{children}</a>
+    return <a href={href != null ? router.createHref(href) : null} className={cx(className, typeof activeClassName ==='string' && { [activeClassName]: isActive })} style={style} onClick={this.onClick} {...rest}>{children}</a>
   }
 }
 

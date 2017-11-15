@@ -103,6 +103,23 @@ describe('Router', () => {
     expect(router.location.search).toEqual('')
   })
 
+  test('createHref string', () => {
+    expect(router.createHref('/a/b/c')).toBe('/a/b/c')
+    expect(router.createHref('')).toBe('/')
+  })
+
+  test('createHref object', () => {
+    expect(router.createHref({ pathname: '/a/b/c' })).toBe('/a/b/c')
+    expect(router.createHref({ pathname: '/a/b/c', search: '?hey=1' })).toBe('/a/b/c?hey=1')
+    expect(router.createHref({ pathname: '/a/b/c', hash: '#ok' })).toBe('/a/b/c#ok')
+    expect(router.createHref({})).toBe('/')
+  })
+
+  test('createHref undefined', () => {
+    expect(router.createHref(undefined)).toBe('/')
+    expect(router.createHref(null)).toBe('/')
+  })
+
   test('resolvePath', async () => {
     await router.push('/a/a2/a3/a4/')
 
