@@ -252,7 +252,8 @@ function withSearch(href: Href) {
   if (typeof href === 'string') {
     return href
   } else {
-    const qs = href.query ? querystring.stringify(href.query) : ''
+    const location = asLocation(href)
+    const qs = location.query ? querystring.stringify(location.query) : ''
     return {
       ...href,
       search: qs ? `?${qs}` : qs

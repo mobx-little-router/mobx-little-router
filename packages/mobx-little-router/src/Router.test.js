@@ -81,6 +81,9 @@ describe('Router', () => {
 
     await router.push(({ pathname: '/a', query: null }: any)) // In case of dynamic `any` being pushed.
     expect(router.location.search).toEqual('')
+
+    await router.push(undefined)
+    expect(router.location.search).toEqual('')
   })
 
   test('updateQuery', async () => {
