@@ -122,7 +122,7 @@ function getGroupColor(ev) {
 }
 
 {
-  (window as any).store = router.store;
+  (window as any).store = router._store;
   (window as any).router = router;
   (window as any).mobx = mobx
 }
