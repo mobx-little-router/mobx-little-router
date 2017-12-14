@@ -9,7 +9,7 @@ import delay from './util/delay'
 import type { Action, History } from 'history'
 import createRouteStateTreeNode from './model/createRouteStateTreeNode'
 import RouterStore from './model/RouterStore'
-import type { Config, Href, Location, LocationShape, Route, RouteStateTreeNode } from './model/types'
+import type { Config, Href, Location, LocationShape, Route, RouteStateTreeNode, Params } from './model/types'
 import Scheduler from './scheduling/Scheduler'
 import type { Event } from './events'
 import { EventTypes } from './events'
@@ -195,6 +195,21 @@ class Router {
   // Note: This will not return any dynamic nodes unless they have already loaded.
   getNode(key: string): null | RouteStateTreeNode<*, *> {
     return this._store.getNode(key)
+  }
+
+  getRoute(key: string): null | Route<*, *> {
+    return this._store.getRoute(key)
+  }
+
+  getParams(key: string): null | Params {
+    return this._store.getParams(key)
+  }
+
+  getParam(key: string, paramName: string): any {
+    const params = this._store.getParams(key)
+    if (params) {
+      return params[paramName]
+    }
   }
 
   /* Private helpers */

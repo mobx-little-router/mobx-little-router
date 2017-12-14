@@ -25,6 +25,7 @@ type TreeNodeMetaData<C, D> = {
 
 class RouterStore {
   location: Location
+  params: ObservableMap<Params>
   state: RouterStateTree
   nextKey = 0
 
@@ -34,6 +35,7 @@ class RouterStore {
   // Keep a list of activated nodes so we can track differences when transitioning to a new state.
   routes: IObservableArray<Route<*, *>>
   prevRoutes: IObservableArray<Route<*, *>>
+
   cancelledSequence: number
 
   constructor(root: RouteStateTreeNode<*, *>) {
@@ -41,6 +43,7 @@ class RouterStore {
     this.cancelledSequence = -1
     extendObservable(this, {
       location: {},
+      params: observable.map({}),
       cache: observable.map({ [root.value.key]: root }),
       routes: observable.array([]),
       prevRoutes: observable.array([])
@@ -93,6 +96,33 @@ class RouterStore {
     }
   }
 
+  getRoute(key: string): null | Route<*, *> {
+    const x = this.routes.find(route => route.node.value.key === key)
+    if (x) {
+      return x
+    } else {
+      return null
+    }
+  }
+
+  getRouteUnsafe(key: string): Route<*, *> {
+    const x = this.getRoute(key)
+    if (x) {
+      return x
+    } else {
+      throw new Error(`Cannot find route with key ${key}`)
+    }
+  }
+
+  getParams(key: string): null | Params {
+    const params = this.params.get(key)
+    if (params) {
+      return params
+    } else {
+      return null
+    }
+  }
+
   /* Mutations */
 
   replaceChildren(node: RouteStateTreeNode<*, *>, children: Config<*>[]): void {
@@ -103,6 +133,12 @@ class RouterStore {
     runInAction(() => {
       this.prevRoutes.replace(this.routes.slice())
       this.routes.replace(routes)
+
+      // Update params
+      this.params.clear()
+      this.routes.forEach(route => {
+        this.params.set(route.node.value.key, route.params)
+      })
     })
   }
 

@@ -68,6 +68,9 @@ describe('RouterStore', () => {
         })
       })
     )
+
+    expect(store.getRouteUnsafe('a').params.x).toBe('2')
+    expect(store.getParams('a')).toEqual({ x: '2' })
   })
 
   test('Building routes from path', () => {

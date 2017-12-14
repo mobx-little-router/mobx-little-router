@@ -24,6 +24,16 @@ describe('Public API', () => {
           ]
         },
         {
+          key: 'account',
+          path: 'account/:id',
+          children: [
+            {
+              key: 'hub',
+              path: 'hub/:id'
+            }
+          ]
+        },
+        {
           path: ':whatever',
           key: 'whatever',
           children: [
@@ -32,6 +42,32 @@ describe('Public API', () => {
         }
       ]
     })
+  })
+
+  test('getParam', async () => {
+    await router.start()
+
+    const ids = []
+
+    const dispose = autorun(() => {
+      const accountId = router.getParam('account', 'id')
+      ids.push(accountId)
+    })
+
+    await router.push('/account/1/hub/2')
+
+    expect(router.getParam('account', 'id')).toBe('1')
+    expect(router.getParam('hub', 'id')).toBe('2')
+
+    await router.push('/account/3/hub/4')
+
+    expect(router.getParam('account', 'id')).toBe('3')
+    expect(router.getParam('hub', 'id')).toBe('4')
+
+    expect(ids).toEqual([undefined, '1', '3'])
+
+    dispose()
+    router.stop()
   })
 
   test('context chain', () => {
