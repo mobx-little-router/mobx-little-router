@@ -162,7 +162,7 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
         leaf,
         root: store.state.root,
         setter: action(() => {
-          leaf.node.children.replace(children.map(x => store.createNode(leaf.node, x)))
+          store.replaceChildren(leaf.node, children)
           leaf.node.value.loadChildren = null
         })
       })

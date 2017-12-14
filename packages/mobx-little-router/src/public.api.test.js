@@ -930,12 +930,31 @@ describe('Public API', () => {
     }
   })
 
-  test('looking up and stringify URL', async () => {
+  test('looking node up by key', async () => {
     await router.start()
+    // Ignore nulls by casting to `any`.
     const a: any = router.getNode('whatever')
     const b: any = router.getNode('thing')
-    expect(a.stringify({ whatever: 'abc' })).toEqual('/abc')
-    expect(b.stringify({ whatever: 'abc', thing: '123' })).toEqual('/abc/123')
+    expect(a.value.key).toEqual('whatever')
+    expect(b.value.key).toEqual('thing')
+  })
+
+  test('calling error handler when route rejects', async () => {
+    const errorSpy = jest.fn(() => Promise.resolve())
+    router = install({
+      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+      routes: [
+        {
+          path: '',
+          willActivate: () => Promise.reject(),
+          onError: errorSpy
+        }
+      ]
+    })
+
+    await router.start()
+
+    expect(errorSpy).toHaveBeenCalled()
   })
 })
 

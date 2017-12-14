@@ -82,10 +82,10 @@ class Router {
         })
 
         // Look for any next navigation from events and call corresponding method on history.
-        this._disposers.push(autorun(this.handleNextNavigation))
+        this._disposers.push(autorun(this._handleNextNavigation))
 
         // Initial location.
-        this._disposers.push(this._history.listen(this.handleLocationChange))
+        this._disposers.push(this._history.listen(this._handleLocationChange))
 
         res()
       } catch (err) {
@@ -96,7 +96,7 @@ class Router {
         this._scheduler.schedule(asNavigation(this._history.location))
 
         // Wait until nextNavigation is processed.
-        return this.done().then(() => {
+        return this._done().then(() => {
           if (this._scheduler.event.type === EventTypes.NAVIGATION_ERROR) {
             throw this._scheduler.event.error
           } else {
@@ -130,12 +130,12 @@ class Router {
 
   push(href: Href) {
     this._history.push(withSearch(href))
-    return this.done()
+    return this._done()
   }
 
   replace(href: Href) {
     this._history.replace(withSearch(href))
-    return this.done()
+    return this._done()
   }
 
   updateQuery(
@@ -166,7 +166,7 @@ class Router {
 
   goBack() {
     this._history.goBack()
-    return this.done()
+    return this._done()
   }
 
   resolvePath(path: string, cwd: string = this.location.pathname) {
@@ -200,13 +200,13 @@ class Router {
   /* Private helpers */
 
   // Waits for next navigation event to be processed and resolves.
-  done(): Promise<void> {
+  _done(): Promise<void> {
     return new Promise(res => {
       when(() => !this.isNavigating, res)
     })
   }
 
-  handleNextNavigation = () => {
+  _handleNextNavigation = () => {
     const { _nextNavigation } = this
 
     if (!_nextNavigation) {
@@ -229,7 +229,7 @@ class Router {
     })
   }
 
-  handleLocationChange = (location: Object, action: ?Action) => {
+  _handleLocationChange = (location: Object, action: ?Action) => {
     this._scheduler.schedule(asNavigation(location, action))
   }
 }

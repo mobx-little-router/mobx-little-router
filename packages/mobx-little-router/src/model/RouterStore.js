@@ -23,10 +23,6 @@ type TreeNodeMetaData<C, D> = {
   parent: null | RouteStateTreeNode<C, D>
 }
 
-type RouteStateTreeNodeWithStringify<C, D> = RouteStateTreeNode<C, D> & {
-  stringify: (x: Params) => string
-}
-
 class RouterStore {
   location: Location
   state: RouterStateTree
@@ -65,7 +61,6 @@ class RouterStore {
   // If the route is not currently active or has changed, then it will be created from factory function.
   getNextRoutes(path: PathElement<*, *>[], location: Location): Route<*, *>[] {
     const query = getQueryParams(location)
-
     return path.map(element => {
       const matchedQueryParams = this.getMatchedQueryParams(element.node, query)
       const newRoute = createRoute(element.node, element.parentUrl, element.segment, element.params, query)
@@ -79,43 +74,30 @@ class RouterStore {
     })
   }
 
-  // All nodes should be created using this method.
-  createNode(parent: RouteStateTreeNode<*, *>, config: Config<*>) {
-    const node = createRouteStateTreeNode(config, parent.value.getContext, this.getNextKey)
-    this.storeInCache(parent, node)
-    return node
-  }
-
-  storeInCache(parent: RouteStateTreeNode<*, *>, node: RouteStateTreeNode<*, *>) {
-    this.cache.set(node.value.key, { node: node, parent })
-    node.children.forEach(child => this.storeInCache(node, child))
-  }
-
-  getNode(key: string): null | RouteStateTreeNodeWithStringify<*, *> {
+  getNode(key: string): null | RouteStateTreeNode<*, *> {
     const x = this.cache.get(key)
     if (x) {
-      const { node, parent } = x
-      return {
-        ...node,
-        stringify: (x: Params) => {
-          const paths = []
-          let curr = node
-          let prev = parent
-          while (curr !== null) {
-            paths.unshift(curr.value.matcher.stringify(x))
-            const y = prev ? this.cache.get(prev.value.key) : null
-            curr = prev
-            prev = y ? (y.parent || null) : null
-          }
-          return paths.join('')
-        }
-      }
+      const { node } = x
+      return node
     } else {
       return null
     }
   }
 
+  getNodeUnsafe(key: string): RouteStateTreeNode<*, *> {
+    const x = this.getNode(key)
+    if (!x) {
+      throw new Error(`Cannot find node with key ${key}`)
+    } else {
+      return x
+    }
+  }
+
   /* Mutations */
+
+  replaceChildren(node: RouteStateTreeNode<*, *>, children: Config<*>[]): void {
+    node.children.replace(children.map(x => this._createNode(node, x)))
+  }
 
   updateRoutes(routes: Route<*, *>[]) {
     runInAction(() => {
@@ -153,6 +135,19 @@ class RouterStore {
         acc[key] = query[key]
         return acc
       }, {})
+  }
+
+  /* Private helpers */
+
+  _createNode(parent: RouteStateTreeNode<*, *>, config: Config<*>) {
+    const node = createRouteStateTreeNode(config, parent.value.getContext, this.getNextKey)
+    this._storeInCache(parent, node)
+    return node
+  }
+
+  _storeInCache(parent: RouteStateTreeNode<*, *>, node: RouteStateTreeNode<*, *>) {
+    this.cache.set(node.value.key, { node: node, parent })
+    node.children.forEach(child => this._storeInCache(node, child))
   }
 }
 

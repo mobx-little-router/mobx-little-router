@@ -22,16 +22,17 @@ describe('RouterStore', () => {
   })
 
   test('Updating current nodes', () => {
-    const a = createRouteStateTreeNode({
+    const a = {
       path: 'a',
+      key: 'a',
       children: [],
       params: {
         x: '1'
       }
-    })
+    }
 
-    replaceChildren(store.state.root, [a])
-    store.updateRoutes([createRoute(a, '1', '1', { x: '1' }, {})])
+    store.replaceChildren(store.state.root, [a])
+    store.updateRoutes([createRoute(store.getNodeUnsafe('a'), '1', '1', { x: '1' }, {})])
 
     expect(store.routes[0]).toEqual(
       expect.objectContaining({
@@ -44,7 +45,7 @@ describe('RouterStore', () => {
       })
     )
 
-    store.updateRoutes([createRoute(a, '2', '2', { x: '2' }, {})])
+    store.updateRoutes([createRoute(store.getNodeUnsafe('a'), '2', '2', { x: '2' }, {})])
 
     expect(store.routes[0]).toEqual(
       expect.objectContaining({
@@ -110,20 +111,22 @@ describe('RouterStore', () => {
   })
 
   test('Routes with query params', () => {
-    const a = createRouteStateTreeNode({
+    const a = {
       path: 'a',
+      key: 'a',
       children: [],
       query: ['q']
-    })
+    }
 
-    const b = createRouteStateTreeNode({
+    const b = {
       path: 'b',
+      key: 'b',
       children: [],
       query: ['r']
-    })
+    }
 
-    replaceChildren(store.state.root, [a, b])
-    store.updateRoutes([createRoute(a, '', '', {}, { q: 'hey' })])
+    store.replaceChildren(store.state.root, [a, b])
+    store.updateRoutes([createRoute(store.getNodeUnsafe('a'), '', '', {}, { q: 'hey' })])
 
     expect(store.routes[0]).toEqual(
       expect.objectContaining({
@@ -136,7 +139,7 @@ describe('RouterStore', () => {
       })
     )
 
-    store.updateRoutes([createRoute(b, '', '', {}, { r: 'what' })])
+    store.updateRoutes([createRoute(store.getNodeUnsafe('b'), '', '', {}, { r: 'what' })])
 
     expect(store.routes[0]).toEqual(
       expect.objectContaining({
@@ -150,23 +153,3 @@ describe('RouterStore', () => {
     )
   })
 })
-
-function replaceChildren(parent: any, nodes: any) {
-  nodes.forEach(x => {
-    runInAction(() => {
-      x.value.getContext = parent.value.getContext
-    })
-  })
-  runInAction(() => {
-    parent.children.replace(nodes)
-    nodes.forEach(child => {
-      replaceChildren(child, child.children.slice())
-    })
-  })
-}
-
-function updateNode(node: any, updates: any) {
-  runInAction(() => {
-    Object.assign(node.value, updates)
-  })
-}
