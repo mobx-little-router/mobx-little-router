@@ -1,6 +1,6 @@
 {
   "name": "mobx-little-router-react",
-  "version": "1.7.0-0",
+  "version": "1.7.0-1",
   "description": "React adapter components for mobx-router.",
   "repository": "git@github.com:mobx-little-router/mobx-little-router.git",
   "license": "MIT",
@@ -22,6 +22,6 @@
   "dependencies": {
     "classnames": "^2.2.5",
     "hoist-non-react-statics": "^2.3.1",
-    "mobx-little-router": "^1.7.0-0"
+    "mobx-little-router": "^1.7.0-1"
   }
 }
