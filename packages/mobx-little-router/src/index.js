@@ -62,3 +62,11 @@ export { default as devTools } from './middleware/devTools'
 export { default as areRoutesEqual } from './model/util/areRoutesEqual'
 
 export type { IMiddleware } from './middleware/Middleware'
+
+export {
+  RouteError,
+  NoMatch,
+  NotFound,
+  Unauthorized,
+  BadRequest
+} from './errors'
