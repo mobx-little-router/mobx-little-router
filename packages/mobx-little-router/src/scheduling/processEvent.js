@@ -102,7 +102,7 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
         return Promise.resolve({
           type: EventTypes.NAVIGATION_ERROR,
           navigation,
-          error: new NoMatch(navigation.to ? navigation.to.pathname : 'UNKNOWN_URL'),
+          error: new NoMatch(navigation),
           done: true
         })
       }

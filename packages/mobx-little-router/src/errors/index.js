@@ -1,12 +1,46 @@
 // @flow
 
-export class NoMatch  {
-  url: string
-  constructor(url: string) {
-    this.url = url
+import type Navigation from '../model/Navigation'
+
+const getNavigationUrl = (navigation: ?Navigation) =>
+  navigation && navigation.to ? navigation.to.pathname : 'UNKNOWN_URL'
+
+export class RouteError {
+  navigation: ?Navigation
+  status: ?number
+  message: ?string
+
+  constructor(navigation: ?Navigation, status: ?number, message: ?string) {
+    this.navigation = navigation
+    this.status = typeof status === 'number' ? status : null
+    this.message = message
   }
+
   toString() {
-    return `No match for ${this.url}`
+    return typeof this.message === 'string' ? this.message : 'Unknown RouteError'
   }
 }
 
+export class NoMatch extends RouteError {
+  constructor(navigation: ?Navigation) {
+    super(navigation, null, `No match for ${getNavigationUrl(navigation)}`)
+  }
+}
+
+export class NotFound extends RouteError {
+  constructor(navigation: ?Navigation) {
+    super(navigation, 404, `Not found ${getNavigationUrl(navigation)}`)
+  }
+}
+
+export class Unauthorized extends RouteError {
+  constructor(navigation: ?Navigation) {
+    super(navigation, 403, `Unauthorized access to ${getNavigationUrl(navigation)}`)
+  }
+}
+
+export class BadRequest extends RouteError {
+  constructor(navigation: ?Navigation) {
+    super(navigation, 400, `Bad request to ${getNavigationUrl(navigation)}`)
+  }
+}
