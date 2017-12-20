@@ -10,6 +10,7 @@ import areRoutesEqual from '../model/util/areRoutesEqual'
 import TransitionManager from '../transition/TransitionManager'
 import type { Event } from '../events'
 import { EventTypes } from '../events'
+import { RouteError } from '../errors'
 
 /*
  * This function maps an Event to a new Event. It is used by the Scheduler to manage data flow.
@@ -181,7 +182,7 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
       }
     }
     case EventTypes.NAVIGATION_ACTIVATING: {
-      const { navigation, routes } = evt
+      const { navigation, routes, partialPath } = evt
 
       const currRoutes = store.routes.slice()
 
@@ -230,13 +231,23 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
             nextNavigation: err,
             done: true
           }
-        } else {
-          return {
-            type: EventTypes.NAVIGATION_ERROR,
-            navigation,
-            error: err,
-            done: true
+        } else if (err instanceof RouteError) {
+          const caughtPath = findCatchAllPath(partialPath, partialPath[partialPath.length - 1])
+          if (caughtPath.length > 0) {
+            return {
+              type: EventTypes.NAVIGATION_ACTIVATING,
+              navigation,
+              partialPath: caughtPath,
+              routes: store.getNextRoutes(caughtPath, navigation.to)
+            }
           }
+        }
+
+        return {
+          type: EventTypes.NAVIGATION_ERROR,
+          navigation,
+          error: err,
+          done: true
         }
       })
     }

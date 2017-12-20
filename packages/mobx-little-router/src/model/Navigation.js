@@ -86,6 +86,10 @@ export default class Navigation {
     }))
   }
 
+  raise(klass: *, ...opts: *): Promise<void> {
+    return Promise.reject(new klass(this, ...opts))
+  }
+
   goBack(): Promise<void> {
     return Promise.reject(this.prev())
   }
