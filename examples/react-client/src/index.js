@@ -1,8 +1,9 @@
 import React from 'react'
-import * as mobx from 'mobx'
 import ReactDOM from 'react-dom'
+import * as mobx from 'mobx'
 import { createHashHistory } from 'history'
 import { Provider } from 'mobx-react'
+import { NotFound } from 'mobx-little-router'
 import { install, RouterProvider } from 'mobx-little-router-react'
 import createStores from './stores'
 import {
@@ -14,7 +15,8 @@ import {
   ActorRoute,
   AdminRoute,
   CollectionsRoute,
-  CollectionRoute
+  CollectionRoute,
+  CatchAllRoute
 } from './routes'
 import App from './App'
 
@@ -31,16 +33,36 @@ const router = install({
     stores
   }),
   routes: [
-    { path: '', component: HomeRoute },
-    { path: 'login', component: LoginRoute },
-    { path: 'about', component: AboutRoute, animate: true },
-    { path: 'contact', component: ContactRoute, animate: true },
+    {
+      path: '',
+      component: HomeRoute
+    },
+    { 
+      path: 'login',
+      component: LoginRoute
+    },
+    { 
+      path: 'about',
+      component: AboutRoute,
+      animate: true
+    },
+    {
+      path: 'contact',
+      component: ContactRoute,
+      animate: true
+    },
     {
       path: 'collections',
       component: CollectionsRoute,
       children: [
-        { path: ':collectionId', component: CollectionRoute },
-        { path: '', redirectTo: 'a' }
+        {
+          path: ':collectionId',
+          component: CollectionRoute
+        },
+        {
+          path: '',
+          redirectTo: 'a'
+        }
       ]
     },
     {
@@ -58,13 +80,22 @@ const router = install({
       component: TagRoute
     },
     // Redirects
-    {path: 'actors', redirectTo: '/' },
-    {path: 'tags', redirectTo: '/' },
+    {
+      path: 'actors',
+      redirectTo: '/'
+    },
+    {
+      path: 'tags',
+      redirectTo: '/'
+    },
     {
       // Using relative path
       path: 'redirect',
       children: [
-        { path: '', redirectTo: '../shows' }
+        {
+          path: '',
+          redirectTo: '../shows'
+        }
       ]
     },
     // Admin route with a session guard
@@ -87,6 +118,22 @@ const router = install({
       },
       // Fakes network delay
       willResolve: () => delay(20 + Math.random() * 200)
+    },
+    // A secret route that only the admin can see, everyone else gets a 404
+    {
+      path: 'secret',
+      canActivate: (route: *, navigation: *) => {
+        const { stores: { SessionStore } } = route.context
+        if (SessionStore.isAuthenticated) {
+          return true
+        } else {
+          return navigation.raise(NotFound)
+        }
+      }
+    },
+    {
+      path: '**',
+      component: CatchAllRoute
     }
   ]
 })

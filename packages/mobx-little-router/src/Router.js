@@ -22,6 +22,7 @@ class Router {
   activeRoutes: IObservableArray<Route<*, *>>
   activeRouteKeys: string[]
   isNavigating: boolean
+  error: any
 
   // Private members
   _store: RouterStore
@@ -51,7 +52,7 @@ class Router {
       activeRouteKeys: computed((): string[] =>
         this.activeRoutes.map(r => r.node.value.key)
       ),
-
+      error: computed(() => this._store.error),
       // Private usage to figure out if an event has a next navigation object.
       _nextNavigation: computed(() => {
         const { event } = this._scheduler

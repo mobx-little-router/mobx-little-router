@@ -36,6 +36,8 @@ class RouterStore {
   routes: IObservableArray<Route<*, *>>
   prevRoutes: IObservableArray<Route<*, *>>
 
+  error: any
+
   cancelledSequence: number
 
   constructor(root: RouteStateTreeNode<*, *>) {
@@ -46,7 +48,8 @@ class RouterStore {
       params: observable.map({}),
       cache: observable.map({ [root.value.key]: root }),
       routes: observable.array([]),
-      prevRoutes: observable.array([])
+      prevRoutes: observable.array([]),
+      error: null
     })
   }
 
@@ -127,6 +130,12 @@ class RouterStore {
 
   replaceChildren(node: RouteStateTreeNode<*, *>, children: Config<*>[]): void {
     node.children.replace(children.map(x => this._createNode(node, x)))
+  }
+
+  updateError(err: any) {
+    runInAction(() => {
+      this.error = err
+    })
   }
 
   updateRoutes(routes: Route<*, *>[]) {
