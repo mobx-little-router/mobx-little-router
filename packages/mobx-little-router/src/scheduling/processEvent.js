@@ -64,7 +64,6 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
     case EventTypes.NAVIGATION_START: {
       const { navigation } = evt
       const matchedPath = store.state.pathFromRoot(normalizePath(navigation.to.pathname))
-
       return Promise.resolve({
         type: EventTypes.NAVIGATION_RESULT_MATCHED,
         navigation,
@@ -92,7 +91,7 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
       const isFullyMatched = isUrlFullyMatched(navigation.to.pathname, matchedPath)
       const loader = leaf && leaf.node.value.loadChildren
 
-      if (isCatchAll(leaf.node)) {
+      if (isCatchAll(leaf && leaf.node)) {
         store.updateError(new NoMatch(navigation))
       }
 
@@ -323,13 +322,13 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
     }
     case EventTypes.NAVIGATION_END: {
       const { routes } = evt
-      const leaf = routes[routes.length - 1]
+      const leaf = routes && routes[routes.length - 1]
 
       return Promise.resolve({
         type: EventTypes.EMPTY,
         navigation: evt.navigation,
         setter: () => {
-          if (!isCatchAll(leaf.node)) {
+          if (!isCatchAll(leaf && leaf.node)) {
             store.updateError(null)
           }
 
@@ -484,9 +483,8 @@ function evalTransitionsForRoutes(
 }
 
 function isCatchAll(node) {
-  return node.value.path === '**'
+  return !!(node && node.value.path === '**')
 }
-
 
 function findCatchAllPath(path) {
   const leaf = path[path.length - 1]
@@ -500,11 +498,14 @@ function findCatchAllPath(path) {
   while (idx >= 0) {
     const element = path[idx]
     foundNode = element.node.children.find(isCatchAll)
+
     if (foundNode) {
       break
     }
+
     idx--
   }
+
   if (foundNode) {
     return path.slice(0, idx).concat([
       {
@@ -516,5 +517,6 @@ function findCatchAllPath(path) {
       }
     ])
   }
+
   return []
 }
