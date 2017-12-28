@@ -65,7 +65,6 @@ export type { IMiddleware } from './middleware/Middleware'
 
 export {
   RouteError,
-  NoMatch,
   NotFound,
   Unauthorized,
   BadRequest

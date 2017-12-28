@@ -21,12 +21,6 @@ export class RouteError {
   }
 }
 
-export class NoMatch extends RouteError {
-  constructor(navigation: ?Navigation) {
-    super(navigation, null, `No match for ${getNavigationUrl(navigation)}`)
-  }
-}
-
 export class NotFound extends RouteError {
   constructor(navigation: ?Navigation) {
     super(navigation, 404, `Not found ${getNavigationUrl(navigation)}`)

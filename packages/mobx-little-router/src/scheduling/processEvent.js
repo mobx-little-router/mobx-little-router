@@ -1,7 +1,7 @@
 // @flow
 import { action } from 'mobx'
 import type RouterStore from '../model/RouterStore'
-import { NoMatch } from '../errors'
+import { NotFound } from '../errors'
 import Navigation from '../model/Navigation'
 import type { Route } from '../model/types'
 import differenceWith from '../util/differenceWith'
@@ -92,7 +92,7 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
       const loader = leaf && leaf.node.value.loadChildren
 
       if (isCatchAll(leaf && leaf.node)) {
-        store.updateError(new NoMatch(navigation))
+        store.updateError(new NotFound(navigation))
       }
 
       if (!isFullyMatched && typeof loader !== 'function') {
@@ -108,7 +108,7 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
         return Promise.resolve({
           type: EventTypes.NAVIGATION_ERROR,
           navigation,
-          error: new NoMatch(navigation),
+          error: new NotFound(navigation),
           done: true
         })
       }

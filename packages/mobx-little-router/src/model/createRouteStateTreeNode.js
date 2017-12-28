@@ -78,7 +78,7 @@ export default function createRouteStateTreeNode(
 }
 
 export function getMatcher(config: Config<*>) {
-  // Catch-all matcher for handling "NoMatch", etc.
+  // Catch-all matcher for handling "NotFound", etc.
   if (config.path === '**') return m.any
 
   // Match was specified.

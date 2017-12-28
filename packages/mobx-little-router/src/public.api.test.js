@@ -4,7 +4,7 @@ import { createMemoryHistory } from 'history'
 import delay from './util/delay'
 import { EventTypes } from './events'
 import { install, Middleware } from './index'
-import { NoMatch } from './errors'
+import { NotFound } from './errors'
 
 describe('Public API', () => {
   let router
@@ -158,7 +158,7 @@ describe('Public API', () => {
       getContext: () => ({}),
       routes: [{ path: '' }]
     })
-    await expect(router.start()).rejects.toEqual(expect.any(NoMatch))
+    await expect(router.start()).rejects.toEqual(expect.any(NotFound))
   })
 
   describe('Events', () => {

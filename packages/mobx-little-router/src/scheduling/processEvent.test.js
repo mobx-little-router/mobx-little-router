@@ -6,7 +6,7 @@ import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
 import createRoute from '../model/createRoute'
 import Navigation from '../model/Navigation'
 import processEvent from './processEvent'
-import { NoMatch } from '../errors'
+import { NotFound } from '../errors'
 
 describe('processEvent', () => {
   let store
@@ -148,7 +148,7 @@ describe('processEvent', () => {
       expect.arrayContaining([
         expect.objectContaining({
           type: EventTypes.NAVIGATION_ERROR,
-          error: expect.any(NoMatch)
+          error: expect.any(NotFound)
         })
       ])
     )
