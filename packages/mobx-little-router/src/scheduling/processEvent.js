@@ -91,10 +91,6 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
       const isFullyMatched = isUrlFullyMatched(navigation.to.pathname, matchedPath)
       const loader = leaf && leaf.node.value.loadChildren
 
-      if (isCatchAll(leaf && leaf.node)) {
-        store.updateError(new NotFound(navigation))
-      }
-
       if (!isFullyMatched && typeof loader !== 'function') {
         const caughtPath = findCatchAllPath(matchedPath)
         if (caughtPath.length > 0) {
@@ -112,6 +108,7 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
           done: true
         })
       }
+      
       if (typeof loader === 'function' && leaf.node.children.length === 0) {
         return Promise.resolve({
           type: EventTypes.CHILDREN_CONFIG_REQUESTED,
@@ -121,6 +118,11 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
           loader
         })
       }
+
+      if (isCatchAll(leaf && leaf.node)) {
+        store.updateError(new NotFound(navigation))
+      }
+
       return Promise.resolve({
         type: EventTypes.NAVIGATION_ACTIVATING,
         navigation: evt.navigation,
