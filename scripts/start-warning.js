@@ -12,14 +12,12 @@ console.log(
 
 console.log()
 
-const question = {
+inquirer.prompt({
   type: 'confirm',
   name: 'shouldRunExample',
   message: chalk.yellow(`Would you like to run ${CLIENT_DIR} now?`),
   default: true
-}
-
-inquirer.prompt(question).then(answer => {
+}).then(answer => {
   console.log()
 
   if (answer.shouldRunExample) {
