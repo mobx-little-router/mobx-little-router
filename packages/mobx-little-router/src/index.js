@@ -67,5 +67,6 @@ export {
   RouteError,
   NotFound,
   Unauthorized,
+  AuthenticationTimeout,
   BadRequest
 } from './errors'

@@ -21,15 +21,21 @@ export class RouteError {
   }
 }
 
+export class Unauthorized extends RouteError {
+  constructor(navigation: ?Navigation) {
+    super(navigation, 403, `Unauthorized access to ${getNavigationUrl(navigation)}`)
+  }
+}
+
 export class NotFound extends RouteError {
   constructor(navigation: ?Navigation) {
     super(navigation, 404, `Not found ${getNavigationUrl(navigation)}`)
   }
 }
 
-export class Unauthorized extends RouteError {
+export class AuthenticationTimeout extends RouteError {
   constructor(navigation: ?Navigation) {
-    super(navigation, 403, `Unauthorized access to ${getNavigationUrl(navigation)}`)
+    super(navigation, 419, `Authentication timeout`)
   }
 }
 
