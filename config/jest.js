@@ -1,6 +1,6 @@
 // Jest setup
-import { useStrict } from 'mobx'
-import { JSDOM } from 'jsdom'
+const useStrict = require('mobx').useStrict
+const JSDOM = require('jsdom').JSDOM
 
 useStrict(true)
 
