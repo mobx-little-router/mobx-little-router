@@ -62,8 +62,9 @@ function createMatcher(pattern: UrlPattern) {
     if (result) {
       const { _, ...params } = result
       const segment = pattern.stringify({ ...params, _: '' })
+
       const parentUrl = typeof full === 'string'
-        ? full.replace(new RegExp(`${segment}${_ || ''}\/?$`), '')
+        ? full.replace(new RegExp(`${escapeRegExp(`${segment}${_ || ''}`)}\/?$`), '')
         : ''
       const normalizedParams = pattern.names.reduce((acc, k) => {
         if (k !== '_') {
@@ -103,3 +104,8 @@ function withoutTrailingSlash(x: string) {
   const match = x.match(/(.*?)\/?$/)
   return match ? match[1] : x
 }
+
+function escapeRegExp(str) {
+  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+}
+

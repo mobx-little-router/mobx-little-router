@@ -992,6 +992,16 @@ describe('Public API', () => {
 
     expect(errorSpy).toHaveBeenCalled()
   })
+
+  test('boundary cases', async () => {
+    router = install({
+      history: createMemoryHistory({initialEntries: ['/**'], initialIndex: 0}),
+      routes: [{ path: '**' }]
+    })
+    await router.start()
+
+    expect(router.location.pathname).toEqual('/**')
+  })
 })
 
 const getLastRoute = router => {
