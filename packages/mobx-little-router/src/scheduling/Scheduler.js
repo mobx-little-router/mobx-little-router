@@ -1,6 +1,6 @@
 // @flow
 import type { Action } from 'history'
-import { action, autorun, extendObservable, reaction, runInAction, when } from 'mobx'
+import { action, autorun, extendObservable, observable, reaction, runInAction, when } from 'mobx'
 import type RouterStore from '../model/RouterStore'
 import type { NavigationDescriptor } from '../model/Navigation'
 import Navigation from '../model/Navigation'
@@ -24,11 +24,11 @@ export default class Scheduler {
     })
     extendObservable(this, {
       currentNavigation: initialNavigation,
-      event: { type: EventTypes.EMPTY, navigation: initialNavigation }
+      event: { type: EventTypes.EMPTY, navigation: initialNavigation },
+      disposer: observable.ref(null),
+      store: observable.ref(store),
+      middleware: observable.ref(middleware)
     })
-    this.disposer = null
-    this.store = store
-    this.middleware = middleware
   }
 
   start() {

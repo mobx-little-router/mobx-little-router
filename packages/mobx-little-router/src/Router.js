@@ -3,13 +3,21 @@
  * The `Router` is a coordinator of other objects in the system.
  */
 import type { IObservableArray } from 'mobx'
-import { autorun, computed, extendObservable, when } from 'mobx'
+import { autorun, computed, extendObservable, observable, when } from 'mobx'
 import querystring from 'querystring'
 import delay from './util/delay'
 import type { Action, History } from 'history'
 import createRouteStateTreeNode from './model/createRouteStateTreeNode'
 import RouterStore from './model/RouterStore'
-import type { Config, Href, Location, LocationShape, Route, RouteStateTreeNode, Params } from './model/types'
+import type {
+  Config,
+  Href,
+  Location,
+  LocationShape,
+  Route,
+  RouteStateTreeNode,
+  Params
+} from './model/types'
 import Scheduler from './scheduling/Scheduler'
 import type { Event } from './events'
 import { EventTypes } from './events'
@@ -38,14 +46,12 @@ class Router {
     getContext?: void | (() => any),
     middleware: IMiddleware
   ) {
-    this._disposers = []
-
-    this._history = history
-    const root = createRouteStateTreeNode({ key: '@@ROOT', path: '', match: 'partial' }, getContext) // Initial root.
-    this._initialChildren = config
-    this._store = new RouterStore(root)
-    this._scheduler = new Scheduler(this._store, middleware)
-
+    const root = createRouteStateTreeNode(
+      { key: '@@ROOT', path: '', match: 'partial' },
+      getContext
+    ) // Initial root.
+    const store = new RouterStore(root)
+    const scheduler = new Scheduler(store, middleware)
     extendObservable(this, {
       location: computed(() => this._store.location),
       activeRoutes: computed((): IObservableArray<Route<*, *>> => this._store.routes),
@@ -53,6 +59,11 @@ class Router {
         this.activeRoutes.map(r => r.node.value.key)
       ),
       error: computed(() => this._store.error),
+      isNavigating: computed(() => {
+        const { event: { type } } = this._scheduler
+        return type !== EventTypes.NAVIGATION_ERROR && type !== EventTypes.NAVIGATION_END
+      }),
+
       // Private usage to figure out if an event has a next navigation object.
       _nextNavigation: computed(() => {
         const { event } = this._scheduler
@@ -60,10 +71,11 @@ class Router {
           ? event.nextNavigation !== null ? event.nextNavigation : null
           : null
       }),
-      isNavigating: computed(() => {
-        const { event: { type } } = this._scheduler
-        return type !== EventTypes.NAVIGATION_ERROR && type !== EventTypes.NAVIGATION_END
-      })
+      _disposers: observable.ref([]),
+      _history: observable.ref(history),
+      _initialChildren: observable.ref(config),
+      _store: observable.ref(store),
+      _scheduler: observable.ref(scheduler)
     })
   }
 
@@ -92,7 +104,9 @@ class Router {
       } catch (err) {
         rej(err)
       }
-    }).then(() => delay(0)).then(() => {
+    })
+      .then(() => delay(0))
+      .then(() => {
         // Schedule initial nextNavigation.
         this._scheduler.schedule(asNavigation(this._history.location))
 
@@ -141,7 +155,7 @@ class Router {
 
   updateQuery(
     query: Object,
-    options: { action?: Action, merge?: boolean } = { action: 'REPLACE', merge: false}
+    options: { action?: Action, merge?: boolean } = { action: 'REPLACE', merge: false }
   ) {
     const search = this._store.location.search
     const existingQuery = search ? querystring.parse(search.substr(1)) : {}
@@ -152,13 +166,15 @@ class Router {
       }
       return acc
     }, {})
-    const queryString = Object.keys(updatedQuery).length > 0 ? `?${querystring.stringify(updatedQuery)}` : ''
+    const queryString = Object.keys(updatedQuery).length > 0
+      ? `?${querystring.stringify(updatedQuery)}`
+      : ''
     const pathname = `${this.location.pathname}${queryString}`
 
-    switch(options.action) {
+    switch (options.action) {
       case 'PUSH':
         return this.push(pathname)
-      
+
       default:
       case 'REPLACE':
         return this.replace(pathname)

@@ -41,9 +41,9 @@ class RouterStore {
   cancelledSequence: number
 
   constructor(root: RouteStateTreeNode<*, *>) {
-    this.state = new RouterStateTree(root)
-    this.cancelledSequence = -1
     extendObservable(this, {
+      state: observable.ref(new RouterStateTree(root)),
+      cancelledSequence: observable.ref(-1),
       location: {},
       params: observable.map({}),
       cache: observable.map({ [root.value.key]: root }),
