@@ -6,7 +6,7 @@ import type { LocationShape } from 'mobx-little-router'
 import { RouterType } from '../propTypes'
 import cx from 'classnames'
 import qs from 'querystring'
-import { assertRouterExists } from '../testUtil'
+import { assertRouterExists } from '../util'
 
 type Props =  {
   to: string | LocationShape,
