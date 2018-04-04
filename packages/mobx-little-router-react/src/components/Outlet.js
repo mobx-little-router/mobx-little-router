@@ -45,15 +45,14 @@ class Outlet extends Component<OutletProps> {
     const idx = this.getCurrentIndex()
 
     extendObservable(this, {
-      currRoutes: computed(() => filterRoutes(router._store.routes)),
-      prevRoutes: computed(() => filterRoutes(router._store.prevRoutes)),
-      to: computed(() => findRoute(this.currRoutes, idx, name)),
-      from: computed(() => findRoute(this.prevRoutes, idx, name)),
-      isTransitioning: computed(() =>
+      currRoutes: () => filterRoutes(router._store.routes),
+      prevRoutes: () => filterRoutes(router._store.prevRoutes),
+      to: () => findRoute(this.currRoutes, idx, name),
+      from: () => findRoute(this.prevRoutes, idx, name),
+      isTransitioning: () =>
         this.prevRoutes.length > 0 &&
         !areRoutesEqual(this.to, this.from) &&
         (canTransition(this.to) || canTransition(this.from))
-      )
     })
   }
 

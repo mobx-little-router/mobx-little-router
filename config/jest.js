@@ -1,8 +1,12 @@
 // Jest setup
-const useStrict = require('mobx').useStrict
+const mobx = require('mobx')
 const JSDOM = require('jsdom').JSDOM
+const enzyme = require('enzyme')
+const EnzymeAdapter = require('enzyme-adapter-react-16')
 
-useStrict(true)
+mobx.configure({ enforceActions: true })
+
+enzyme.configure({ adapter: new EnzymeAdapter() })
 
 const jsdom = new JSDOM('<!doctype html><html><body></body></html>')
 const { window } = jsdom

@@ -52,26 +52,40 @@ export default function createRouteStateTreeNode(
     observable({
       key: typeof config.key === 'string' ? config.key : createKey(),
       path: config.path,
-      matcher: observable.ref(matcher(config.path)),
+      matcher: matcher(config.path),
       query: typeof config.query !== 'undefined' ? config.query : [],
       params: config.params !== null ? config.params : {},
       loadChildren: typeof config.loadChildren === 'function'
-        ? observable.ref(config.loadChildren)
+        ? config.loadChildren
         : null,
-      canActivate: observable.ref(config.canActivate || NOP),
-      canDeactivate: observable.ref(config.canDeactivate || NOP),
-      willActivate: observable.ref(config.willActivate || NOP),
-      willDeactivate: observable.ref(config.willDeactivate || NOP),
-      willResolve: observable.ref(config.willResolve || NOP),
-      onError: observable.ref(config.onError || null),
-      onTransition: observable.ref(config.onTransition || null),
-      onEnter: observable.ref(config.onEnter || null),
-      onExit: observable.ref(config.onExit || null),
+      canActivate: config.canActivate || NOP,
+      canDeactivate: config.canDeactivate || NOP,
+      willActivate: config.willActivate || NOP,
+      willDeactivate: config.willDeactivate || NOP,
+      willResolve: config.willResolve || NOP,
+      onError: config.onError || null,
+      onTransition: config.onTransition || null,
+      onEnter: config.onEnter || null,
+      onExit: config.onExit || null,
       getContext,
-      getData: observable.ref(config.getData || (() => ({}))),
+      getData: config.getData || (() => ({})),
       // This prop is meant for middleware to add annotations that it may need to perform its task.
       // e.g. validate config needs to add some hash for equality checks between tree nodes.
-      etc: observable.ref(config.etc || {})
+      etc: config.etc || {}
+    }, {
+      matcher: observable.ref,
+      loadChildren: observable.ref,
+      canActivate: observable.ref,
+      canDeactivate: observable.ref,
+      willActivate: observable.ref,
+      willDeactivate: observable.ref,
+      willResolve: observable.ref,
+      onError: observable.ref,
+      onTransition: observable.ref,
+      onEnter: observable.ref,
+      onExit: observable.ref,
+      getData: observable.ref,
+      etc: observable.ref
     }),
     children
   )

@@ -53,29 +53,33 @@ class Router {
     const store = new RouterStore(root)
     const scheduler = new Scheduler(store, middleware)
     extendObservable(this, {
-      location: computed(() => this._store.location),
-      activeRoutes: computed((): IObservableArray<Route<*, *>> => this._store.routes),
-      activeRouteKeys: computed((): string[] =>
-        this.activeRoutes.map(r => r.node.value.key)
-      ),
-      error: computed(() => this._store.error),
-      isNavigating: computed(() => {
+      location: () => this._store.location,
+      activeRoutes: (): IObservableArray<Route<*, *>> => this._store.routes,
+      activeRouteKeys: (): string[] => this.activeRoutes.map(r => r.node.value.key),
+      error: () => this._store.error,
+      isNavigating: () => {
         const { event: { type } } = this._scheduler
         return type !== EventTypes.NAVIGATION_ERROR && type !== EventTypes.NAVIGATION_END
-      }),
+      },
 
       // Private usage to figure out if an event has a next navigation object.
-      _nextNavigation: computed(() => {
+      _nextNavigation: () => {
         const { event } = this._scheduler
         return event !== null
           ? event.nextNavigation !== null ? event.nextNavigation : null
           : null
-      }),
-      _disposers: observable.ref([]),
-      _history: observable.ref(history),
-      _initialChildren: observable.ref(config),
-      _store: observable.ref(store),
-      _scheduler: observable.ref(scheduler)
+      },
+      _disposers: [],
+      _history: history,
+      _initialChildren: config,
+      _store: store,
+      _scheduler: scheduler
+    }, {
+      _disposers: observable.ref,
+      _history: observable.ref,
+      _initialChildren: observable.ref,
+      _store: observable.ref,
+      _scheduler: observable.ref
     })
   }
 
