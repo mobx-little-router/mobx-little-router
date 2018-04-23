@@ -53,17 +53,17 @@ class Router {
     const store = new RouterStore(root)
     const scheduler = new Scheduler(store, middleware)
     extendObservable(this, {
-      location: () => this._store.location,
-      activeRoutes: (): IObservableArray<Route<*, *>> => this._store.routes,
-      activeRouteKeys: (): string[] => this.activeRoutes.map(r => r.node.value.key),
-      error: () => this._store.error,
-      isNavigating: () => {
+      get location() { return this._store.location },
+      get activeRoutes(): IObservableArray<Route<*, *>> { return this._store.routes },
+      get activeRouteKeys(): string[] { return  this.activeRoutes.map(r => r.node.value.key) },
+      get error() { return this._store.error },
+      get isNavigating() {
         const { event: { type } } = this._scheduler
         return type !== EventTypes.NAVIGATION_ERROR && type !== EventTypes.NAVIGATION_END
       },
 
       // Private usage to figure out if an event has a next navigation object.
-      _nextNavigation: () => {
+      get _nextNavigation() {
         const { event } = this._scheduler
         return event !== null
           ? event.nextNavigation !== null ? event.nextNavigation : null
