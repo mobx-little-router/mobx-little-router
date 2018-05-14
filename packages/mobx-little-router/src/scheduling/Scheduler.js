@@ -25,9 +25,13 @@ export default class Scheduler {
     extendObservable(this, {
       currentNavigation: initialNavigation,
       event: { type: EventTypes.EMPTY, navigation: initialNavigation },
-      disposer: observable.ref(null),
-      store: observable.ref(store),
-      middleware: observable.ref(middleware)
+      disposer: null,
+      store: store,
+      middleware: middleware
+    }, {
+      disposer: observable.ref,
+      store: observable.ref,
+      middleware: observable.ref
     })
   }
 

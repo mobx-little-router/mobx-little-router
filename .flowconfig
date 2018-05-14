@@ -10,10 +10,8 @@
 [libs]
 ./flow-typed/npm/
 ./interface/
-node_modules/mobx/lib/mobx.js.flow
 
 [options]
-include_warnings=true
 esproposal.class_static_fields=enable
 esproposal.class_instance_fields=enable
 module.file_ext=.js

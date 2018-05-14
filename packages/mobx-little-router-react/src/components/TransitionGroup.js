@@ -58,6 +58,7 @@ class TransitionGroup extends Component<TransitionGroupProps> {
             // Force repaint
             inner.scrollTop
 
+            // XXX this breaks enzyme test because it does not see any class list mutations
             // Add ephemeral classname to trigger animation
             inner.classList.add(route === to ? classNames.enterActive : classNames.exitActive)
           })
@@ -133,7 +134,7 @@ type TransitionItemProps = {
 }
 
 // Need to wrap the item so we can properly set the innerRef
-class TransitionItem extends Component<TransitionItemProps> {
+export class TransitionItem extends Component<TransitionItemProps> {
   render() {
     const { route, className, additionalProps, innerRef } = this.props
     

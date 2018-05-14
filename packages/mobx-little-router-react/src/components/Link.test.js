@@ -35,12 +35,12 @@ describe('Link', () => {
       </div>
     )
 
-    wrapper.find('.foo').simulate('click', { button: 0 })
+    wrapper.find('.foo').hostNodes().simulate('click', { button: 0 })
     await delay(0)
 
     expect(router._store.location.pathname).toEqual('/foo')
 
-    wrapper.find('.index').simulate('click', { button: 0 })
+    wrapper.find('.index').hostNodes().simulate('click', { button: 0 })
     await delay(0)
 
     expect(router._store.location.pathname).toEqual('/')
@@ -53,7 +53,7 @@ describe('Link', () => {
       </div>
     )
 
-    wrapper.find('.foo').simulate('click', { button: 0 })
+    wrapper.find('.foo').hostNodes().simulate('click', { button: 0 })
     await delay(0)
 
     expect(router._store.location.pathname).toEqual('/')
@@ -67,7 +67,7 @@ describe('Link', () => {
       </div>
     )
 
-    wrapper.find('.foo').simulate('click', { button: 0 })
+    wrapper.find('.foo').hostNodes().simulate('click', { button: 0 })
     await delay(0)
 
     expect(spy).toHaveBeenCalled()
@@ -81,7 +81,7 @@ describe('Link', () => {
       </div>
     )
 
-    wrapper.find('.foo').simulate('mouseenter')
+    wrapper.find('.foo').hostNodes().simulate('mouseenter')
     await delay(0)
 
     expect(spy).toHaveBeenCalled()
@@ -95,7 +95,7 @@ describe('Link', () => {
       </div>
     )
 
-    wrapper.find('.foo').simulate('mouseleave')
+    wrapper.find('.foo').hostNodes().simulate('mouseleave')
     await delay(0)
 
     expect(spy).toHaveBeenCalled()
@@ -117,7 +117,7 @@ describe('Link', () => {
       </div>
     )
 
-    wrapper.find('.foo').simulate('click', { button: 0 })
+    wrapper.find('.foo').hostNodes().simulate('click', { button: 0 })
     await delay(0)
 
     expect(spy).toHaveBeenCalled()
@@ -150,7 +150,7 @@ describe('Link', () => {
       </div>
     )
 
-    wrapper.find('.foo').simulate('click', { button: 0 })
+    wrapper.find('.foo').hostNodes().simulate('click', { button: 0 })
     await delay(0)
 
     expect(spy).toHaveBeenCalled()
