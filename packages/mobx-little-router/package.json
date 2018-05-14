@@ -16,7 +16,7 @@
   "module": "es/index.js",
   "peerDependencies": {
     "history": "^4.0.0",
-    "mobx": "^4.0.0"
+    "mobx": "^4.2.1"
   },
   "dependencies": {
     "url-pattern": "^1.0.3"
