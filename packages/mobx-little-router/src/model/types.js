@@ -25,6 +25,7 @@ export type Config<D> = BasicConfig<D> | RedirectConfig<D>
 export type BasicConfig<D: Object> = {
   path: string,
   query?: Array<string>,
+  params?: Params,
   getData?: () => D,
   key?: string,
   children?: Config<D>[],
