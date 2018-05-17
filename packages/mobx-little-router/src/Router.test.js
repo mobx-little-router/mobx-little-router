@@ -1,5 +1,6 @@
 // @flow
 import { createMemoryHistory } from 'history'
+import { autorun } from 'mobx'
 import Middleware from './middleware/Middleware'
 import { EventTypes } from './events'
 import Navigation from './model/Navigation'
@@ -13,17 +14,21 @@ describe('Router', () => {
     router = new Router(
       createMemoryHistory(),
       [
-        { path: '', match: 'full' },
+        { key: 'root', path: '', match: 'full' },
         {
+          key: 'a',
           path: 'a',
           children: [
             {
+              key: 'a2',
               path: 'a2',
               children: [
                 {
+                  key: 'a3',
                   path: 'a3',
                   children: [
                     {
+                      key: 'a4',
                       path: 'a4'
                     }
                   ]
@@ -32,8 +37,8 @@ describe('Router', () => {
             }
           ]
         },
-        { path: 'b' },
-        { path: 'c' }
+        { key: 'b', path: 'b' },
+        { key: 'c', path: 'c' }
       ],
       () => ({ message: 'Hello' }),
       Middleware.EMPTY
@@ -48,9 +53,7 @@ describe('Router', () => {
 
   describe('events', () => {
     test('handling transition events', async () => {
-      router._scheduler.dispatch(
-        abortNavigation('PUSH', { pathname: '/' }, { pathname: '/a' })
-      )
+      router._scheduler.dispatch(abortNavigation('PUSH', { pathname: '/' }, { pathname: '/a' }))
       await delay(0)
       await delay(0)
 
@@ -62,9 +65,7 @@ describe('Router', () => {
 
       expect(router.location.pathname).toEqual('/')
 
-      router._scheduler.dispatch(
-        abortNavigation('REPLACE', { pathname: '/' }, { pathname: '/b' })
-      )
+      router._scheduler.dispatch(abortNavigation('REPLACE', { pathname: '/' }, { pathname: '/b' }))
       await delay(0)
       await delay(0)
 
@@ -156,6 +157,80 @@ describe('Router', () => {
     expect(router.resolvePath('../../', '/a/a2/a3/a4/')).toBe('/a/a2/')
     expect(router.resolvePath('../b4', '/a/a2/a3/a4/')).toBe('/a/a2/a3/b4')
     expect(router.resolvePath('./b5', '/a/a2/a3/a4/')).toBe('/a/a2/a3/a4/b5')
+  })
+
+  test('select', async () => {
+    router = new Router(
+      createMemoryHistory(),
+      [
+        {
+          key: 'user',
+          path: '/users/:id',
+          children: [
+            {
+              key: 'settings',
+              path: '/settings(/:section)'
+            }
+          ]
+        }
+      ],
+      () => ({}),
+      Middleware.EMPTY
+    )
+    await router.start()
+
+    const spy1 = jest.fn()
+    const spy2 = jest.fn()
+    const userData = router.select({
+      user: {
+        id: null
+      }
+    })
+    const userSettingsData = router.select({
+      user: {
+        id: null
+      },
+      settings: {
+        section: 'main'
+      }
+    })
+
+    const dispose1 = autorun(() => {
+      const { user: { id } } = userData.get()
+      spy1(id)
+    })
+
+    const dispose2 = autorun(() => {
+      const { user: { id }, settings: { section } } = userSettingsData.get()
+      spy2(id, section)
+    })
+
+    router.push('/users/1')
+    await delay(0)
+
+    router.push('/users/2')
+    await delay(0)
+
+    router.push('/users/3')
+    await delay(0)
+
+    router.push('/users/3/settings')
+    await delay(0)
+
+    router.push('/users/3/settings/password')
+    await delay(0)
+
+    router.push('/users/4/settings')
+    await delay(0)
+
+    router.push('/users/4')
+    await delay(0)
+
+    expect(spy1.mock.calls.map(x => x[0])).toEqual([null, '1', '2', '3', '4'])
+    expect(spy2.mock.calls).toEqual([[null, 'main'], ['3', 'main'], ['3', 'password'], ['4', 'main']])
+
+    dispose1()
+    dispose2()
   })
 })
 

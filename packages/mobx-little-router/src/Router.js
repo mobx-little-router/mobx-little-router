@@ -2,22 +2,14 @@
  * This is the public facade over all of the routing interface.
  * The `Router` is a coordinator of other objects in the system.
  */
-import type { IObservableArray } from 'mobx'
-import { autorun, computed, extendObservable, observable, when } from 'mobx'
+import type { IComputedValue, IObservableArray } from 'mobx'
+import { action, autorun, computed, extendObservable, observable, runInAction, when } from 'mobx'
 import querystring from 'querystring'
 import delay from './util/delay'
 import type { Action, History } from 'history'
 import createRouteStateTreeNode from './model/createRouteStateTreeNode'
 import RouterStore from './model/RouterStore'
-import type {
-  Config,
-  Href,
-  Location,
-  LocationShape,
-  Route,
-  RouteStateTreeNode,
-  Params
-} from './model/types'
+import type { Config, Href, Location, LocationShape, Route, RouteStateTreeNode, Params } from './model/types'
 import Scheduler from './scheduling/Scheduler'
 import type { Event } from './events'
 import { EventTypes } from './events'
@@ -40,47 +32,49 @@ class Router {
   _disposers: Function[]
   _nextNavigation: * // This is computed from Scheduler event observable.
 
-  constructor(
-    history: History,
-    config: Config<*>[],
-    getContext?: void | (() => any),
-    middleware: IMiddleware
-  ) {
-    const root = createRouteStateTreeNode(
-      { key: '@@ROOT', path: '', match: 'partial' },
-      getContext
-    ) // Initial root.
+  constructor(history: History, config: Config<*>[], getContext?: void | (() => any), middleware: IMiddleware) {
+    const root = createRouteStateTreeNode({ key: '@@ROOT', path: '', match: 'partial' }, getContext) // Initial root.
     const store = new RouterStore(root)
     const scheduler = new Scheduler(store, middleware)
-    extendObservable(this, {
-      get location() { return this._store.location },
-      get activeRoutes(): IObservableArray<Route<*, *>> { return this._store.routes },
-      get activeRouteKeys(): string[] { return  this.activeRoutes.map(r => r.node.value.key) },
-      get error() { return this._store.error },
-      get isNavigating() {
-        const { event: { type } } = this._scheduler
-        return type !== EventTypes.NAVIGATION_ERROR && type !== EventTypes.NAVIGATION_END
-      },
+    extendObservable(
+      this,
+      {
+        get location() {
+          return this._store.location
+        },
+        get activeRoutes(): IObservableArray<Route<*, *>> {
+          return this._store.routes
+        },
+        get activeRouteKeys(): string[] {
+          return this.activeRoutes.map(r => r.node.value.key)
+        },
+        get error() {
+          return this._store.error
+        },
+        get isNavigating() {
+          const { event: { type } } = this._scheduler
+          return type !== EventTypes.NAVIGATION_ERROR && type !== EventTypes.NAVIGATION_END
+        },
 
-      // Private usage to figure out if an event has a next navigation object.
-      get _nextNavigation() {
-        const { event } = this._scheduler
-        return event !== null
-          ? event.nextNavigation !== null ? event.nextNavigation : null
-          : null
+        // Private usage to figure out if an event has a next navigation object.
+        get _nextNavigation() {
+          const { event } = this._scheduler
+          return event !== null ? (event.nextNavigation !== null ? event.nextNavigation : null) : null
+        },
+        _disposers: [],
+        _history: history,
+        _initialChildren: config,
+        _store: store,
+        _scheduler: scheduler
       },
-      _disposers: [],
-      _history: history,
-      _initialChildren: config,
-      _store: store,
-      _scheduler: scheduler
-    }, {
-      _disposers: observable.ref,
-      _history: observable.ref,
-      _initialChildren: observable.ref,
-      _store: observable.ref,
-      _scheduler: observable.ref
-    })
+      {
+        _disposers: observable.ref,
+        _history: observable.ref,
+        _initialChildren: observable.ref,
+        _store: observable.ref,
+        _scheduler: observable.ref
+      }
+    )
   }
 
   // We may want the start to take in a callback with the router instance as the parameter.
@@ -157,10 +151,7 @@ class Router {
     return this._done()
   }
 
-  updateQuery(
-    query: Object,
-    options: { action?: Action, merge?: boolean } = { action: 'REPLACE', merge: false }
-  ) {
+  updateQuery(query: Object, options: { action?: Action, merge?: boolean } = { action: 'REPLACE', merge: false }) {
     const search = this._store.location.search
     const existingQuery = search ? querystring.parse(search.substr(1)) : {}
     let updatedQuery = options.merge === true ? { ...existingQuery, ...query } : query
@@ -170,9 +161,7 @@ class Router {
       }
       return acc
     }, {})
-    const queryString = Object.keys(updatedQuery).length > 0
-      ? `?${querystring.stringify(updatedQuery)}`
-      : ''
+    const queryString = Object.keys(updatedQuery).length > 0 ? `?${querystring.stringify(updatedQuery)}` : ''
     const pathname = `${this.location.pathname}${queryString}`
 
     switch (options.action) {
@@ -192,9 +181,7 @@ class Router {
 
   resolvePath(path: string, cwd: string = this.location.pathname) {
     const endsWithSlash = path.endsWith('/')
-    const segments = path[0] === '/'
-      ? path.split('/')
-      : cwd.split('/').concat(path.split('/'))
+    const segments = path[0] === '/' ? path.split('/') : cwd.split('/').concat(path.split('/'))
 
     const result = segments.reduce((acc, p) => {
       if (p && p !== '.') {
@@ -231,6 +218,47 @@ class Router {
     if (params) {
       return params[paramName]
     }
+  }
+
+  select<T: { [k: string]: { [k: string]: null | string } }>(query: T): IComputedValue<T> {
+    // Keep a local state so we can return the same object instance (when nothing has changed).
+    let _state = clone(query)
+
+    return computed(() => {
+      let stateDidChange = false
+
+      const routes = Object.keys(query).reduce((acc, k) => {
+        acc[k] = this.activeRoutes.find(route => route.node.value.key === k) || null
+        return acc
+      }, {})
+
+      const allRoutesMatched = Object.keys(routes).every(k => routes[k] !== null)
+
+      if (allRoutesMatched) {
+        Object.keys(_state)
+          .map(routeKey => ({
+            slice: _state[routeKey],
+            route: routes[routeKey],
+            defaults: query[routeKey]
+          }))
+          .forEach(({ slice, route, defaults }) =>
+            Object.keys(slice).forEach(paramKey => {
+              const value = route.params[paramKey] || defaults[paramKey]
+              if (value !== slice[paramKey]) {
+                stateDidChange = true
+                slice[paramKey] = value
+              }
+            })
+          )
+      }
+
+      if (stateDidChange) {
+        // Update reference so equality check will detect a value change.
+        _state = { ..._state }
+      }
+
+      return _state
+    })
   }
 
   /* Private helpers */
@@ -295,6 +323,13 @@ function withSearch(href: Href) {
       search: qs ? `?${qs}` : qs
     }
   }
+}
+
+function clone(obj) {
+  return Object.keys(obj).reduce((acc, k) => {
+    acc[k] = { ...obj[k] }
+    return acc
+  }, {})
 }
 
 export default Router
