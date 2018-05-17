@@ -169,6 +169,7 @@ describe('Router', () => {
           children: [
             {
               key: 'settings',
+              query: ['locale'],
               path: '/settings(/:section)'
             }
           ]
@@ -183,26 +184,35 @@ describe('Router', () => {
     const spy2 = jest.fn()
     const userData = router.select({
       user: {
-        id: null
+        params: { id: null }
       }
     })
     const userSettingsData = router.select({
       user: {
-        id: null
+        params: { id: null }
       },
       settings: {
-        section: 'main'
+        query: { locale: 'en' },
+        params: { section: 'main' }
       }
     })
 
     const dispose1 = autorun(() => {
-      const { user: { id } } = userData.get()
+      const { user: { params: { id } } } = userData.get()
       spy1(id)
     })
 
     const dispose2 = autorun(() => {
-      const { user: { id }, settings: { section } } = userSettingsData.get()
-      spy2(id, section)
+      const {
+        user: {
+          params: { id }
+        },
+        settings: {
+          query: { locale },
+          params: { section }
+        }
+      } = userSettingsData.get()
+      spy2(id, section, locale)
     })
 
     router.push('/users/1')
@@ -223,11 +233,20 @@ describe('Router', () => {
     router.push('/users/4/settings')
     await delay(0)
 
+    router.push('/users/4/settings?locale=fr')
+    await delay(0)
+
     router.push('/users/4')
     await delay(0)
 
     expect(spy1.mock.calls.map(x => x[0])).toEqual([null, '1', '2', '3', '4'])
-    expect(spy2.mock.calls).toEqual([[null, 'main'], ['3', 'main'], ['3', 'password'], ['4', 'main']])
+    expect(spy2.mock.calls).toEqual([
+      [null, 'main', 'en'],
+      ['3', 'main', 'en'],
+      ['3', 'password', 'en'],
+      ['4', 'main', 'en'],
+      ['4', 'main', 'fr']
+    ])
 
     dispose1()
     dispose2()

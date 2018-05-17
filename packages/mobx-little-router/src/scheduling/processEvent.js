@@ -4,7 +4,6 @@ import type RouterStore from '../model/RouterStore'
 import { NotFound } from '../errors'
 import Navigation from '../model/Navigation'
 import type { Route } from '../model/types'
-import differenceWith from '../util/differenceWith'
 import isUrlFullyMatched from './util/isUrlFullyMatched'
 import areRoutesEqual from '../model/util/areRoutesEqual'
 import TransitionManager from '../transition/TransitionManager'
@@ -427,7 +426,7 @@ function evalTransition(
     : true
   
   // If the guard results in `false` or a rejected promise then mark transition as failed.
-  if (false === result) {
+  if (undefined === result || false === result) {
     return navigation.goBack() // TODO: This `goBack` will not work if this is the first navigation in the system.
   } else if (typeof result.then === 'function') {
     return result.then(x => {

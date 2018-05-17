@@ -6,136 +6,87 @@ import { Provider } from 'mobx-react'
 import { NotFound } from 'mobx-little-router'
 import { install, RouterProvider } from 'mobx-little-router-react'
 import createStores from './stores'
-import {
-  HomeRoute,
-  LoginRoute,
-  AboutRoute,
-  ContactRoute,
-  TagRoute,
-  ActorRoute,
-  AdminRoute,
-  CollectionsRoute,
-  CollectionRoute,
-  CatchAllRoute
-} from './routes'
+import CatchAllRoute from './routes/CatchAllRoute'
+import HomeRoute from './routes/HomeRoute'
+import LoginRoute from './routes/LoginRoute'
 import App from './App'
 
-const delay = ms =>
-  new Promise(resolve => {
-    setTimeout(resolve, ms)
-  })
-
 const stores = createStores()
+
+const ROUTES = [
+  {
+    key: 'root',
+    path: '/',
+    component: HomeRoute
+  },
+  {
+    key: 'login',
+    path: '/login',
+    component: LoginRoute
+  },
+  {
+    key: 'about',
+    path: '/about',
+    loadChildren: () => import('./routes/about').then(initModule)
+  },
+  {
+    key: 'contact',
+    path: '/contact',
+    loadChildren: () => import('./routes/contact').then(initModule)
+  },
+  {
+    path: '/collections',
+    loadChildren: () => import('./routes/collections').then(initModule)
+  },
+  {
+    path: '/shows',
+    loadChildren: () => import('./routes/shows').then(initModule)
+  },
+  {
+    path: '/actors',
+    redirectTo: '/'
+  },
+  {
+    path: '/actors',
+    loadChildren: () => import('./routes/actors').then(initModule)
+  },
+  {
+    path: '/tags',
+    redirectTo: '/'
+  },
+  {
+    path: '/tags',
+    loadChildren: () => import('./routes/tags').then(initModule)
+  },
+  // Admin route with a session guard
+  {
+    path: '/admin',
+    loadChildren: () => import('./routes/admin').then(initModule)
+  },
+  // A secret route that only the admin can see, everyone else gets a 404
+  {
+    path: '/secret',
+    canActivate: (route: *, navigation: *) => {
+      const { stores: { SessionStore } } = route.context
+      if (SessionStore.isAuthenticated) {
+        return true
+      } else {
+        return navigation.raise(NotFound)
+      }
+    }
+  },
+  {
+    path: '**',
+    component: CatchAllRoute
+  }
+]
 
 const router = install({
   history: createHashHistory(),
   getContext: () => ({
     stores
   }),
-  routes: [
-    {
-      path: '',
-      component: HomeRoute
-    },
-    { 
-      path: 'login',
-      component: LoginRoute
-    },
-    { 
-      path: 'about',
-      component: AboutRoute,
-      animate: true
-    },
-    {
-      path: 'contact',
-      component: ContactRoute,
-      animate: true
-    },
-    {
-      path: 'collections',
-      component: CollectionsRoute,
-      children: [
-        {
-          path: ':collectionId',
-          component: CollectionRoute
-        },
-        {
-          path: '',
-          redirectTo: 'a'
-        }
-      ]
-    },
-    {
-      path: 'shows',
-      loadChildren: () => import('./routes/shows')
-    },
-    {
-      path: 'actors/:id',
-      component: ActorRoute,
-      outlet: 'modal',
-      animate: true
-    },
-    {
-      path: 'tags/:tag',
-      component: TagRoute
-    },
-    // Redirects
-    {
-      path: 'actors',
-      redirectTo: '/'
-    },
-    {
-      path: 'tags',
-      redirectTo: '/'
-    },
-    {
-      // Using relative path
-      path: 'redirect',
-      children: [
-        {
-          path: '',
-          redirectTo: '../shows'
-        }
-      ]
-    },
-    // Admin route with a session guard
-    {
-      path: 'admin',
-      component: AdminRoute,
-      canActivate: (route, navigation) => {
-        const { stores: { SessionStore } } = route.context
-        if (SessionStore.isAuthenticated) {
-          return true
-        } else {
-          SessionStore.unauthorizedNavigation = navigation
-          return navigation.redirectTo('/login')
-        }
-      },
-      canDeactivate: (route, navigation) => {
-        if (window.confirm('Discard changes?')) {
-          return true
-        }
-      },
-      // Fakes network delay
-      willResolve: () => delay(20 + Math.random() * 200)
-    },
-    // A secret route that only the admin can see, everyone else gets a 404
-    {
-      path: 'secret',
-      canActivate: (route: *, navigation: *) => {
-        const { stores: { SessionStore } } = route.context
-        if (SessionStore.isAuthenticated) {
-          return true
-        } else {
-          return navigation.raise(NotFound)
-        }
-      }
-    },
-    {
-      path: '**',
-      component: CatchAllRoute
-    }
-  ]
+  routes: ROUTES
 })
 
 window.store = router._store
@@ -181,3 +132,7 @@ router.start(() => {
     document.getElementById('root')
   )
 })
+
+function initModule(module) {
+  return module.default({ stores, router })
+}

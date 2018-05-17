@@ -3,13 +3,13 @@
  * The `Router` is a coordinator of other objects in the system.
  */
 import type { IComputedValue, IObservableArray } from 'mobx'
-import { action, autorun, computed, extendObservable, observable, runInAction, when } from 'mobx'
+import { autorun, computed, extendObservable, observable, when } from 'mobx'
 import querystring from 'querystring'
 import delay from './util/delay'
 import type { Action, History } from 'history'
 import createRouteStateTreeNode from './model/createRouteStateTreeNode'
 import RouterStore from './model/RouterStore'
-import type { Config, Href, Location, LocationShape, Route, RouteStateTreeNode, Params } from './model/types'
+import type { SelectBody, Config, Href, Location, LocationShape, Params, Route, RouteStateTreeNode } from './model/types'
 import Scheduler from './scheduling/Scheduler'
 import type { Event } from './events'
 import { EventTypes } from './events'
@@ -220,14 +220,18 @@ class Router {
     }
   }
 
-  select<T: { [k: string]: { [k: string]: null | string } }>(query: T): IComputedValue<T> {
+  select<T: SelectBody>(body: T): IComputedValue<T> {
+    if (!body) {
+      throw new Error(`A query object must be passed to select function.`)
+    }
+
     // Keep a local state so we can return the same object instance (when nothing has changed).
-    let _state = clone(query)
+    let _state = clone(body)
 
     return computed(() => {
       let stateDidChange = false
 
-      const routes = Object.keys(query).reduce((acc, k) => {
+      const routes = Object.keys(body).reduce((acc, k) => {
         acc[k] = this.activeRoutes.find(route => route.node.value.key === k) || null
         return acc
       }, {})
@@ -239,17 +243,29 @@ class Router {
           .map(routeKey => ({
             slice: _state[routeKey],
             route: routes[routeKey],
-            defaults: query[routeKey]
+            defaults: body[routeKey]
           }))
-          .forEach(({ slice, route, defaults }) =>
-            Object.keys(slice).forEach(paramKey => {
-              const value = route.params[paramKey] || defaults[paramKey]
-              if (value !== slice[paramKey]) {
-                stateDidChange = true
-                slice[paramKey] = value
-              }
-            })
-          )
+          .forEach(({ slice, route, defaults }) => {
+            const { params, query } = defaults
+            if (params) {
+              Object.keys(slice.params).forEach(paramKey => {
+                const value = route.params[paramKey] || params[paramKey]
+                if (value !== slice.params[paramKey]) {
+                  stateDidChange = true
+                  slice.params[paramKey] = value
+                }
+              })
+            }
+            if (query) {
+              Object.keys(slice.query).forEach(queryKey => {
+                const value = route.query[queryKey] || query[queryKey]
+                if (value !== slice.query[queryKey]) {
+                  stateDidChange = true
+                  slice.query[queryKey] = value
+                }
+              })
+            }
+          })
       }
 
       if (stateDidChange) {
@@ -327,7 +343,10 @@ function withSearch(href: Href) {
 
 function clone(obj) {
   return Object.keys(obj).reduce((acc, k) => {
-    acc[k] = { ...obj[k] }
+    acc[k] = {
+      query: { ...obj[k].query },
+      params: { ...obj[k].params }
+    }
     return acc
   }, {})
 }

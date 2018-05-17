@@ -5,28 +5,15 @@ import { Link } from 'mobx-little-router-react'
 
 import Modal from '../../components/Modal'
 
-const ShowRoute = ({ route: { params, query }, className, ShowsStore }) => {
-  let prevShow, nextShow
-
-  if (ShowsStore.shows && ShowsStore.shows.length > 0) {
-    const currIdx = ShowsStore.shows.findIndex(show => show.id === Number(params.id))
-
-    if (currIdx > 0) {
-      prevShow = ShowsStore.shows[currIdx - 1]
-    }
-
-    if (currIdx < ShowsStore.shows.length - 1) {
-      nextShow = ShowsStore.shows[currIdx + 1]
-    }
-  }
-  const model = ShowsStore.getDetails(params.id)
+const ShowRoute = ({ route: { params, query, data }, className }) => {
+  const { model: { activeShow, prevShow, nextShow } } = data
 
   return (
     <Modal className={className} closePath={`/shows?q=${query.q}`}>
-      {model &&
+      {activeShow &&
         <Content>
-          {model.image &&
-            <CoverImage style={{ backgroundImage: `url(${model.image.original})` }} />}
+          {activeShow.image &&
+            <CoverImage style={{ backgroundImage: `url(${activeShow.image.original})` }} />}
           <Abstract>
             <Navigation>
               {prevShow &&
@@ -39,22 +26,22 @@ const ShowRoute = ({ route: { params, query }, className, ShowsStore }) => {
                 </NextNavigationLink>}
             </Navigation>
 
-            <Network>{model.network && model.network.name}</Network>
-            <Title>{model.name}</Title>
-            <OfficialSite href={model.officialSite} target="_blank">
+            <Network>{activeShow.network && activeShow.network.name}</Network>
+            <Title>{activeShow.name}</Title>
+            <OfficialSite href={activeShow.officialSite} target="_blank">
               Official site
             </OfficialSite>
-            <Summary dangerouslySetInnerHTML={{ __html: model.summary }} />
+            <Summary dangerouslySetInnerHTML={{ __html: activeShow.summary }} />
             <Tags>
-              {model.genres &&
-                model.genres.map((genre, idx) =>
+              {activeShow.genres &&
+                activeShow.genres.map((genre, idx) =>
                   <Link key={idx} to={`/tags/${genre}`}>{genre}</Link>
                 )}
             </Tags>
 
             <Cast>
               <h2>Cast</h2>
-              {model._embedded.cast.map((member, idx) =>
+              {activeShow._embedded.cast.map((member, idx) =>
                 <CastMember key={idx}>
                   <Character>{member.character.name}</Character>
                   <Actor to={`/actors/${member.person.id}`}>{member.person.name}</Actor>

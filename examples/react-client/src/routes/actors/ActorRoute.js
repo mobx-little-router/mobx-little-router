@@ -1,53 +1,23 @@
 import React, { Component } from 'react'
 import { observer } from 'mobx-react'
-import { extendObservable } from 'mobx'
 import styled from 'styled-components'
 import { Link } from 'mobx-little-router-react'
-import Modal from '../components/Modal'
+import Modal from '../../components/Modal'
+import { inject } from 'mobx-react/index'
 
-class ActorRoute extends Component {
-  constructor(props) {
-    super(props)
-
-    extendObservable(this, {
-      model: null
-    })
-  }
-
-  componentDidMount() {
-    this.fetchModel(this.props)
-  }
-
-  componentWillReceiveProps(props) {
-    this.fetchModel(props)
-  }
-
-  fetchModel = async (props) => {
-    const { params } = props.route
-
-    const actorRes = await fetch(`https://api.tvmaze.com/people/${params.id}`)
-    const actorData = await actorRes.json()
-
-    const creditsRes = await fetch(`https://api.tvmaze.com/people/${params.id}/castcredits?embed=show`)
-    const creditsData = await creditsRes.json()
-
-    this.model = { ...actorData, credits: creditsData }
-  }
-
-  render() {
-    const { className } = this.props
-
-    return (
-      <Modal className={className} closePath="/shows">
-        {this.model &&
-          <Content>
-            {this.model.image && <CoverImage style={{ backgroundImage: `url(${this.model.image.original})` }} />}
+const ActorRoute = ({ className, ActorsStore, route: { params } }) => {
+  const details = ActorsStore.get(params.id)
+  return (
+    <Modal className={className} closePath="/shows">
+      {details
+        ? <Content>
+            {details.image && <CoverImage style={{ backgroundImage: `url(${details.image.original})` }} />}
             <Abstract>
-              <Title>{this.model.name}</Title>
-              <Summary/>
+              <Title>{details.name}</Title>
+              <Summary />
               <Credits>
                 <h2>Credits</h2>
-                {this.model.credits.map((credit, idx) => 
+                {details.credits.map((credit, idx) =>
                   <Show key={idx} to={`/shows/${credit._embedded.show.id}`}>
                     {credit._embedded.show.name}
                   </Show>
@@ -55,10 +25,9 @@ class ActorRoute extends Component {
               </Credits>
             </Abstract>
           </Content>
-        }
-      </Modal>
-    )
-  }
+        : null}
+    </Modal>
+  )
 }
 
 const Content = styled.div`
@@ -132,4 +101,4 @@ const Show = styled(Link)`
   }
 `
 
-export default observer(ActorRoute)
+export default inject('ActorsStore')(observer(ActorRoute))

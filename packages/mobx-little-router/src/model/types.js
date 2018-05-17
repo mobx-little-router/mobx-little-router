@@ -10,7 +10,6 @@ export type { MatchFn, Matcher }
 export type Query = { [key: string]: string }
 export type Params = { [key: string]: string | number | boolean | null | void }
 
-
 export type Location = HistoryLocation & {
   params: Params,
   query: Query
@@ -65,26 +64,15 @@ export type RedirectConfig<D: Object> = {
 
 export type LoadChildrenConfigFn<D> = () => Promise<any>
 
-export type GuardFn = (
-  route: Route<*, *>,
-  nav: Navigation
-) => boolean | Promise<void>
+export type GuardFn = (route: Route<*, *>, nav: Navigation) => boolean | Promise<void>
 
-export type LifecycleFn = (
-  route: Route<*, *>,
-  nav: Navigation
-) => Promise<void>
+export type LifecycleFn = (route: Route<*, *>, nav: Navigation) => Promise<void>
 
-export type LifecycleEndFn = (
-  route: Route<*, *>
-) => void
+export type LifecycleEndFn = (route: Route<*, *>) => void
 
 export type Setter = () => void
 
-export type ResolveFn = (
-  route: Route<*, *>,
-  nav: Navigation
-) => Promise<void | Setter>
+export type ResolveFn = (route: Route<*, *>, nav: Navigation) => Promise<void | Setter>
 
 export type ErrorHandler = (route: Route<*, *>, navigation: Navigation, err: Error) => Promise<any>
 
@@ -121,7 +109,7 @@ export type PathElement<C, D> = {
   params: Params
 }
 
-export type Route<C,D> = {
+export type Route<C, D> = {
   key: string,
   value: string,
   node: RouteStateTreeNode<C, D>,
@@ -132,4 +120,11 @@ export type Route<C,D> = {
   segment: string, // This is the matched segment from URL. e.g. "/123" for ":id"
   parentUrl: string,
   onTransition: null | TransitionFn
+}
+
+export type SelectBody = {
+  [k: string]: {
+    query?: { [k: string]: null | string },
+    params?: { [k: string]: null | string }
+  }
 }

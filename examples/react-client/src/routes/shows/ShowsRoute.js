@@ -13,33 +13,20 @@ const ShowsRoute = ({ router, route, ShowsStore, className }) =>
         defaultValue={route.query.q}
       />
     </SearchHeader>
-    {
-      (() => {
-        switch (route.data.resolveStatus) {
-          case 'PENDING':
-            return <Spinner />
-          case 'FULFILLED':
-            return (
-              <SearchResults>
-                {ShowsStore.shows.map(show =>
-                  <Show key={show.id}>
-                    <CoverImage
-                      to={`/shows/${show.id}?q=${route.query.q}`}
-                      style={{ backgroundImage: `url(${show.image && show.image.medium})` }}
-                    />
-                    <Abstract>
-                      <Network>{show.network && show.network.name}</Network>
-                      <ShowName to={`/shows/${show.id}?q=${route.query.q}`}>{show.name}</ShowName>
-                    </Abstract>
-                  </Show>
-                )}
-              </SearchResults>
-            )
-          default:
-            return null
-        }
-      })()
-    }
+    <SearchResults>
+      {ShowsStore.shows.map(show =>
+        <Show key={show.id}>
+          <CoverImage
+            to={`/shows/${show.id}?q=${route.query.q}`}
+            style={{ backgroundImage: `url(${show.image && show.image.medium})` }}
+          />
+          <Abstract>
+            <Network>{show.network && show.network.name}</Network>
+            <ShowName to={`/shows/${show.id}?q=${route.query.q}`}>{show.name}</ShowName>
+          </Abstract>
+        </Show>
+      )}
+    </SearchResults>
   </Container>
 
 const Container = styled.div`
@@ -62,8 +49,8 @@ const spinnerWeight = 4
 const Spinner = styled.div`
   &, &::after {
     border-radius: 50%;
-    width: ${spinnerRadius*2}px;
-    height: ${spinnerRadius*2}px;
+    width: ${spinnerRadius * 2}px;
+    height: ${spinnerRadius * 2}px;
   }
 
   margin: 240px auto;
