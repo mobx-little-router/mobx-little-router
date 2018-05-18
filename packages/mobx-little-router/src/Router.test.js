@@ -198,7 +198,7 @@ describe('Router', () => {
     })
 
     const dispose1 = autorun(() => {
-      const { user: { params: { id } } } = userData.get()
+      const { user: { params: { id } } } = userData
       spy1(id)
     })
 
@@ -211,7 +211,7 @@ describe('Router', () => {
           query: { locale },
           params: { section }
         }
-      } = userSettingsData.get()
+      } = userSettingsData
       spy2(id, section, locale)
     })
 

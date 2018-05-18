@@ -4,7 +4,7 @@ export default function createViewModel({ input, stores }) {
   const { ShowsStore } = stores
   return observable({
     get activeShow() {
-      const { show } = input.get()
+      const { show } = input
       if (show.params.id) {
         return stores.ShowsStore.getDetails(show.params.id)
       } else {
@@ -13,7 +13,7 @@ export default function createViewModel({ input, stores }) {
     },
 
     get prevShow() {
-      const { show } = input.get()
+      const { show } = input
       if (ShowsStore.shows && ShowsStore.shows.length > 0) {
         const currIdx = ShowsStore.shows.findIndex(x => x.id === Number(show.params.id))
         if (currIdx > 0) {
@@ -24,7 +24,7 @@ export default function createViewModel({ input, stores }) {
     },
 
     get nextShow() {
-      const { show } = input.get()
+      const { show } = input
       if (ShowsStore.shows && ShowsStore.shows.length > 0) {
         const currIdx = ShowsStore.shows.findIndex(x => x.id === Number(show.params.id))
         if (currIdx < ShowsStore.shows.length - 1) {

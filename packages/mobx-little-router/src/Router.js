@@ -2,19 +2,30 @@
  * This is the public facade over all of the routing interface.
  * The `Router` is a coordinator of other objects in the system.
  */
-import type { IComputedValue, IObservableArray } from 'mobx'
+import type { IObservable, IObservableArray } from 'mobx'
 import { autorun, computed, extendObservable, observable, when } from 'mobx'
 import querystring from 'querystring'
 import delay from './util/delay'
 import type { Action, History } from 'history'
 import createRouteStateTreeNode from './model/createRouteStateTreeNode'
 import RouterStore from './model/RouterStore'
-import type { SelectBody, Config, Href, Location, LocationShape, Params, Route, RouteStateTreeNode } from './model/types'
+import type {
+  SelectBody,
+  Config,
+  Href,
+  Location,
+  LocationShape,
+  Params,
+  Route,
+  RouteStateTreeNode
+} from './model/types'
 import Scheduler from './scheduling/Scheduler'
 import type { Event } from './events'
 import { EventTypes } from './events'
 import { NavigationTypes } from './model/Navigation'
 import type { IMiddleware } from './middleware/Middleware'
+
+const OBSERVABLE_ROUTE_PROPERTIES = ['params', 'query']
 
 class Router {
   // Public members
@@ -220,61 +231,40 @@ class Router {
     }
   }
 
-  select<T: SelectBody>(body: T): IComputedValue<T> {
+  select<T: SelectBody>(body: T): IObservable<T> {
     if (!body) {
       throw new Error(`A query object must be passed to select function.`)
     }
 
-    // Keep a local state so we can return the same object instance (when nothing has changed).
-    let _state = clone(body)
-
-    return computed(() => {
-      let stateDidChange = false
-
-      const routes = Object.keys(body).reduce((acc, k) => {
-        acc[k] = this.activeRoutes.find(route => route.node.value.key === k) || null
-        return acc
-      }, {})
-
-      const allRoutesMatched = Object.keys(routes).every(k => routes[k] !== null)
-
-      if (allRoutesMatched) {
-        Object.keys(_state)
-          .map(routeKey => ({
-            slice: _state[routeKey],
-            route: routes[routeKey],
-            defaults: body[routeKey]
-          }))
-          .forEach(({ slice, route, defaults }) => {
-            const { params, query } = defaults
-            if (params) {
-              Object.keys(slice.params).forEach(paramKey => {
-                const value = route.params[paramKey] || params[paramKey]
-                if (value !== slice.params[paramKey]) {
-                  stateDidChange = true
-                  slice.params[paramKey] = value
-                }
-              })
-            }
-            if (query) {
-              Object.keys(slice.query).forEach(queryKey => {
-                const value = route.query[queryKey] || query[queryKey]
-                if (value !== slice.query[queryKey]) {
-                  stateDidChange = true
-                  slice.query[queryKey] = value
-                }
-              })
-            }
-          })
-      }
-
-      if (stateDidChange) {
-        // Update reference so equality check will detect a value change.
-        _state = { ..._state }
-      }
-
-      return _state
+    const { activeRoutes } = this
+    const obs = {}
+    // Prevents computeds from updating if not all routes have matched.
+    const guard$ = computed(() => {
+      return Object.keys(body).every(routeKey => activeRoutes.find(route => route.node.value.key === routeKey))
     })
+
+    Object.keys(body).forEach(routeKey => {
+      obs[routeKey] = {}
+      OBSERVABLE_ROUTE_PROPERTIES.forEach(type => {
+        const { [type]: defaults } = body[routeKey]
+        if (defaults) {
+          obs[routeKey][type] = {}
+          Object.keys(defaults).forEach(key => {
+            const route$ = createRouteObs(activeRoutes, routeKey)
+            const value$ =  createValueObs({route$, key, type, defaults })
+
+            defineComputedProperty({
+              object: obs[routeKey][type],
+              key,
+              value$,
+              guard$
+            })
+          })
+        }
+      })
+    })
+
+    return observable(obs)
   }
 
   /* Private helpers */
@@ -341,14 +331,32 @@ function withSearch(href: Href) {
   }
 }
 
-function clone(obj) {
-  return Object.keys(obj).reduce((acc, k) => {
-    acc[k] = {
-      query: { ...obj[k].query },
-      params: { ...obj[k].params }
+function createRouteObs(routes, key) {
+  return computed(() => routes.find(route => route.node.value.key === key) || null)
+}
+
+function createValueObs({ route$, type, defaults, key }) {
+  return computed(() => {
+    const currRoute = route$.get()
+    if (currRoute) {
+      return currRoute[type][key] || defaults[key]
+    } else {
+      return defaults[key]
     }
-    return acc
-  }, {})
+  })
+}
+
+function defineComputedProperty({ object, guard$, value$, key }) {
+  let _state = value$.get()
+  Object.defineProperty(object, key, {
+    enumerable: true,
+    get() {
+      if (guard$.get()) {
+        _state = value$.get()
+      }
+      return _state
+    }
+  })
 }
 
 export default Router

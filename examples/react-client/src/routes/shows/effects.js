@@ -6,7 +6,7 @@ import { autorun } from 'mobx'
 
 export function fetchShows({ stores, input }) {
   return autorun(() => {
-    const { shows } = input.get()
+    const { shows } = input
     if (shows.query.q) {
       fetch(`https://api.tvmaze.com/search/shows?q=${shows.query.q}`)
         .then(res => res.json())
@@ -18,7 +18,7 @@ export function fetchShows({ stores, input }) {
 
 export function fetchShow({ stores, input }) {
   return autorun(() => {
-    const { show } = input.get()
+    const { show } = input
     if (show.params.id) {
       fetch(`https://api.tvmaze.com/shows/${show.params.id}?embed=cast`)
         .then(res => res.json())

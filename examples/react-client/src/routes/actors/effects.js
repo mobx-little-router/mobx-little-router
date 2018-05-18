@@ -6,7 +6,7 @@ import { autorun } from 'mobx'
 
 export function fetchActor({ stores, input }) {
   return autorun(() => {
-    const { actor } = input.get()
+    const { actor } = input
 
     if (actor.params.id) {
       const actorPromise = fetch(`https://api.tvmaze.com/people/${actor.params.id}`)
