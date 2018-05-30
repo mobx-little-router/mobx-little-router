@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "history": "^4.7.2",
-    "mobx": "^4.2.1",
+    "mobx": "^4.3.0",
     "mobx-little-router": "^1.7.4",
     "mobx-little-router-react": "^1.7.5",
     "mobx-react": "^5.1.2",
