@@ -2,9 +2,10 @@
 import type { Router } from 'mobx-little-router'
 import React, { Component } from 'react'
 import type { ComponentType } from 'react'
-import hoistStatics from 'hoist-non-react-statics'
 import { RouterType } from '../propTypes'
 import { assertRouterExists } from '../util'
+//import hoistNonReactStatics from 'hoist-non-react-statics'
+const hoistNonReactStatics = require('hoist-non-react-statics')
 
 export default function withRouter<T: Object>(
   Source: ComponentType<{ router: Router } & T>
@@ -20,5 +21,5 @@ export default function withRouter<T: Object>(
     }
   }
 
-  return hoistStatics(Wrapped, Source)
+  return hoistNonReactStatics(Wrapped, Source)
 }
