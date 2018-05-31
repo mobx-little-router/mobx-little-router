@@ -3,17 +3,19 @@ import styled, { injectGlobal } from 'styled-components'
 import cx from 'classnames'
 import { Link } from 'mobx-little-router-react'
 
-class Modal extends Component {
+class Modal extends Component<*> {
   componentWillMount() {
-    if (document && document.body) {
-      const bodyClassNames = document.body.className
-      document.body.className = bodyClassNames + (bodyClassNames ? ' ' : '') + 'modal-open'
+    const { body } = document
+    if (body) {
+      const bodyClassNames = body.className
+      body.className = bodyClassNames + (bodyClassNames ? ' ' : '') + 'modal-open'
     }
   }
 
   componentWillUnmount() {
-    if (document && document.body) {
-      document.body.className = document.body.className.replace(/ ?modal-open/, '')
+    const { body } = document
+    if (body) {
+      body.className = body.className.replace(/ ?modal-open/, '')
     }
   }
 

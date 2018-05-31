@@ -1,9 +1,11 @@
 // @flow
 
-export { default as RouterProvider } from './components/RouterProvider'
+export { default as RouterContext } from './contexts/RouterContext'
+export { default as OutletContext } from './contexts/OutletContext'
 export { default as Link } from './components/Link'
 export { default as Outlet } from './components/Outlet'
 export { default as withRouter } from './hoc/withRouter'
+export { default as withOutlet } from './hoc/withOutlet'
 export { default as transformReactConfig } from './middleware/transformReactConfig'
 
 import * as router from 'mobx-little-router'

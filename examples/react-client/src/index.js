@@ -4,7 +4,7 @@ import * as mobx from 'mobx'
 import { createHashHistory } from 'history'
 import { Provider } from 'mobx-react'
 import { NotFound } from 'mobx-little-router'
-import { install, RouterProvider } from 'mobx-little-router-react'
+import { install, RouterContext } from 'mobx-little-router-react'
 import createStores from './stores'
 import CatchAllRoute from './routes/CatchAllRoute'
 import HomeRoute from './routes/HomeRoute'
@@ -124,11 +124,11 @@ function getGroupColor(ev) {
 
 router.start(() => {
   ReactDOM.render(
-    <RouterProvider router={router}>
+    <RouterContext.Provider value={router}>
       <Provider {...stores}>
         <App />
       </Provider>
-    </RouterProvider>,
+    </RouterContext.Provider>,
     document.getElementById('root')
   )
 })

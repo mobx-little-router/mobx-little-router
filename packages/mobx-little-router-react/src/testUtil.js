@@ -3,7 +3,7 @@ import React from 'react'
 import type { Element } from 'react'
 import { render, mount } from 'enzyme'
 import { install, Router } from 'mobx-little-router'
-import RouterProvider from './components/RouterProvider'
+import RouterContext from './contexts/RouterContext'
 import { createMemoryHistory } from 'history'
 
 export function createRouter(routes: Array<*>, initialEntry: ?string = '/') {
@@ -22,7 +22,7 @@ export const callInProvider = (f: Function) => (x: Router | Array<*>) => (
   y: Element<*>
 ) => {
   const router = x instanceof Router ? x : createRouter(x)
-  return f(<RouterProvider router={router}>{y}</RouterProvider>)
+  return f(<RouterContext.Provider value={router}>{y}</RouterContext.Provider>)
 }
 
 export const renderInProvider = callInProvider(render)

@@ -11,5 +11,5 @@ export const RouterType = PropTypes.shape({
 })
 
 export const OutletType = PropTypes.shape({
-  currIndex: PropTypes.number
+  index: PropTypes.number
 })

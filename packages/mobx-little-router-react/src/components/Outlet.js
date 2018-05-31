@@ -1,13 +1,14 @@
 // @flow
-import React, { Component } from 'react'
+import React, { Component, createContext } from 'react'
 import withRouter from '../hoc/withRouter'
+import withOutlet from '../hoc/withOutlet'
 import { observer } from 'mobx-react'
 import { computed, extendObservable } from 'mobx'
 import type { Router } from 'mobx-little-router'
 import { areRoutesEqual } from 'mobx-little-router'
 import { OutletType } from '../propTypes'
-
 import TransitionGroup from './TransitionGroup'
+import OutletContext from '../contexts/OutletContext'
 
 /*
  * Outlet component is responsible for rendering the matched components
@@ -19,18 +20,19 @@ type OutletProps = {
   // The name will allow us to potentially render to different outlets
   // throughout the app. e.g. sidebar vs main
   name?: string,
-  router: Router
+  router: Router,
+  outlet: OutletType
 }
 
 class Outlet extends Component<OutletProps> {
-  static contextTypes = {
-    // We may have another outlet above us in the context.
-    outlet: OutletType
-  }
+  // static contextTypes = {
+  //   // We may have another outlet above us in the context.
+  //   outlet: OutletType
+  // }
 
-  static childContextTypes = {
-    outlet: OutletType
-  }
+  // static childContextTypes = {
+  //   outlet: OutletType
+  // }
 
   currRoutes: any
   prevRoutes: any
@@ -57,17 +59,16 @@ class Outlet extends Component<OutletProps> {
     })
   }
 
-  getChildContext() {
+  getChildOutlet(): OutletType {
     return {
-      outlet: {
-        currentIndex: this.getCurrentIndex() + 1
-      }
+      index: this.getCurrentIndex() + 1
     }
   }
 
   getCurrentIndex() {
-    return typeof this.context.outlet !== 'undefined'
-      ? this.context.outlet.currentIndex
+    const { outlet } = this.props
+    return typeof outlet !== 'undefined'
+      ? outlet.index
       : 0
   }
 
@@ -81,14 +82,16 @@ class Outlet extends Component<OutletProps> {
     }
 
     return (
-      <div className={`outlet`} {...dataProps}>
-        <TransitionGroup
-          to={this.to}
-          from={this.isTransitioning ? this.from : undefined}
-          isTransitioning={this.isTransitioning}
-          additionalProps={rest}
-        />
-      </div>
+      <OutletContext.Provider value={this.getChildOutlet()}>
+        <div className={`outlet`} {...dataProps}>
+          <TransitionGroup
+            to={this.to}
+            from={this.isTransitioning ? this.from : undefined}
+            isTransitioning={this.isTransitioning}
+            additionalProps={rest}
+          />
+        </div>
+      </OutletContext.Provider>
     )
   }
 }
@@ -103,4 +106,4 @@ const findRoute = (routes, outletIdx, outletName) => {
 }
 const canTransition = node => (node ? typeof node.onTransition === 'function' : false)
 
-export default withRouter(observer(Outlet))
+export default withRouter(withOutlet(observer(Outlet)))

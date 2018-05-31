@@ -2,24 +2,22 @@
 import type { Router } from 'mobx-little-router'
 import React, { Component } from 'react'
 import type { ComponentType } from 'react'
-import RouterContext from '../contexts/RouterContext'
-import { RouterType } from '../propTypes'
-import { assertRouterExists } from '../util'
+import { OutletType } from '../propTypes'
+import OutletContext from '../contexts/OutletContext'
 //import hoistNonReactStatics from 'hoist-non-react-statics'
 const hoistNonReactStatics = require('hoist-non-react-statics')
 
-export default function withRouter<T: Object>(
-  Source: ComponentType<{ router: Router } & T>
+export default function withOutlet<T: Object>(
+  Source: ComponentType<{ outlet: OutletType } & T>
 ): ComponentType<T> {
   class Wrapped extends Component<*> {
     render() {
       return (
-        <RouterContext.Consumer>
-          {router => {
-            assertRouterExists(router)
-            return <Source router={router} {...this.props} />
+        <OutletContext.Consumer>
+          {outlet => {
+            return <Source outlet={outlet} {...this.props} />
           }}
-        </RouterContext.Consumer>
+        </OutletContext.Consumer>
       )
     }
   }
