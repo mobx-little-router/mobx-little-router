@@ -69,11 +69,11 @@ const ModalOverlay = styled(Link)`
 const Container = styled.div`  
   &.transitioning {
     ${ModalOverlay} {
-      transition: opacity 200ms ease-out;
+      transition: opacity 400ms ease-out;
     }
 
     ${ModalDialog} {
-      transition: all 200ms ease-out;
+      transition: all 400ms ease-out;
     }
 
     &.exit {
