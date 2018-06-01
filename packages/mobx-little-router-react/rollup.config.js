@@ -15,7 +15,6 @@ const config = {
     'mobx-react': 'mobxReact',
     'react': 'React',
     'react-dom': 'ReactDOM',
-    'prop-types': 'PropTypes',
     mobx: 'mobx',
     classnames: 'classNames'
   },
@@ -25,7 +24,6 @@ const config = {
     'react',
     'react-dom',
     'mobx',
-    'prop-types',
     'classnames'
   ],
   plugins: [

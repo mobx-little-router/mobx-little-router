@@ -1,6 +1,8 @@
 // @flow
 import React, { createContext } from 'react'
 
-const OutletContext = React.createContext({ index: 0 })
+export type OutletContextValue = { index: number }
+
+const OutletContext = React.createContext(({ index: 0 }: OutletContextValue))
 
 export default OutletContext

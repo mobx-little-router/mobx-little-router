@@ -6,9 +6,8 @@ import { observer } from 'mobx-react'
 import { computed, extendObservable } from 'mobx'
 import type { Router } from 'mobx-little-router'
 import { areRoutesEqual } from 'mobx-little-router'
-import { OutletType } from '../propTypes'
 import TransitionGroup from './TransitionGroup'
-import OutletContext from '../contexts/OutletContext'
+import OutletContext, { type OutletContextValue } from '../contexts/OutletContext'
 
 /*
  * Outlet component is responsible for rendering the matched components
@@ -21,19 +20,10 @@ type OutletProps = {
   // throughout the app. e.g. sidebar vs main
   name?: string,
   router: Router,
-  outlet: OutletType
+  outlet: OutletContextValue
 }
 
 class Outlet extends Component<OutletProps> {
-  // static contextTypes = {
-  //   // We may have another outlet above us in the context.
-  //   outlet: OutletType
-  // }
-
-  // static childContextTypes = {
-  //   outlet: OutletType
-  // }
-
   currRoutes: any
   prevRoutes: any
   to: any
@@ -59,7 +49,7 @@ class Outlet extends Component<OutletProps> {
     })
   }
 
-  getChildOutlet(): OutletType {
+  getChildOutlet(): OutletContextValue {
     return {
       index: this.getCurrentIndex() + 1
     }

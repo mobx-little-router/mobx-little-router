@@ -3,7 +3,6 @@ import type { Router } from 'mobx-little-router'
 import React, { Component } from 'react'
 import type { ComponentType } from 'react'
 import RouterContext from '../contexts/RouterContext'
-import { RouterType } from '../propTypes'
 import { assertRouterExists } from '../util'
 //import hoistNonReactStatics from 'hoist-non-react-statics'
 const hoistNonReactStatics = require('hoist-non-react-statics')

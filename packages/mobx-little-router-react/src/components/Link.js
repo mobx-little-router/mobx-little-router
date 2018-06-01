@@ -2,8 +2,7 @@
 import React, { Component } from 'react'
 import type { Element } from 'react'
 import { observer } from 'mobx-react'
-import type { LocationShape } from 'mobx-little-router'
-import { RouterType } from '../propTypes'
+import type { Router, LocationShape } from 'mobx-little-router'
 import cx from 'classnames'
 import qs from 'querystring'
 import { assertRouterExists } from '../util'
@@ -18,7 +17,7 @@ type Props =  {
   exact?: boolean,
   target?: string,
   onClick: Function,
-  router: RouterType
+  router: Router
 }
 
 class Link extends Component<Props> {
