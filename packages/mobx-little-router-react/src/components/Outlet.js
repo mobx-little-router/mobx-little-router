@@ -2,7 +2,7 @@
 import React, { Component } from 'react'
 import withRouter from '../hoc/withRouter'
 import { observer } from 'mobx-react'
-import { computed, extendObservable } from 'mobx'
+import { autorun, computed, extendObservable } from 'mobx'
 import type { Router } from 'mobx-little-router'
 import { areRoutesEqual } from 'mobx-little-router'
 import { OutletType } from '../propTypes'
@@ -37,6 +37,7 @@ class Outlet extends Component<OutletProps> {
   to: any
   from: any
   isTransitioning: boolean
+  dispose: null | Function = null
 
   constructor(props, context) {
     super(props, context)
@@ -45,8 +46,9 @@ class Outlet extends Component<OutletProps> {
     const idx = this.getCurrentIndex()
 
     extendObservable(this, {
-      get currRoutes() { return filterRoutes(router._store.routes) },
-      get prevRoutes() { return filterRoutes(router._store.prevRoutes) },
+      prevRoutes: null,
+      get currRoutes() { return filterRoutes(router.activeRoutes) },
+      // get prevRoutes() { return filterRoutes(router._store.prevRoutes) },
       get to() { return findRoute(this.currRoutes, idx, name) },
       get from() { return findRoute(this.prevRoutes, idx, name) },
       get isTransitioning() {
@@ -55,6 +57,21 @@ class Outlet extends Component<OutletProps> {
         (canTransition(this.to) || canTransition(this.from))
       }
     })
+  }
+
+  componentDidMount() {
+    const { router } = this.props
+    this.dispose2 = router.on('NAVIGATION_END', () => {
+      this.currRoutes.clear()
+    })
+    this.dispose = autorun(() => {
+      this.currRoutes.clear()
+    })
+  }
+
+  componentWillUnmount() {
+    const { dispose } = this
+    dispose && dispose()
   }
 
   getChildContext() {

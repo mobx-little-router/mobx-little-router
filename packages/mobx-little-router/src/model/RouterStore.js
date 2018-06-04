@@ -8,15 +8,7 @@ import RouterStateTree from './RouterStateTree'
 import qs from 'querystring'
 import areRoutesEqual from './util/areRoutesEqual'
 import type Navigation from './Navigation'
-import type {
-  Location,
-  Query,
-  Params,
-  Route,
-  RouteStateTreeNode,
-  PathElement,
-  Config,
-} from './types'
+import type { Location, Query, Params, Route, RouteStateTreeNode, PathElement, Config } from './types'
 
 type TreeNodeMetaData<C, D> = {
   node: RouteStateTreeNode<C, D>,
@@ -41,19 +33,23 @@ class RouterStore {
   cancelledSequence: number
 
   constructor(root: RouteStateTreeNode<*, *>) {
-    extendObservable(this, {
-      state: new RouterStateTree(root),
-      cancelledSequence: -1,
-      location: {},
-      params: observable.map({}),
-      cache: observable.map({ [root.value.key]: root }),
-      routes: observable.array([]),
-      prevRoutes: observable.array([]),
-      error: null
-    }, {
-      state: observable.ref,
-      cancelledSequence: observable.ref
-    })
+    extendObservable(
+      this,
+      {
+        state: new RouterStateTree(root),
+        cancelledSequence: -1,
+        location: {},
+        params: observable.map({}),
+        cache: observable.map({ [root.value.key]: root }),
+        routes: observable.array([]),
+        prevRoutes: observable.array([]),
+        error: null
+      },
+      {
+        state: observable.ref,
+        cancelledSequence: observable.ref
+      }
+    )
   }
 
   getNextKey = (): string => {
@@ -68,19 +64,21 @@ class RouterStore {
 
   // Returns a list of the next routes from the matched path.
   // If the route is not currently active or has changed, then it will be created from factory function.
+  // TODO: extract this to util module.
   getNextRoutes(path: PathElement<*, *>[], location: Location): Route<*, *>[] {
     const query = getQueryParams(location)
-    return path.map(element => {
-      const matchedQueryParams = this.getMatchedQueryParams(element.node, query)
-      const newRoute = createRoute(element.node, element.parentUrl, element.segment, element.params, query)
-      const existingRoute = this.routes.find(x => areRoutesEqual(x, newRoute))
-      
-      if (existingRoute) {
-        return existingRoute
-      } else {
-        return observable(createRoute(element.node, element.parentUrl, element.segment, element.params, matchedQueryParams))
-      }
-    })
+    return path.map(element =>
+      createRoute(
+        element.node,
+        element.parentUrl,
+        element.segment,
+        element.params,
+        Object.keys(query).filter(key => element.node.value.query.includes(key)).reduce((acc, key) => {
+          acc[key] = query[key]
+          return acc
+        }, {})
+      )
+    )
   }
 
   getNode(key: string): null | RouteStateTreeNode<*, *> {
@@ -141,11 +139,27 @@ class RouterStore {
     })
   }
 
-  updateRoutes(routes: Route<*, *>[]) {
+  updateRoutes(next: Route<*, *>[]) {
     runInAction(() => {
-      this.prevRoutes.replace(this.routes.slice())
-      this.routes.replace(routes)
+      this.prevRoutes.replace(this.routes.slice().map(route => {
+        return { ...route, params: { ...route.params }, query: { ...route.query } }
+      }))
+      const xxx = next.map(route => {
+        const existing = this.routes.find(r => r.node.value.key === route.node.value.key)
+        if (existing) {
+          Object.assign(existing, {
+            params: route.params,
+            query: route.query,
+            ...route
+          })
+          return existing
+        } else {
+          return route
+        }
+      })
+      this.routes.replace(xxx)
 
+      // TODO: Delete this?
       // Update params
       this.params.clear()
       this.routes.forEach(route => {
@@ -177,12 +191,10 @@ class RouterStore {
   }
 
   getMatchedQueryParams(node: RouteStateTreeNode<*, *>, query: Query): Query {
-    return Object.keys(query)
-      .filter(key => node.value.query.includes(key))
-      .reduce((acc, key) => {
-        acc[key] = query[key]
-        return acc
-      }, {})
+    return Object.keys(query).filter(key => node.value.query.includes(key)).reduce((acc, key) => {
+      acc[key] = query[key]
+      return acc
+    }, {})
   }
 
   /* Private helpers */

@@ -94,23 +94,20 @@ describe('RouterStore', () => {
 
     const nextRoutes1 = store.getNextRoutes(nextPath1, ({}: any))
 
-    expect(nextRoutes1.length).toEqual(3)
-    expect(nextRoutes1[0]).toBe(store.routes[0])
-    expect(nextRoutes1[1]).toBe(store.routes[1])
-    expect(nextRoutes1[2]).toBeDefined() // Newly created route.
-
-    const nextPath2: PathElement<*, *>[] = [
-      { node: a, params: { x: '2' }, parentUrl: '', segment: '/a/2', remaining: '/b/1/c/1' },
-      { node: b, params: { y: '1' }, parentUrl: '/a/2', segment: '/b/1', remaining: '/c/1' },
-      { node: c, params: { z: '1' }, parentUrl: '/a/2/b/1', segment: '/c/1', remaining: '' }
-    ]
-
-    const nextRoutes2 = store.getNextRoutes(nextPath2, ({}: any))
-
-    expect(nextRoutes2.length).toEqual(3)
-    expect(nextRoutes2[0]).not.toBe(store.routes[0]) // Params Changed so different route
-    expect(nextRoutes2[1]).not.toBe(store.routes[1]) // Parant params changed so this changes too
-    expect(nextRoutes2[2]).toBeDefined() // Newly created route.
+    expect(nextRoutes1).toEqual([
+      expect.objectContaining({
+        parentUrl: '',
+        params: { x: '1' }
+      }),
+      expect.objectContaining({
+        parentUrl: '/a/1',
+        params: { y: '1' }
+      }),
+      expect.objectContaining({
+        parentUrl: '/a/1/b/1',
+        params: { z: '1' }
+      })
+    ])
   })
 
   test('Routes with query params', () => {
