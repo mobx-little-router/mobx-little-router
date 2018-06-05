@@ -235,7 +235,6 @@ describe('Public API', () => {
   })
 
   test('willResolve hook', async () => {
-    const stack = []
     const willActivateSpy = jest.fn(() => Promise.resolve())
     const willResolveSpy = jest.fn(() => Promise.resolve())
     const willDeactivateSpy = jest.fn(() => Promise.resolve())
@@ -1003,7 +1002,7 @@ describe('Public API', () => {
     expect(router.location.pathname).toEqual('/**')
   })
 
-  test.skip('route instance is kept in place', async () => {
+  test('route instance is kept in place', async () => {
     await router.start()
 
     await router.push('/foo')

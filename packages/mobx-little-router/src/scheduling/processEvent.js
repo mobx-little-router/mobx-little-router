@@ -246,7 +246,7 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
         type: EventTypes.NAVIGATION_TRANSITION_START,
         navigation: evt.navigation,
         setter: action(() => {
-          store.updateRoutes(nextRoutes)
+          store.updateActivateRoutes(nextRoutes)
           store.updateLocation(navigation.to)
         }),
         entering,

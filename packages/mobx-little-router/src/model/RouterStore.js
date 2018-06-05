@@ -5,7 +5,8 @@ import createRouteStateTreeNode from './createRouteStateTreeNode'
 import createRouteInstance from './createRouteInstance'
 import RouterStateTree from './RouterStateTree'
 import qs from 'querystring'
-import areRoutesEqual from './util/areRoutesEqual'
+import getNodeValue from './util/getNodeValue'
+import assign from './util/assign'
 import type Navigation from './Navigation'
 import type { Config, Location, Params, PathElement, Query, Route, RouteStateTreeNode } from './types'
 
@@ -135,10 +136,15 @@ class RouterStore {
     })
   }
 
-  updateRoutes(routes: Route<*, *>[]) {
+  updateActivateRoutes(nextRoutes: Route<*, *>[]) {
     runInAction(() => {
       // this.prevRoutes.replace(this.routes.slice())
-      this.activatedRoutes.replace(routes)
+      this.activatedRoutes.replace(
+        nextRoutes.map(route => {
+          const existing = this.activatedRoutes.find(r => getNodeValue('key', r) === getNodeValue('key', route))
+          return existing ? assign(existing, route) : route
+        })
+      )
 
       // Update params
       this.params.clear()
