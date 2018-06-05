@@ -2,19 +2,24 @@
 import React from 'react'
 import { createRouter, delay } from '../testUtil'
 import { mount } from 'enzyme'
+import { filterRoutes } from './Outlet'
 import TransitionGroup, { TransitionItem } from './TransitionGroup'
 import { areRoutesEqual } from 'mobx-little-router'
+import { autorun } from 'mobx/lib/mobx'
 
 describe('TransitionGroup', () => {
   let router
+  let prevRoutes
+  let currRoutes
+  let dispose
   
   const updateRoutes = (wrapper) => {
     let to, from
     if (router._store.activatedRoutes.length > 1) { to = router._store.activatedRoutes[1] }
-    if (router._store.prevRoutes.length > 1) { from = router._store.prevRoutes[1] }
+    if (prevRoutes.length > 1) { from = prevRoutes[1] }
 
     const isTransitioning =
-      router._store.prevRoutes.length > 0 &&
+      prevRoutes.length > 0 &&
       !areRoutesEqual(to, from) &&
       (canTransition(to) || canTransition(from))
 
@@ -45,11 +50,16 @@ describe('TransitionGroup', () => {
       ],
       '/'
     )
+    dispose = autorun(() => {
+      currRoutes = filterRoutes(router._store.activatedRoutes)
+      prevRoutes = currRoutes
+    })
     return router.start()
   })
 
   afterEach(() => {
     router.stop()
+    dispose && dispose()
   })
 
   test('TransitionGroup initial state is empty', async () => {
@@ -71,9 +81,9 @@ describe('TransitionGroup', () => {
   // We need to mutate the classlist in this fashion to trigger the animation in the most
   // efficient way possible. The hasClass helper uses enzymes .html() function to view the raw html
   // we use this to check the animation lifecycle classes are correctly applied.
-  test('TransitionGroup handles transitioning in and out of routes', async () => {
+  test.only('TransitionGroup handles transitioning in and out of routes', async () => {
     const wrapper = mount(<TransitionGroup isTransitioning={false} />)
-    const { routes, prevRoutes } = router._store
+    const { activatedRoutes } = router._store
 
     router.push('/about')
     await delay(0)
@@ -86,7 +96,7 @@ describe('TransitionGroup', () => {
     await delay(1000)
 
     // Then the animation is initialized with the active class
-    expect(routes[1].data.transitionState).toBe('entering')
+    expect(activatedRoutes[1].data.transitionState).toBe('entering')
     //XXX expect(wrapper.find(TransitionItem).hasClass('enter-active')).toBe(true)
     expect(hasClass(wrapper.find(TransitionItem).at(0), 'enter-active')).toBe(true)
 
@@ -97,7 +107,7 @@ describe('TransitionGroup', () => {
     // Our transition has settled and transitioning class removed 
     expect(wrapper.childAt(0).childAt(0).hasClass('transitioning')).toBe(false)
     expect(wrapper.childAt(0).childAt(0).hasClass('enter-active')).toBe(false)
-    expect(routes[1].data.transitionState).toBe('entered')
+    expect(activatedRoutes[1].data.transitionState).toBe('entered')
 
     router.push('/contact')
     await delay(0)
@@ -113,7 +123,7 @@ describe('TransitionGroup', () => {
     await delay(0)
 
     // Then the animation is initialized with the active class
-    expect(routes[1].data.transitionState).toBe('entering')
+    expect(activatedRoutes[1].data.transitionState).toBe('entering')
     expect(prevRoutes[1].data.transitionState).toBe('exiting')
     //XXX expect(wrapper.find(TransitionItem).at(0).hasClass('exit-active')).toBe(true)
     //XXX expect(wrapper.find(TransitionItem).at(1).hasClass('enter-active')).toBe(true)
