@@ -30,8 +30,7 @@ const OBSERVABLE_ROUTE_PROPERTIES = ['params', 'query']
 class Router {
   // Public members
   location: Location
-  activeRoutes: IObservableArray<Route<*, *>>
-  activeRouteKeys: string[]
+  activatedRoutes: IObservableArray<Route<*, *>>
   isNavigating: boolean
   error: any
 
@@ -53,11 +52,8 @@ class Router {
         get location() {
           return this._store.location
         },
-        get activeRoutes(): IObservableArray<Route<*, *>> {
+        get activatedRoutes(): IObservableArray<Route<*, *>> {
           return this._store.activatedRoutes
-        },
-        get activeRouteKeys(): string[] {
-          return this.activeRoutes.map(r => r.node.value.key)
         },
         get error() {
           return this._store.error
@@ -240,11 +236,11 @@ class Router {
       throw new Error(`A query object must be passed to select function.`)
     }
 
-    const { activeRoutes } = this
+    const { activatedRoutes } = this
     const obs = {}
     // Prevents computeds from updating if not all routes have matched.
     const guard$ = computed(() => {
-      return Object.keys(body).every(routeKey => activeRoutes.find(route => route.node.value.key === routeKey))
+      return Object.keys(body).every(routeKey => activatedRoutes.find(route => route.node.value.key === routeKey))
     })
 
     Object.keys(body).forEach(routeKey => {
@@ -254,7 +250,7 @@ class Router {
         if (defaults) {
           obs[routeKey][type] = {}
           Object.keys(defaults).forEach(key => {
-            const route$ = createRouteObs(activeRoutes, routeKey)
+            const route$ = createRouteObs(activatedRoutes, routeKey)
             const value$ =  createValueObs({route$, key, type, defaults })
 
             defineComputedProperty({

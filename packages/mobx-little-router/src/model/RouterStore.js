@@ -24,10 +24,7 @@ class RouterStore {
   // Instances should be exactly the same as in state tree.
   cache: ObservableMap<TreeNodeMetaData<*, *>>
 
-  // Keep a list of activated nodes so we can track differences when transitioning to a new state.
   activatedRoutes: IObservableArray<Route<*, *>>
-  // routes: IObservableArray<Route<*, *>>
-  // prevRoutes: IObservableArray<Route<*, *>>
 
   error: any
 
@@ -43,8 +40,6 @@ class RouterStore {
         params: observable.map({}),
         cache: observable.map({ [root.value.key]: root }),
         activatedRoutes: observable.array([]),
-        // routes: observable.array([]),
-        // prevRoutes: observable.array([]),
         error: null
       },
       {
