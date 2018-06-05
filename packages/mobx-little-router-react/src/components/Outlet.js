@@ -3,12 +3,8 @@ import React, { Component, createContext } from 'react'
 import withRouter from '../hoc/withRouter'
 import withOutlet from '../hoc/withOutlet'
 import { observer } from 'mobx-react'
-import { computed, extendObservable } from 'mobx'
-import type { Router } from 'mobx-little-router'
-import { areRoutesEqual } from 'mobx-little-router'
-import { observe, extendObservable, observable } from 'mobx'
+import { observe, reaction, extendObservable, observable } from 'mobx'
 import { type Router, EventTypes, areRoutesEqual } from 'mobx-little-router'
-import { OutletType } from '../propTypes'
 
 import TransitionGroup from './TransitionGroup'
 import OutletContext, { type OutletContextValue } from '../contexts/OutletContext'
@@ -32,9 +28,10 @@ class Outlet extends Component<OutletProps> {
   prevRoutes: any
   to: any
   from: any
+  isNavigating: any
   isTransitioning: boolean
 
-  _dispose: null | Function = null
+  _subscriptions: Function[] = []
 
   constructor(props, context) {
     super(props, context)
@@ -50,13 +47,13 @@ class Outlet extends Component<OutletProps> {
           return filterRoutes(this.props.router._store.activatedRoutes)
         },
         get to() {
-          return findRoute(this.currRoutes, idx, name)
+          return findRoute(idx, name, this.currRoutes)
         },
         get from() {
-          return findRoute(this.prevRoutes, idx, name)
+          return findRoute(idx, name, this.prevRoutes)
         },
         get isNavigating() {
-          return this.props.router._scheduler.event.type !== EventTypes.NAVIGATION_END
+          return this.props.router.currentEventType !== EventTypes.NAVIGATION_END
         },
         get isTransitioning() {
           return (
@@ -71,9 +68,13 @@ class Outlet extends Component<OutletProps> {
       }
     )
 
-    this._dispose = observe(this, 'currRoutes', change => {
+    this._subscriptions.push(observe(this, 'currRoutes', change => {
       this.prevRoutes = change.oldValue
-    })
+    }))
+
+    this._subscriptions.push(reaction(() => !this.isNavigating, ()=> {
+      this.prevRoutes = []
+    }, { fireImmediately: true }))
   }
 
   getChildOutlet(): OutletContextValue {
@@ -116,7 +117,7 @@ class Outlet extends Component<OutletProps> {
 // Exported for tests.
 export const filterRoutes = (routes: *) => routes.filter(route => route.data.component)
 
-const findRoute = (routes, outletIdx, outletName) => {
+const findRoute = (outletIdx, outletName, routes) => {
   if (typeof outletName === 'string') {
     return routes.find(route => route.data.outlet === outletName)
   } else {

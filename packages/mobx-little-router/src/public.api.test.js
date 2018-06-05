@@ -1002,7 +1002,7 @@ describe('Public API', () => {
     expect(router.location.pathname).toEqual('/**')
   })
 
-  test('route instance is kept in place', async () => {
+  test('route instance differs based on param values', async () => {
     await router.start()
 
     await router.push('/foo')
@@ -1011,7 +1011,7 @@ describe('Public API', () => {
     await router.push('/bar')
     const [__, whateverRoute2] = router.activeRoutes.slice()
 
-    expect(whateverRoute1).toBe(whateverRoute2)
+    expect(whateverRoute1).not.toBe(whateverRoute2)
   })
 })
 

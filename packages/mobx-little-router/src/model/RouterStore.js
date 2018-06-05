@@ -5,8 +5,7 @@ import createRouteStateTreeNode from './createRouteStateTreeNode'
 import createRouteInstance from './createRouteInstance'
 import RouterStateTree from './RouterStateTree'
 import qs from 'querystring'
-import getNodeValue from './util/getNodeValue'
-import assign from './util/assign'
+import areRoutesEqual from './util/areRoutesEqual'
 import type Navigation from './Navigation'
 import type { Config, Location, Params, PathElement, Query, Route, RouteStateTreeNode } from './types'
 
@@ -68,13 +67,15 @@ class RouterStore {
   createNextRouteInstances(path: PathElement<*, *>[], nextLocation: Location): Route<*, *>[] {
     const query = getQueryParams(nextLocation)
     return path.map(element => {
-      const matchedQueryParams = Object.keys(query)
-        .filter(key => element.node.value.query.includes(key))
-        .reduce((acc, key) => {
-          acc[key] = query[key]
-          return acc
-        }, {})
-      return createRouteInstance(element.node, element.parentUrl, element.segment, element.params, matchedQueryParams)
+      const matchedQueryParams = this.getMatchedQueryParams(element.node, query)
+      const newRoute = createRouteInstance(element.node, element.parentUrl, element.segment, element.params, query)
+      const existingRoute = this.activatedRoutes.find(x => areRoutesEqual(x, newRoute))
+
+      if (existingRoute) {
+        return existingRoute
+      } else {
+        return observable(createRouteInstance(element.node, element.parentUrl, element.segment, element.params, matchedQueryParams))
+      }
     })
   }
 
@@ -138,13 +139,7 @@ class RouterStore {
 
   updateActivateRoutes(nextRoutes: Route<*, *>[]) {
     runInAction(() => {
-      // this.prevRoutes.replace(this.routes.slice())
-      this.activatedRoutes.replace(
-        nextRoutes.map(route => {
-          const existing = this.activatedRoutes.find(r => getNodeValue('key', r) === getNodeValue('key', route))
-          return existing ? assign(existing, route) : route
-        })
-      )
+      this.activatedRoutes.replace(nextRoutes)
 
       // Update params
       this.params.clear()

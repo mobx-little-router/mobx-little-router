@@ -72,6 +72,10 @@ class Router {
           const { event } = this._scheduler
           return event !== null ? (event.nextNavigation !== null ? event.nextNavigation : null) : null
         },
+        get currentEventType() {
+          const { event } = this._scheduler
+          return event ? event.type : EventTypes.EMPTY
+        },
         _disposers: [],
         _history: history,
         _initialChildren: config,
