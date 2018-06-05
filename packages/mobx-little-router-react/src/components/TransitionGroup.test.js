@@ -10,7 +10,7 @@ describe('TransitionGroup', () => {
   
   const updateRoutes = (wrapper) => {
     let to, from
-    if (router._store.routes.length > 1) { to = router._store.routes[1] }
+    if (router._store.activatedRoutes.length > 1) { to = router._store.activatedRoutes[1] }
     if (router._store.prevRoutes.length > 1) { from = router._store.prevRoutes[1] }
 
     const isTransitioning =

@@ -102,8 +102,7 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
       return Promise.resolve({
         type: EventTypes.NAVIGATION_ACTIVATING,
         navigation: evt.navigation,
-        matchedPath,
-        routes: store.getNextRoutes(matchedPath, navigation.to)
+        matchedPath
       })
     }
     case EventTypes.NAVIGATION_NOT_MATCHED: {
@@ -113,8 +112,7 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
         return Promise.resolve({
           type: EventTypes.NAVIGATION_ACTIVATING,
           navigation: evt.navigation,
-          matchedPath,
-          routes: store.getNextRoutes(caughtPath, navigation.to)
+          matchedPath: caughtPath
         })
       } else {
         return Promise.resolve({
@@ -184,12 +182,13 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
       }
     }
     case EventTypes.NAVIGATION_ACTIVATING: {
-      const { navigation, routes } = evt
-      const currRoutes = store.routes.slice()
-      const { activating, deactivating, entering, exiting } = diffRoutes(currRoutes, routes)
+      const { navigation, matchedPath } = evt
+      const currRoutes = store.activatedRoutes.slice()
+      const nextRoutes = store.createNextRouteInstances(matchedPath, navigation.to)
+      const { activating, deactivating, entering, exiting } = diffRoutes(currRoutes, nextRoutes)
 
       // Add matched leaf to the navigation object so it can be used for redirection
-      navigation.leaf = routes[routes.length - 1]
+      navigation.leaf = nextRoutes[nextRoutes.length - 1]
 
       return Promise.resolve()
         .then(() =>
@@ -202,17 +201,18 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
               { type: 'willActivate', includes: activating },
               { type: 'willResolve', includes: entering }
             ],
-            routes,
+            nextRoutes,
             navigation
           )
-        ).then((setter: Function) => ({
+        )
+        .then((setter: Function) => ({
           type: EventTypes.NAVIGATION_ACTIVATED,
           navigation,
           activating,
           deactivating,
           entering,
           exiting,
-          routes,
+          nextRoutes,
           setter
         }))
         .catch(err => {
@@ -240,22 +240,21 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
         })
     }
     case EventTypes.NAVIGATION_ACTIVATED: {
-      const { navigation, routes, exiting, entering } = evt
+      const { navigation, nextRoutes, exiting, entering } = evt
 
       return Promise.resolve({
         type: EventTypes.NAVIGATION_TRANSITION_START,
         navigation: evt.navigation,
-        routes,
-        entering,
-        exiting,
         setter: action(() => {
-          store.updateRoutes(routes)
+          store.updateRoutes(nextRoutes)
           store.updateLocation(navigation.to)
-        })
+        }),
+        entering,
+        exiting
       })
     }
     case EventTypes.NAVIGATION_TRANSITION_START: {
-      const { navigation, routes, exiting, entering } = evt
+      const { navigation, exiting, entering } = evt
       let done
       if (navigation.shouldTransition) {
         // Run and wait on transition of exiting and newly entering nodes.
@@ -267,7 +266,6 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
       return done.then(() => ({
         type: EventTypes.NAVIGATION_TRANSITION_END,
         navigation,
-        routes,
         entering,
         exiting
       }))
@@ -294,7 +292,6 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
         navigation: evt.navigation,
         setter: () => {
           store.cancel(evt.navigation)
-          store.clearPrevRoutes()
         }
       })
     }
@@ -309,8 +306,6 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
           if (!isCatchAll(leaf)) {
             store.updateError(null)
           }
-
-          store.clearPrevRoutes()
         }
       })
     }
@@ -502,4 +497,3 @@ function invokeTransitionFunction(type) {
 function getTransitionFunction(type) {
   return route => getNodeValue(type, route) || (route => {})
 }
-

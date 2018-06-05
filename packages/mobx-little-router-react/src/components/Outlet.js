@@ -37,7 +37,7 @@ class Outlet extends Component<OutletProps> {
     const idx = this.getCurrentIndex()
 
     extendObservable(this, {
-      get currRoutes() { return filterRoutes(router._store.routes) },
+      get currRoutes() { return filterRoutes(router._store.activatedRoutes) },
       get prevRoutes() { return filterRoutes(router._store.prevRoutes) },
       get to() { return findRoute(this.currRoutes, idx, name) },
       get from() { return findRoute(this.prevRoutes, idx, name) },

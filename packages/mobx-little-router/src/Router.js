@@ -54,7 +54,7 @@ class Router {
           return this._store.location
         },
         get activeRoutes(): IObservableArray<Route<*, *>> {
-          return this._store.routes
+          return this._store.activatedRoutes
         },
         get activeRouteKeys(): string[] {
           return this.activeRoutes.map(r => r.node.value.key)
