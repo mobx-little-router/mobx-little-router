@@ -914,18 +914,6 @@ describe('Public API', () => {
     router.stop()
   })
 
-  test('custom keys and active keys', async () => {
-    router = install({
-      history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
-      getContext: () => ({ message: 'Hello' }),
-      routes: [{ path: 'a', key: 'my-custom-key' }]
-    })
-
-    await router.start()
-
-    expect(router.activeRouteKeys).toEqual(expect.arrayContaining(['my-custom-key']))
-  })
-
   test('router navigation within activation function', async () => {
     const spy = jest.fn(() => router.replace('/b'))
     router = install({
@@ -1006,15 +994,15 @@ describe('Public API', () => {
     await router.start()
 
     await router.push('/foo')
-    const [_, whateverRoute1] = router.activeRoutes.slice()
+    const [_, whateverRoute1] = router.activatedRoutes.slice()
 
     await router.push('/bar')
-    const [__, whateverRoute2] = router.activeRoutes.slice()
+    const [__, whateverRoute2] = router.activatedRoutes.slice()
 
     expect(whateverRoute1).not.toBe(whateverRoute2)
   })
 })
 
 const getLastRoute = router => {
-  return router._store.activatedRoutes[router._store.activatedRoutes.length - 1]
+  return router.activatedRoutes[router.activatedRoutes.length - 1]
 }

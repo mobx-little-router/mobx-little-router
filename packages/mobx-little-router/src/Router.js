@@ -20,8 +20,7 @@ import type {
   RouteStateTreeNode
 } from './model/types'
 import Scheduler from './scheduling/Scheduler'
-import type { Event } from './events'
-import { EventTypes } from './events'
+import { type Event, EventTypes } from './events'
 import { NavigationTypes } from './model/Navigation'
 import type { IMiddleware } from './middleware/Middleware'
 
@@ -32,6 +31,7 @@ class Router {
   location: Location
   activatedRoutes: IObservableArray<Route<*, *>>
   isNavigating: boolean
+  currentEventType: $Keys<typeof EventTypes>
   error: any
 
   // Private members
