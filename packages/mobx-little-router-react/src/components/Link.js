@@ -4,6 +4,7 @@ import type { Element } from 'react'
 import { observer } from 'mobx-react'
 import type { LocationShape } from 'mobx-little-router'
 import { RouterType } from '../propTypes'
+import withRouter from '../hoc/withRouter'
 import cx from 'classnames'
 import qs from 'querystring'
 import { assertRouterExists } from '../util'
@@ -20,12 +21,8 @@ type Props =  {
 }
 
 class Link extends Component<Props> {
-  static contextTypes = {
-    router: RouterType
-  }
-
   onClick = (evt: MouseEvent) => {
-    const { to, target, onClick } = this.props
+    const { to, target, router, onClick } = this.props
     onClick && onClick(evt)
 
     // Taken from react-router to match their Link logic
@@ -36,17 +33,17 @@ class Link extends Component<Props> {
       !isModifiedEvent(evt) // ignore clicks with modifier keys
     ) {
       evt.preventDefault()
-      this.context.router.push(to)
+      router.push(to)
     }
   }
 
   render() {
-    const { router } = this.context
+    const { to, className, activeClassName, style, children, exact, onClick, router, ...rest } = this.props
     // Mark for non-production build only.
     if (process && process.env.NODE_ENV !== 'production') {
       assertRouterExists(router)
     }
-    const { to, className, activeClassName, style, children, exact, onClick, ...rest } = this.props
+
     const href = typeof to === 'object'
       ? locationToHref(to)
       : to
@@ -54,7 +51,7 @@ class Link extends Component<Props> {
     const matchPrefix = '^'
     const matchSuffix = '/?' + (exact === true ? '$' : '')
     const matcher = new RegExp(`${matchPrefix}${typeof href === 'string' ? href.replace(/(\?.*)?$/, '') : ''}${matchSuffix}`)
-    const isActive = matcher.test(this.context.router.location.pathname)
+    const isActive = matcher.test(router.location.pathname)
 
     return <a href={href != null ? router.createHref(href) : null} className={cx(className, typeof activeClassName ==='string' && { [activeClassName]: isActive })} style={style} onClick={this.onClick} {...rest}>{children}</a>
   }
@@ -70,4 +67,4 @@ const locationToHref = (location: LocationShape) => {
 
 const isModifiedEvent = (event: MouseEvent) => !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
 
-export default observer(Link)
+export default withRouter(observer(Link))
