@@ -25,7 +25,9 @@ const validate = process.env.NODE_ENV === 'production'
       onExit: optional(func),
       willActivate: optional(func),
       willDeactivate: optional(func),
-      willResolve: optional(func)
+      willResolve: optional(func),
+      subscriptions: optional(func),
+      computed: optional(func)
     })
 
 type GetContext = () => *
@@ -68,7 +70,10 @@ export default function createRouteStateTreeNode(
       onEnter: config.onEnter || null,
       onExit: config.onExit || null,
       getContext,
-      getData: config.getData || (() => ({}))
+      getData: config.getData || (() => ({})),
+      disposers: [],
+      subscriptions: config.subscriptions || null,
+      computed: typeof config.computed === 'function' ? observable(config.computed()) : null
     }, {
       matcher: observable.ref,
       loadChildren: observable.ref,
@@ -81,7 +86,9 @@ export default function createRouteStateTreeNode(
       onTransition: observable.ref,
       onEnter: observable.ref,
       onExit: observable.ref,
-      getData: observable.ref
+      getData: observable.ref,
+      subscriptions: observable.ref,
+      computed: observable.ref
     }),
     children
   )

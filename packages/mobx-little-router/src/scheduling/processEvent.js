@@ -1,5 +1,5 @@
 // @flow
-import { action } from 'mobx'
+import { action, observable } from 'mobx'
 import type RouterStore from '../model/RouterStore'
 import { NotFound } from '../errors'
 import Navigation from '../model/Navigation'
@@ -194,8 +194,22 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
         .then(() =>
           evalTransitionsForRoutes([{ type: 'canDeactivate' }, { type: 'willDeactivate' }], deactivating, navigation)
         )
-        .then(() =>
-          evalTransitionsForRoutes(
+        .then(() => {
+          // Dispose of all route disposers when deactivating a route
+          deactivating.forEach(route => {
+            route.node.value.disposers.forEach(disposer => disposer())
+            route.node.value.disposers = []
+          })
+
+          // Run all subscriptions when activating a route
+          activating.forEach(route => {
+            const { subscriptions } = route.node.value
+            if (typeof subscriptions === 'function') {
+              route.node.value.disposers = [].concat(subscriptions())
+            }
+          })
+        
+          return evalTransitionsForRoutes(
             [
               { type: 'canActivate', includes: activating },
               { type: 'willActivate', includes: activating },
@@ -204,7 +218,7 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
             nextRoutes,
             navigation
           )
-        )
+        })
         .then((setter: Function) => ({
           type: EventTypes.NAVIGATION_ACTIVATED,
           navigation,
