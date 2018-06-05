@@ -3,7 +3,7 @@ import { runInAction, autorun } from 'mobx'
 import type { Route, PathElement } from './types'
 import RouterStore from './RouterStore'
 import createRouteStateTreeNode from './createRouteStateTreeNode'
-import createRoute from './createRoute'
+import createRouteInstance from './createRouteInstance'
 
 describe('RouterStore', () => {
   let store, root, getContext
@@ -32,7 +32,7 @@ describe('RouterStore', () => {
     }
 
     store.replaceChildren(store.state.root, [a])
-    store.updateRoutes([createRoute(store.getNodeUnsafe('a'), '1', '1', { x: '1' }, {})])
+    store.updateRoutes([createRouteInstance(store.getNodeUnsafe('a'), '1', '1', { x: '1' }, {})])
 
     expect(store.routes[0]).toEqual(
       expect.objectContaining({
@@ -45,7 +45,7 @@ describe('RouterStore', () => {
       })
     )
 
-    store.updateRoutes([createRoute(store.getNodeUnsafe('a'), '2', '2', { x: '2' }, {})])
+    store.updateRoutes([createRouteInstance(store.getNodeUnsafe('a'), '2', '2', { x: '2' }, {})])
 
     expect(store.routes[0]).toEqual(
       expect.objectContaining({
@@ -79,8 +79,8 @@ describe('RouterStore', () => {
     const b = createRouteStateTreeNode({ path: 'b', getData: () => dataSpy('b') })
     const c = createRouteStateTreeNode({ path: 'c', getData: () => dataSpy('c') })
 
-    const aRoute = createRoute(a, '', '/a/1', { x: '1' }, {})
-    const bRoute = createRoute(b, '/a/1', '/b/1', { y: '1' }, {})
+    const aRoute = createRouteInstance(a, '', '/a/1', { x: '1' }, {})
+    const bRoute = createRouteInstance(b, '/a/1', '/b/1', { y: '1' }, {})
 
     const currRoutes = [aRoute, bRoute]
 
@@ -129,7 +129,7 @@ describe('RouterStore', () => {
     }
 
     store.replaceChildren(store.state.root, [a, b])
-    store.updateRoutes([createRoute(store.getNodeUnsafe('a'), '', '', {}, { q: 'hey' })])
+    store.updateRoutes([createRouteInstance(store.getNodeUnsafe('a'), '', '', {}, { q: 'hey' })])
 
     expect(store.routes[0]).toEqual(
       expect.objectContaining({
@@ -142,7 +142,7 @@ describe('RouterStore', () => {
       })
     )
 
-    store.updateRoutes([createRoute(store.getNodeUnsafe('b'), '', '', {}, { r: 'what' })])
+    store.updateRoutes([createRouteInstance(store.getNodeUnsafe('b'), '', '', {}, { r: 'what' })])
 
     expect(store.routes[0]).toEqual(
       expect.objectContaining({

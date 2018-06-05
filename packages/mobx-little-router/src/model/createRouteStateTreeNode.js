@@ -68,10 +68,7 @@ export default function createRouteStateTreeNode(
       onEnter: config.onEnter || null,
       onExit: config.onExit || null,
       getContext,
-      getData: config.getData || (() => ({})),
-      // This prop is meant for middleware to add annotations that it may need to perform its task.
-      // e.g. validate config needs to add some hash for equality checks between tree nodes.
-      etc: config.etc || {}
+      getData: config.getData || (() => ({}))
     }, {
       matcher: observable.ref,
       loadChildren: observable.ref,
@@ -84,8 +81,7 @@ export default function createRouteStateTreeNode(
       onTransition: observable.ref,
       onEnter: observable.ref,
       onExit: observable.ref,
-      getData: observable.ref,
-      etc: observable.ref
+      getData: observable.ref
     }),
     children
   )

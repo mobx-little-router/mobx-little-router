@@ -3,7 +3,7 @@ import type { IObservableArray } from 'mobx'
 import { extendObservable, runInAction, observable, computed } from 'mobx'
 import createRouteStateTreeNode from './createRouteStateTreeNode'
 import type { ObservableMap } from 'mobx'
-import createRoute from './createRoute'
+import createRouteInstance from './createRouteInstance'
 import RouterStateTree from './RouterStateTree'
 import qs from 'querystring'
 import areRoutesEqual from './util/areRoutesEqual'
@@ -72,13 +72,13 @@ class RouterStore {
     const query = getQueryParams(location)
     return path.map(element => {
       const matchedQueryParams = this.getMatchedQueryParams(element.node, query)
-      const newRoute = createRoute(element.node, element.parentUrl, element.segment, element.params, query)
+      const newRoute = createRouteInstance(element.node, element.parentUrl, element.segment, element.params, query)
       const existingRoute = this.routes.find(x => areRoutesEqual(x, newRoute))
       
       if (existingRoute) {
         return existingRoute
       } else {
-        return observable(createRoute(element.node, element.parentUrl, element.segment, element.params, matchedQueryParams))
+        return observable(createRouteInstance(element.node, element.parentUrl, element.segment, element.params, matchedQueryParams))
       }
     })
   }

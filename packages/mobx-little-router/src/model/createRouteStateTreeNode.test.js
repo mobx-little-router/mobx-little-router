@@ -1,6 +1,6 @@
 // @flow
 import createRouteStateTreeNode from './createRouteStateTreeNode'
-import createRoute from './createRoute'
+import createRouteInstance from './createRouteInstance'
 import Navigation from './Navigation'
 
 describe('createRouteStateTreeNode', () => {

@@ -1002,6 +1002,18 @@ describe('Public API', () => {
 
     expect(router.location.pathname).toEqual('/**')
   })
+
+  test.skip('route instance is kept in place', async () => {
+    await router.start()
+
+    await router.push('/foo')
+    const [_, whateverRoute1] = router.activeRoutes.slice()
+
+    await router.push('/bar')
+    const [__, whateverRoute2] = router.activeRoutes.slice()
+
+    expect(whateverRoute1).toBe(whateverRoute2)
+  })
 })
 
 const getLastRoute = router => {

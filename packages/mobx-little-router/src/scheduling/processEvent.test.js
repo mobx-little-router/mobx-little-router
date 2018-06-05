@@ -3,7 +3,7 @@ import { runInAction } from 'mobx'
 import { EventTypes } from '../events'
 import RouterStore from '../model/RouterStore'
 import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
-import createRoute from '../model/createRoute'
+import createRouteInstance from '../model/createRouteInstance'
 import Navigation from '../model/Navigation'
 import processEvent from './processEvent'
 import { NotFound } from '../errors'
@@ -156,7 +156,7 @@ describe('processEvent', () => {
 
   test('cancel event clears previous routes on store', async () => {
     runInAction(() => {
-      store.prevRoutes.replace([createRoute(store.state.root, '/', '/', {}, {})])
+      store.prevRoutes.replace([createRouteInstance(store.state.root, '/', '/', {}, {})])
     })
 
     await processEvent(
@@ -174,7 +174,7 @@ describe('processEvent', () => {
 
   test('cancel event clears previous routes on store', async () => {
     runInAction(() => {
-      store.prevRoutes.replace([createRoute(store.state.root, '/', '/', {}, {})])
+      store.prevRoutes.replace([createRouteInstance(store.state.root, '/', '/', {}, {})])
     })
 
     await processEvent(
