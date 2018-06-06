@@ -3,7 +3,8 @@ import React, { Component, createContext } from 'react'
 import withRouter from '../hoc/withRouter'
 import withOutlet from '../hoc/withOutlet'
 import { observer } from 'mobx-react'
-import { observe, reaction, extendObservable, observable } from 'mobx'
+import { reaction, action, extendObservable, observable, observe } from 'mobx'
+import RoutedComponentsTracker from '../util/RoutedComponentsTracker'
 import { type Router, EventTypes, areRoutesEqual } from 'mobx-little-router'
 
 import TransitionGroup from './TransitionGroup'
@@ -24,57 +25,16 @@ type OutletProps = {
 }
 
 class Outlet extends Component<OutletProps> {
-  currRoutes: any
-  prevRoutes: any
-  to: any
-  from: any
-  isNavigating: any
-  isTransitioning: boolean
-
-  _subscriptions: Function[] = []
+  changeTracker: RoutedComponentsTracker
 
   constructor(props, context) {
     super(props, context)
-
-    const { name } = this.props
-    const idx = this.getCurrentIndex()
-
-    extendObservable(
-      this,
-      {
-        prevRoutes: [],
-        get currRoutes() {
-          return filterRoutes(this.props.router._store.activatedRoutes)
-        },
-        get to() {
-          return findRoute(idx, name, this.currRoutes)
-        },
-        get from() {
-          return findRoute(idx, name, this.prevRoutes)
-        },
-        get isNavigating() {
-          return this.props.router.currentEventType !== EventTypes.NAVIGATION_END
-        },
-        get isTransitioning() {
-          return (
-            this.isNavigating &&
-            !areRoutesEqual(this.to, this.from) &&
-            (canTransition(this.to) || canTransition(this.from))
-          )
-        }
-      },
-      {
-        prevRoutes: observable
-      }
+    this.changeTracker = new RoutedComponentsTracker(
+      this.props.router,
+      this.props.name,
+      this.getCurrentIndex()
     )
-
-    this._subscriptions.push(observe(this, 'currRoutes', change => {
-      this.prevRoutes = change.oldValue
-    }))
-
-    this._subscriptions.push(reaction(() => !this.isNavigating, ()=> {
-      this.prevRoutes = []
-    }, { fireImmediately: true }))
+    this.changeTracker.start()
   }
 
   getChildOutlet(): OutletContextValue {
@@ -85,9 +45,7 @@ class Outlet extends Component<OutletProps> {
 
   getCurrentIndex() {
     const { outlet } = this.props
-    return typeof outlet !== 'undefined'
-      ? outlet.index
-      : 0
+    return typeof outlet !== 'undefined' ? outlet.index : 0
   }
 
   render() {
@@ -103,9 +61,9 @@ class Outlet extends Component<OutletProps> {
       <OutletContext.Provider value={this.getChildOutlet()}>
         <div className={`outlet`} {...dataProps}>
           <TransitionGroup
-            to={this.to}
-            from={this.isTransitioning ? this.from : undefined}
-            isTransitioning={this.isTransitioning}
+            to={this.changeTracker.to}
+            from={this.changeTracker.isTransitioning ? this.changeTracker.from : undefined}
+            isTransitioning={this.changeTracker.isTransitioning}
             additionalProps={rest}
           />
         </div>
@@ -113,18 +71,5 @@ class Outlet extends Component<OutletProps> {
     )
   }
 }
-
-// Exported for tests.
-export const filterRoutes = (routes: *) => routes.filter(route => route.data.component)
-
-const findRoute = (outletIdx, outletName, routes) => {
-  if (typeof outletName === 'string') {
-    return routes.find(route => route.data.outlet === outletName)
-  } else {
-    return routes.filter(route => !route.data.outlet)[outletIdx]
-  }
-}
-
-const canTransition = node => (node ? typeof node.onTransition === 'function' : false)
 
 export default withRouter(withOutlet(observer(Outlet)))
