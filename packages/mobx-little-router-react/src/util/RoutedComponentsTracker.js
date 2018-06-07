@@ -78,7 +78,7 @@ const filterRoutes = (routes: *) => routes.filter(route => route.data.component)
 
 const findRoute = (outletIdx, outletName, routes): Route<*, *> | null => {
   if (typeof outletName === 'string') {
-    return routes.find(route => route.data.outlet === outletName) || null
+    return routes.slice().reverse().find(route => route.data.outlet === outletName) || null
   } else {
     return routes.filter(route => !route.data.outlet)[outletIdx] || null
   }
