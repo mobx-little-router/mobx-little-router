@@ -24,7 +24,7 @@ import { type Event, EventTypes } from './events'
 import { NavigationTypes } from './model/Navigation'
 import type { IMiddleware } from './middleware/Middleware'
 
-const OBSERVABLE_ROUTE_PROPERTIES = ['params', 'query']
+const OBSERVABLE_ROUTE_PROPERTIES = ['params', 'query', 'model']
 
 class Router {
   // Public members
