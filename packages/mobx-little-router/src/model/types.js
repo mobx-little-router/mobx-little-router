@@ -38,14 +38,9 @@ export type BasicConfig<D: Object> = {
   onError?: ErrorHandler,
   onTransition?: TransitionFn,
   onEnter?: LifecycleEndFn,
-<<<<<<< HEAD
-  onExit?: LifecycleEndFn
-=======
   onExit?: LifecycleEndFn,
-  etc?: any,
   subscriptions?: Function,
   computed?: Function
->>>>>>> WIP
 }
 
 export type RedirectConfig<D: Object> = {
