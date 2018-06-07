@@ -73,7 +73,7 @@ export default function createRouteStateTreeNode(
       getData: config.getData || (() => ({})),
       disposers: [],
       subscriptions: config.subscriptions || null,
-      computed: typeof config.computed === 'function' ? observable(config.computed()) : null
+      computed: config.computed || (() => ({}))
     }, {
       matcher: observable.ref,
       loadChildren: observable.ref,

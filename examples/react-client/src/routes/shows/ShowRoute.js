@@ -5,9 +5,8 @@ import { Link } from 'mobx-little-router-react'
 
 import Modal from '../../components/Modal'
 
-const ShowRoute = ({ route: { node, params, query, data }, className }) => {
-  const { computed } = node.value
-  const { activeShow, prevShow, nextShow } = computed
+const ShowRoute = ({ route: { params, query, model }, className }) => {
+  const { activeShow, prevShow, nextShow } = model
 
   return (
     <Modal className={className} closePath={`/shows?q=${query.q}`}>

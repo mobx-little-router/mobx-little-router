@@ -33,11 +33,9 @@ export default function init({ router, stores }) {
           key: ROUTE_KEYS.show,
           path: '/:id',
           query: ['q'],
-          computed() {
+          computed(route) {
             const { ShowsStore } = stores
-            const { show: { params } } = router.select({
-              show: { params: { id: null } }
-            })
+            const { params } = route
 
             return {
               get activeShow() {

@@ -103,7 +103,7 @@ export type RouteValue<C: Object, D: Object> = {
   getContext: () => C,
   getData: () => D,
   subscriptions: null | Function,
-  computed: null | Function,
+  computed: Function,
   disposers: Array<Function>
 }
 
@@ -128,7 +128,7 @@ export type Route<C, D> = {
   segment: string, // This is the matched segment from URL. e.g. "/123" for ":id"
   parentUrl: string,
   onTransition: null | TransitionFn,
-  computed: Object
+  model: Object
 }
 
 export type SelectBody = {

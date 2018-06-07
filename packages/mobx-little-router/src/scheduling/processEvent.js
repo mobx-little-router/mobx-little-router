@@ -209,6 +209,14 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
             }
           })
         
+          // Start all subscriptions when activating a route
+          activating.forEach(route => {
+            const { subscriptions } = route.node.value
+            if (typeof subscriptions === 'function') {
+              route.node.value.disposers = [].concat(subscriptions())
+            }
+          })
+
           return evalTransitionsForRoutes(
             [
               { type: 'canActivate', includes: activating },
