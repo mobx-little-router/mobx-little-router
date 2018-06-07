@@ -19,5 +19,6 @@ describe('createRouteKey', () => {
 
   test('Create a key with segment', () => {
     expect(createRouteKey(node, '/abc/123')).toEqual('1/a7a42171')
+    expect(createRouteKey(node, '/abc/456')).toEqual('1/e4ea4b1e')
   })
 })

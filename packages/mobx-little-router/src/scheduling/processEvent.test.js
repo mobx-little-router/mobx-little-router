@@ -3,7 +3,7 @@ import { runInAction } from 'mobx'
 import { EventTypes } from '../events'
 import RouterStore from '../model/RouterStore'
 import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
-import createRoute from '../model/createRoute'
+import createRouteInstance from '../model/createRouteInstance'
 import Navigation from '../model/Navigation'
 import processEvent from './processEvent'
 import { NotFound } from '../errors'
@@ -86,7 +86,7 @@ describe('processEvent', () => {
     )
 
     // The :id param is chained.
-    expect(store.routes.slice()).toEqual([
+    expect(store.activatedRoutes.slice()).toEqual([
       expect.anything(),
       expect.anything(),
       expect.objectContaining({
@@ -118,7 +118,7 @@ describe('processEvent', () => {
       expect.arrayContaining([
         expect.objectContaining({
           type: EventTypes.NAVIGATION_ACTIVATED,
-          routes: expect.arrayContaining([
+          nextRoutes: expect.arrayContaining([
             expect.objectContaining({
               node: expect.objectContaining({
                 value: expect.objectContaining({ path: '**' })
@@ -152,45 +152,6 @@ describe('processEvent', () => {
         })
       ])
     )
-  })
-
-  test('cancel event clears previous routes on store', async () => {
-    runInAction(() => {
-      store.prevRoutes.replace([createRoute(store.state.root, '/', '/', {}, {})])
-    })
-
-    await processEvent(
-      {
-        type: EventTypes.NAVIGATION_CANCELLED,
-        done: true,
-        navigation: null,
-        nextNavigation: null
-      },
-      store
-    )
-
-    expect(store.prevRoutes.length).toEqual(0)
-  })
-
-  test('cancel event clears previous routes on store', async () => {
-    runInAction(() => {
-      store.prevRoutes.replace([createRoute(store.state.root, '/', '/', {}, {})])
-    })
-
-    await processEvent(
-      {
-        type: EventTypes.NAVIGATION_END,
-        done: true,
-        navigation: new Navigation({
-          type: 'POP',
-          to: null,
-          from: null
-        })
-      },
-      store
-    )
-
-    expect(store.prevRoutes.length).toEqual(0)
   })
 
   test('handles errors', async () => {

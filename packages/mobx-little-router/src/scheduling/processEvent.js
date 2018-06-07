@@ -6,6 +6,8 @@ import Navigation from '../model/Navigation'
 import type { Route } from '../model/types'
 import isUrlFullyMatched from './util/isUrlFullyMatched'
 import areRoutesEqual from '../model/util/areRoutesEqual'
+import getNodeValue from '../model/util/getNodeValue'
+import setNodeValue from '../model/util/setNodeValue'
 import TransitionManager from '../transition/TransitionManager'
 import type { Event } from '../events'
 import { EventTypes } from '../events'
@@ -15,50 +17,35 @@ import { RouteError } from '../errors'
  * This function maps an Event to a new Event. It is used by the Scheduler to manage data flow.
  */
 
-export default function maybeProcessEvent(
-  evt: Event,
-  store: RouterStore
-): Promise<Event> {
-  try {
-    return processEvent(evt, store)
-      .then(next => {
-        if (next) {
-          if (store.isCancelled(next.navigation)) {
-            return { type: EventTypes.EMPTY, navigation: null }
-          } else {
-            // Any setters returned after willResolve is called here.
-            if (typeof next.setter === 'function') {
-              next.setter()
-            }
-            return next
-          }
-        } else {
-          return { type: EventTypes.EMPTY, navigation: null }
+export default function maybeProcessEvent(evt: Event, store: RouterStore): Promise<Event> {
+  return Promise.resolve({ evt, store })
+    .then(processEvent)
+    .then(next => {
+      if (!next) {
+        return { type: EventTypes.EMPTY, navigation: null }
+      }
+
+      if (store.isCancelled(next.navigation)) {
+        return { type: EventTypes.EMPTY, navigation: null }
+      } else {
+        // Any setters returned after willResolve is called here.
+        if (next.setter) {
+          next.setter()
         }
-      })
-      .catch(err => {
-        return {
-          type: EventTypes.NAVIGATION_ERROR,
-          navigation: evt && evt.navigation,
-          error: err,
-          done: true
-        }
-      })
-  } catch (err) {
-    return Promise.resolve({
-      type: EventTypes.NAVIGATION_ERROR,
-      navigation: evt && evt.navigation,
-      error: err,
-      done: true
+        return next
+      }
     })
-  }
+    .catch(err => {
+      return {
+        type: EventTypes.NAVIGATION_ERROR,
+        navigation: evt && evt.navigation,
+        error: err,
+        done: true
+      }
+    })
 }
 
-function normalizePath(x: string) {
-  return x.endsWith('/') ? x : `${x}/`
-}
-
-export function processEvent(evt: Event, store: RouterStore): Promise<null | Event> {
+export function processEvent({ evt, store }: { evt: Event, store: RouterStore }): Promise<null | Event> {
   switch (evt.type) {
     case EventTypes.NAVIGATION_START: {
       const { navigation } = evt
@@ -88,33 +75,23 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
       const { matchedPath, navigation } = evt
       const leaf = matchedPath[matchedPath.length - 1]
       const isFullyMatched = isUrlFullyMatched(navigation.to.pathname, matchedPath)
-      const loader = leaf && leaf.node.value.loadChildren
+      const loader = getNodeValue('loadChildren', leaf)
 
-      if (!isFullyMatched && typeof loader !== 'function') {
-        const caughtPath = findCatchAllPath(matchedPath)
-        if (caughtPath.length > 0) {
-          return Promise.resolve({
-            type: EventTypes.NAVIGATION_ACTIVATING,
-            navigation: evt.navigation,
-            partialPath: caughtPath,
-            routes: store.getNextRoutes(caughtPath, navigation.to)
-          })
-        }
-        return Promise.resolve({
-          type: EventTypes.NAVIGATION_ERROR,
-          navigation,
-          error: new NotFound(navigation),
-          done: true
-        })
-      }
-      
-      if (typeof loader === 'function' && leaf.node.children.length === 0) {
+      if (typeof loader === 'function') {
         return Promise.resolve({
           type: EventTypes.CHILDREN_CONFIG_REQUESTED,
           navigation: evt.navigation,
           partialPath: matchedPath,
           leaf,
           loader
+        })
+      }
+
+      if (!isFullyMatched) {
+        return Promise.resolve({
+          type: EventTypes.NAVIGATION_NOT_MATCHED,
+          navigation: evt.navigation,
+          matchedPath: matchedPath
         })
       }
 
@@ -125,9 +102,26 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
       return Promise.resolve({
         type: EventTypes.NAVIGATION_ACTIVATING,
         navigation: evt.navigation,
-        partialPath: matchedPath,
-        routes: store.getNextRoutes(matchedPath, navigation.to)
+        matchedPath
       })
+    }
+    case EventTypes.NAVIGATION_NOT_MATCHED: {
+      const { matchedPath, navigation } = evt
+      const caughtPath = findCatchAllPath(matchedPath)
+      if (caughtPath.length > 0) {
+        return Promise.resolve({
+          type: EventTypes.NAVIGATION_ACTIVATING,
+          navigation: evt.navigation,
+          matchedPath: caughtPath
+        })
+      } else {
+        return Promise.resolve({
+          type: EventTypes.NAVIGATION_ERROR,
+          navigation,
+          error: new NotFound(navigation),
+          done: true
+        })
+      }
     }
     case EventTypes.CHILDREN_CONFIG_REQUESTED: {
       const { navigation, leaf, partialPath, loader } = evt
@@ -170,7 +164,7 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
         root: store.state.root,
         setter: action(() => {
           store.replaceChildren(leaf.node, children)
-          leaf.node.value.loadChildren = null
+          setNodeValue('loadChildren', null, leaf)
         })
       })
     }
@@ -188,101 +182,83 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
       }
     }
     case EventTypes.NAVIGATION_ACTIVATING: {
-      const { navigation, routes, partialPath } = evt
-
-      const currRoutes = store.routes.slice()
-
-      // We've found a match or unmatched error has been handled.
-      const { activating, deactivating, entering, exiting } = diffRoutes(
-        currRoutes,
-        routes
-      )
+      const { navigation, matchedPath } = evt
+      const currRoutes = store.activatedRoutes.slice()
+      const nextRoutes = store.createNextRouteInstances(matchedPath, navigation.to)
+      const { activating, deactivating, entering, exiting } = diffRoutes(currRoutes, nextRoutes)
 
       // Add matched leaf to the navigation object so it can be used for redirection
-      navigation.leaf = routes[routes.length - 1]
+      navigation.leaf = nextRoutes[nextRoutes.length - 1]
 
-      return evalTransitionsForRoutes(
-        [
-          { type: 'canDeactivate' },
-          { type: 'willDeactivate' }
-        ],
-        deactivating,
-        navigation
-      ).then(() =>
-        evalTransitionsForRoutes(
-          [
-            { type: 'canActivate', includes: activating },
-            { type: 'willActivate', includes: activating },
-            { type: 'willResolve', includes: entering }
-          ],
-          routes,
-          navigation
-        ).then((setter: Function) => ({
+      return Promise.resolve()
+        .then(() =>
+          evalTransitionsForRoutes([{ type: 'canDeactivate' }, { type: 'willDeactivate' }], deactivating, navigation)
+        )
+        .then(() =>
+          evalTransitionsForRoutes(
+            [
+              { type: 'canActivate', includes: activating },
+              { type: 'willActivate', includes: activating },
+              { type: 'willResolve', includes: entering }
+            ],
+            nextRoutes,
+            navigation
+          )
+        )
+        .then((setter: Function) => ({
           type: EventTypes.NAVIGATION_ACTIVATED,
           navigation,
           activating,
           deactivating,
           entering,
           exiting,
-          routes,
+          nextRoutes,
           setter
         }))
-      ).catch(err => {
-        store.updateError(err)
-
-        // Navigation error may be thrown by a guard or lifecycle hook.
-        // If so, mark the current navigation as cancelled, and use the error Navigation as next.
-        if (err instanceof Navigation) {
-          return {
-            type: EventTypes.NAVIGATION_CANCELLED,
-            navigation: evt.navigation,
-            nextNavigation: err,
-            done: true
-          }
-        } else if (err instanceof RouteError) {
-          const caughtPath = findCatchAllPath(partialPath)
-          if (caughtPath.length > 0) {
+        .catch(err => {
+          if (err instanceof Navigation) {
             return {
-              type: EventTypes.NAVIGATION_ACTIVATING,
-              navigation,
-              partialPath: caughtPath,
-              routes: store.getNextRoutes(caughtPath, navigation.to)
+              type: EventTypes.NAVIGATION_CANCELLED,
+              navigation: evt.navigation,
+              nextNavigation: err,
+              done: true
+            }
+          } else if (err instanceof RouteError) {
+            return {
+              type: EventTypes.NAVIGATION_NOT_MATCHED,
+              navigation: evt.navigation,
+              matchedPath: evt.matchedPath
+            }
+          } else {
+            return {
+              type: EventTypes.NAVIGATION_ERROR,
+              navigation: evt.navigation,
+              error: err,
+              done: true
             }
           }
-        }
-
-        return {
-          type: EventTypes.NAVIGATION_ERROR,
-          navigation,
-          error: err,
-          done: true
-        }
-      })
+        })
     }
     case EventTypes.NAVIGATION_ACTIVATED: {
-      const { navigation, routes, exiting, entering } = evt
+      const { navigation, nextRoutes, exiting, entering } = evt
 
       return Promise.resolve({
         type: EventTypes.NAVIGATION_TRANSITION_START,
         navigation: evt.navigation,
-        routes,
-        entering,
-        exiting,
         setter: action(() => {
-          store.updateRoutes(routes)
+          store.updateActivateRoutes(nextRoutes)
           store.updateLocation(navigation.to)
-        })
+        }),
+        entering,
+        exiting
       })
     }
     case EventTypes.NAVIGATION_TRANSITION_START: {
-      const { navigation, routes, exiting, entering } = evt
+      const { navigation, exiting, entering } = evt
       let done
       if (navigation.shouldTransition) {
         // Run and wait on transition of exiting and newly entering nodes.
-        done = Promise.all([
-          TransitionManager.run('exiting', exiting),
-          TransitionManager.run('entering', entering)
-        ])
+        done = Promise.all([TransitionManager.run('exiting', exiting), TransitionManager.run('entering', entering)])
       } else {
         done = Promise.resolve()
       }
@@ -290,7 +266,6 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
       return done.then(() => ({
         type: EventTypes.NAVIGATION_TRANSITION_END,
         navigation,
-        routes,
         entering,
         exiting
       }))
@@ -298,8 +273,8 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
     case EventTypes.NAVIGATION_TRANSITION_END: {
       const { exiting, entering } = evt
 
-      exiting.forEach(route => typeof route.node.value.onExit === 'function' && route.node.value.onExit(route))
-      entering.forEach(route => typeof route.node.value.onEnter === 'function' && route.node.value.onEnter(route))
+      exiting.forEach(invokeTransitionFunction('onExit'))
+      entering.forEach(invokeTransitionFunction('onEnter'))
 
       return Promise.resolve({
         type: EventTypes.NAVIGATION_END,
@@ -317,7 +292,6 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
         navigation: evt.navigation,
         setter: () => {
           store.cancel(evt.navigation)
-          store.clearPrevRoutes()
         }
       })
     }
@@ -329,11 +303,9 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
         type: EventTypes.EMPTY,
         navigation: evt.navigation,
         setter: () => {
-          if (!isCatchAll(leaf && leaf.node)) {
+          if (!isCatchAll(leaf)) {
             store.updateError(null)
           }
-
-          store.clearPrevRoutes()
         }
       })
     }
@@ -346,17 +318,23 @@ export function processEvent(evt: Event, store: RouterStore): Promise<null | Eve
  * Private helpers.
  */
 
+function normalizePath(x: string) {
+  return x.endsWith('/') ? x : `${x}/`
+}
+
 function diffRoutes(currRoutes: Route<*, *>[], nextRoutes: Route<*, *>[]) {
   let parentWillResolve
 
   // Exiting this specific route instance
-  const exiting = currRoutes.reduce((acc, x, idx) => {
-    const y = nextRoutes.length > idx ? nextRoutes[idx] : undefined
-    if (acc.length > 0 || !areRoutesEqual(x, y)) {
-      acc.push(x)
-    }
-    return acc
-  }, []).reverse()
+  const exiting = currRoutes
+    .reduce((acc, x, idx) => {
+      const y = nextRoutes.length > idx ? nextRoutes[idx] : undefined
+      if (acc.length > 0 || !areRoutesEqual(x, y)) {
+        acc.push(x)
+      }
+      return acc
+    }, [])
+    .reverse()
 
   // Entering this specific route instance
   const entering = nextRoutes.reduce((acc, x, idx) => {
@@ -369,42 +347,43 @@ function diffRoutes(currRoutes: Route<*, *>[], nextRoutes: Route<*, *>[]) {
 
   // Deactivating this route state tree node
   parentWillResolve = false
-  const deactivating = currRoutes.reduce((acc, x, idx) => {
-    const y = nextRoutes.length > idx ? nextRoutes[idx] : undefined
-    if (acc.length > 0 || parentWillResolve || x.node !== (y && y.node)) {
-      acc.push(x)
-    }
-    if (!areRoutesEqual(x, y)) { parentWillResolve = true }
-    return acc
-  }, []).reverse()
+  const deactivating = currRoutes
+    .reduce((acc, x, idx) => {
+      const y = nextRoutes.length > idx ? nextRoutes[idx] : undefined
+      if (acc.length > 0 || parentWillResolve || x.node !== (y && y.node)) {
+        acc.push(x)
+      }
+      if (!areRoutesEqual(x, y)) {
+        parentWillResolve = true
+      }
+      return acc
+    }, [])
+    .reverse()
 
   // Activating this route state tree node
   parentWillResolve = false
   const activating = nextRoutes.reduce((acc, x, idx) => {
     const y = currRoutes.length > idx ? currRoutes[idx] : undefined
     if (acc.length > 0 || parentWillResolve || x.node !== (y && y.node)) {
-      acc.push(x)      
+      acc.push(x)
     }
-    if (!areRoutesEqual(x, y)) { parentWillResolve = true }
+    if (!areRoutesEqual(x, y)) {
+      parentWillResolve = true
+    }
     return acc
   }, [])
 
   return { activating, deactivating, entering, exiting }
 }
 
-type HookType =
-  | 'canDeactivate'
-  | 'canActivate'
-  | 'willDeactivate'
-  | 'willActivate'
-  | 'willResolve'
+type HookType = 'canDeactivate' | 'canActivate' | 'willDeactivate' | 'willActivate' | 'willResolve'
 
 type Operation = {
   type: HookType,
   includes?: Route<*, *>[]
 }
 
-function isIncluded(route: Route<*, *>, routes: ?Route<*, *>[]) {
+function isIncluded(route: Route<*, *>, routes: ?(Route<*, *>[])) {
   return routes ? routes.includes(route) : true
 }
 
@@ -424,51 +403,40 @@ function evalTransition(
   const result = typeof value[type] === 'function' && isIncluded(route, includes)
     ? value[type](route, navigation)
     : true
-  
+
   // If the guard results in `false` or a rejected promise then mark transition as failed.
   if (undefined === result || false === result) {
     return navigation.goBack() // TODO: This `goBack` will not work if this is the first navigation in the system.
   } else if (typeof result.then === 'function') {
-    return result.then(x => {
-      if (typeof x === 'function') {
-        state.setters.push(x)
-      }
-    })
-    .catch(err => {
-      if (typeof route.node.value.onError === 'function') {
-        const result = route.node.value.onError(route, navigation, err)
-        if (typeof result.then === 'function') {
-          return result.then(() => {
-            state.caughtError = true
-          })
+    return result
+      .then(x => {
+        if (typeof x === 'function') {
+          state.setters.push(x)
         }
-      }
-      return Promise.reject(err)
-    })
+      })
+      .catch(err => {
+        if (typeof route.node.value.onError === 'function') {
+          const result = route.node.value.onError(route, navigation, err)
+          if (typeof result.then === 'function') {
+            return result.then(() => {
+              state.caughtError = true
+            })
+          }
+        }
+        return Promise.reject(err)
+      })
   } else {
     return Promise.resolve()
   }
 }
 
-function evalTransitions(
-  operations: Operation[],
-  route: Route<*, *>,
-  navigation: Navigation,
-  state: EvalState
-) {
-  return operations
-    .reduce((curr, operation) => {
-      return state.caughtError
-        ? Promise.resolve()
-        : curr.then(() => evalTransition(operation, route, navigation, state))
-    }, Promise.resolve())
+function evalTransitions(operations: Operation[], route: Route<*, *>, navigation: Navigation, state: EvalState) {
+  return operations.reduce((curr, operation) => {
+    return state.caughtError ? Promise.resolve() : curr.then(() => evalTransition(operation, route, navigation, state))
+  }, Promise.resolve())
 }
 
-function evalTransitionsForRoutes(
-  operations: Operation[],
-  routes: Route<*, *>[],
-  navigation: Navigation
-) {
+function evalTransitionsForRoutes(operations: Operation[], routes: Route<*, *>[], navigation: Navigation) {
   const state = {
     caughtError: false,
     setters: []
@@ -520,4 +488,12 @@ function findCatchAllPath(path) {
   }
 
   return []
+}
+
+function invokeTransitionFunction(type) {
+  return route => getTransitionFunction(type)(route).call(route)
+}
+
+function getTransitionFunction(type) {
+  return route => getNodeValue(type, route) || (route => {})
 }

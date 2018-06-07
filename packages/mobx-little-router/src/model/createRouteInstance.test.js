@@ -1,6 +1,6 @@
 // @flow
 import createRouteStateTreeNode from './createRouteStateTreeNode'
-import createRoute from './createRoute'
+import createRouteInstance from './createRouteInstance'
 
 describe('createRouteStateTreeNode', () => {
   let node
@@ -19,7 +19,7 @@ describe('createRouteStateTreeNode', () => {
   })
 
   test('Sets the params, context and data', () => {
-    expect(createRoute(node, '/root', '/a/1/b/2', { a: '1', b: '2' }, { q: 'hey' })).toEqual(
+    expect(createRouteInstance(node, '/root', '/a/1/b/2', { a: '1', b: '2' }, { q: 'hey' })).toEqual(
       expect.objectContaining({
         parentUrl: '/root',
         segment: '/a/1/b/2',

@@ -38,8 +38,7 @@ export type BasicConfig<D: Object> = {
   onError?: ErrorHandler,
   onTransition?: TransitionFn,
   onEnter?: LifecycleEndFn,
-  onExit?: LifecycleEndFn,
-  etc?: any
+  onExit?: LifecycleEndFn
 }
 
 export type RedirectConfig<D: Object> = {
@@ -95,8 +94,7 @@ export type RouteValue<C: Object, D: Object> = {
   onEnter: null | LifecycleEndFn,
   onExit: null | LifecycleEndFn,
   getContext: () => C,
-  getData: () => D,
-  etc: Object
+  getData: () => D
 }
 
 export type RouteStateTreeNode<C, D> = ITreeNode<RouteValue<C, D>>

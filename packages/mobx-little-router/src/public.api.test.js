@@ -96,7 +96,7 @@ describe('Public API', () => {
 
     expect(changes).toEqual(['/initial', '/foo', '/bar', '/foo', '/bar', '/quux'])
 
-    expect(router._store.routes.map(route => route.node.value.path)).toEqual([
+    expect(router._store.activatedRoutes.map(route => route.node.value.path)).toEqual([
       '',
       ':whatever'
     ])
@@ -123,7 +123,7 @@ describe('Public API', () => {
 
     expect(changes).toEqual(['/initial', '/10'])
 
-    expect(router._store.routes.map(route => route.node.value.path)).toEqual([
+    expect(router._store.activatedRoutes.map(route => route.node.value.path)).toEqual([
       '',
       ':whatever'
     ])
@@ -141,7 +141,7 @@ describe('Public API', () => {
       _router.push('/1').then(() => {
         expect(changes).toEqual(['/initial', '/1'])
 
-        expect(_router._store.routes.map(route => route.node.value.path)).toEqual([
+        expect(_router._store.activatedRoutes.map(route => route.node.value.path)).toEqual([
           '',
           ':whatever'
         ])
@@ -235,7 +235,6 @@ describe('Public API', () => {
   })
 
   test('willResolve hook', async () => {
-    const stack = []
     const willActivateSpy = jest.fn(() => Promise.resolve())
     const willResolveSpy = jest.fn(() => Promise.resolve())
     const willDeactivateSpy = jest.fn(() => Promise.resolve())
@@ -401,7 +400,7 @@ describe('Public API', () => {
 
     await router.push('/joe/settings')
 
-    expect(router._store.routes[2].params.username).toBe('joe')
+    expect(router._store.activatedRoutes[2].params.username).toBe('joe')
 
     expect(activating.length).toBe(3)
     expect(entering.length).toBe(3)
@@ -434,7 +433,7 @@ describe('Public API', () => {
     // It should also rerun all resolvers
     await router.push('/lenny/settings')
 
-    expect(router._store.routes[2].params.username).toBe('lenny')
+    expect(router._store.activatedRoutes[2].params.username).toBe('lenny')
 
     expect(activating.length).toBe(2)
     expect(entering.length).toBe(3)
@@ -559,8 +558,8 @@ describe('Public API', () => {
 
     expect(router.location.pathname).toBe('/a/b')
 
-    expect(router._store.routes[1].data.component).toBe(ARouteHandler)
-    expect(router._store.routes[2].data.component).toBe(BRouteHandler)
+    expect(router._store.activatedRoutes[1].data.component).toBe(ARouteHandler)
+    expect(router._store.activatedRoutes[2].data.component).toBe(BRouteHandler)
     expect(willResolveSpy.mock.calls.length).toBe(0)
 
     router.stop()
@@ -915,18 +914,6 @@ describe('Public API', () => {
     router.stop()
   })
 
-  test('custom keys and active keys', async () => {
-    router = install({
-      history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
-      getContext: () => ({ message: 'Hello' }),
-      routes: [{ path: 'a', key: 'my-custom-key' }]
-    })
-
-    await router.start()
-
-    expect(router.activeRouteKeys).toEqual(expect.arrayContaining(['my-custom-key']))
-  })
-
   test('router navigation within activation function', async () => {
     const spy = jest.fn(() => router.replace('/b'))
     router = install({
@@ -1002,8 +989,20 @@ describe('Public API', () => {
 
     expect(router.location.pathname).toEqual('/**')
   })
+
+  test('route instance differs based on param values', async () => {
+    await router.start()
+
+    await router.push('/foo')
+    const [_, whateverRoute1] = router.activatedRoutes.slice()
+
+    await router.push('/bar')
+    const [__, whateverRoute2] = router.activatedRoutes.slice()
+
+    expect(whateverRoute1).not.toBe(whateverRoute2)
+  })
 })
 
 const getLastRoute = router => {
-  return router._store.routes[router._store.routes.length - 1]
+  return router.activatedRoutes[router.activatedRoutes.length - 1]
 }

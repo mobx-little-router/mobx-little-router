@@ -15,6 +15,7 @@ export const EventTypes = {
   CHILDREN_LOADING: 'CHILDREN_LOADING',
   CHILDREN_LOADED: 'CHILDREN_LOADED',
   NAVIGATION_RETRY: 'NAVIGATION_RETRY',
+  NAVIGATION_NOT_MATCHED: 'NAVIGATION_NOT_MATCHED',
   NAVIGATION_ACTIVATING: 'NAVIGATION_ACTIVATING',
   NAVIGATION_ACTIVATED: 'NAVIGATION_ACTIVATED',
   NAVIGATION_TRANSITION_START: 'NAVIGATION_TRANSITION_START',
@@ -33,6 +34,7 @@ export type Event =
   | ChildrenLoading
   | ChildrenLoaded
   | NavigationRetry
+  | NavigationNotMatched
   | NavigationActivating
   | NavigationActivated
   | NavigationTransitionStart
@@ -115,10 +117,19 @@ export type NavigationRetry = {
   [other: string]: any
 }
 
+export type NavigationNotMatched = {
+  type: 'NAVIGATION_NOT_MATCHED',
+  navigation: Navigation,
+  matchedPath: PathElement<*, *>[],
+  setter?: ?Setter,
+  done?: false,
+  [other: string]: any
+}
+
 export type NavigationActivating = {
   type: 'NAVIGATION_ACTIVATING',
   navigation: Navigation,
-  routes: Route<*, *>[],
+  matchedPath: PathElement<*, *>[],
   setter?: ?Setter,
   done?: false,
   [other: string]: any
@@ -127,7 +138,7 @@ export type NavigationActivating = {
 export type NavigationActivated = {
   type: 'NAVIGATION_ACTIVATED',
   navigation: Navigation,
-  routes: Route<*, *>[],
+  nextRoutes: Route<*, *>[],
   entering: Route<*, *>[],
   exiting: Route<*, *>[],
   setter?: ?Setter,
@@ -138,7 +149,6 @@ export type NavigationActivated = {
 export type NavigationTransitionStart = {
   type: 'NAVIGATION_TRANSITION_START',
   navigation: Navigation,
-  routes: Route<*, *>[],
   entering: Route<*, *>[],
   exiting: Route<*, *>[],
   setter?: ?Setter,
@@ -149,7 +159,6 @@ export type NavigationTransitionStart = {
 export type NavigationTransitionEnd = {
   type: 'NAVIGATION_TRANSITION_END',
   navigation: Navigation,
-  routes: Route<*, *>[],
   entering: Route<*, *>[],
   exiting: Route<*, *>[],
   setter?: ?Setter,

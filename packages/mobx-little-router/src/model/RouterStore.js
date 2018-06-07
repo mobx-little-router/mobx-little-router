@@ -1,22 +1,13 @@
 // @flow
-import type { IObservableArray } from 'mobx'
-import { extendObservable, runInAction, observable, computed } from 'mobx'
+import type { IObservableArray, ObservableMap } from 'mobx'
+import { extendObservable, observable, runInAction } from 'mobx'
 import createRouteStateTreeNode from './createRouteStateTreeNode'
-import type { ObservableMap } from 'mobx'
-import createRoute from './createRoute'
+import createRouteInstance from './createRouteInstance'
 import RouterStateTree from './RouterStateTree'
 import qs from 'querystring'
 import areRoutesEqual from './util/areRoutesEqual'
 import type Navigation from './Navigation'
-import type {
-  Location,
-  Query,
-  Params,
-  Route,
-  RouteStateTreeNode,
-  PathElement,
-  Config,
-} from './types'
+import type { Config, Location, Params, PathElement, Query, Route, RouteStateTreeNode } from './types'
 
 type TreeNodeMetaData<C, D> = {
   node: RouteStateTreeNode<C, D>,
@@ -32,28 +23,30 @@ class RouterStore {
   // Create a map of all nodes in tree so we can perform faster lookup.
   // Instances should be exactly the same as in state tree.
   cache: ObservableMap<TreeNodeMetaData<*, *>>
-  // Keep a list of activated nodes so we can track differences when transitioning to a new state.
-  routes: IObservableArray<Route<*, *>>
-  prevRoutes: IObservableArray<Route<*, *>>
+
+  activatedRoutes: IObservableArray<Route<*, *>>
 
   error: any
 
   cancelledSequence: number
 
   constructor(root: RouteStateTreeNode<*, *>) {
-    extendObservable(this, {
-      state: new RouterStateTree(root),
-      cancelledSequence: -1,
-      location: {},
-      params: observable.map({}),
-      cache: observable.map({ [root.value.key]: root }),
-      routes: observable.array([]),
-      prevRoutes: observable.array([]),
-      error: null
-    }, {
-      state: observable.ref,
-      cancelledSequence: observable.ref
-    })
+    extendObservable(
+      this,
+      {
+        state: new RouterStateTree(root),
+        cancelledSequence: -1,
+        location: {},
+        params: observable.map({}),
+        cache: observable.map({ [root.value.key]: root }),
+        activatedRoutes: observable.array([]),
+        error: null
+      },
+      {
+        state: observable.ref,
+        cancelledSequence: observable.ref
+      }
+    )
   }
 
   getNextKey = (): string => {
@@ -66,19 +59,17 @@ class RouterStore {
 
   /* Queries */
 
-  // Returns a list of the next routes from the matched path.
-  // If the route is not currently active or has changed, then it will be created from factory function.
-  getNextRoutes(path: PathElement<*, *>[], location: Location): Route<*, *>[] {
-    const query = getQueryParams(location)
+  createNextRouteInstances(path: PathElement<*, *>[], nextLocation: Location): Route<*, *>[] {
+    const query = getQueryParams(nextLocation)
     return path.map(element => {
       const matchedQueryParams = this.getMatchedQueryParams(element.node, query)
-      const newRoute = createRoute(element.node, element.parentUrl, element.segment, element.params, query)
-      const existingRoute = this.routes.find(x => areRoutesEqual(x, newRoute))
-      
+      const newRoute = createRouteInstance(element.node, element.parentUrl, element.segment, element.params, query)
+      const existingRoute = this.activatedRoutes.find(x => areRoutesEqual(x, newRoute))
+
       if (existingRoute) {
         return existingRoute
       } else {
-        return observable(createRoute(element.node, element.parentUrl, element.segment, element.params, matchedQueryParams))
+        return observable(createRouteInstance(element.node, element.parentUrl, element.segment, element.params, matchedQueryParams))
       }
     })
   }
@@ -103,7 +94,7 @@ class RouterStore {
   }
 
   getRoute(key: string): null | Route<*, *> {
-    const x = this.routes.find(route => route.node.value.key === key)
+    const x = this.activatedRoutes.find(route => route.node.value.key === key)
     if (x) {
       return x
     } else {
@@ -141,14 +132,13 @@ class RouterStore {
     })
   }
 
-  updateRoutes(routes: Route<*, *>[]) {
+  updateActivateRoutes(nextRoutes: Route<*, *>[]) {
     runInAction(() => {
-      this.prevRoutes.replace(this.routes.slice())
-      this.routes.replace(routes)
+      this.activatedRoutes.replace(nextRoutes)
 
       // Update params
       this.params.clear()
-      this.routes.forEach(route => {
+      this.activatedRoutes.forEach(route => {
         this.params.set(route.node.value.key, route.params)
       })
     })
@@ -157,12 +147,6 @@ class RouterStore {
   updateLocation(nextLocation: Location) {
     runInAction(() => {
       this.location = nextLocation
-    })
-  }
-
-  clearPrevRoutes() {
-    runInAction(() => {
-      this.prevRoutes.replace([])
     })
   }
 
@@ -177,12 +161,10 @@ class RouterStore {
   }
 
   getMatchedQueryParams(node: RouteStateTreeNode<*, *>, query: Query): Query {
-    return Object.keys(query)
-      .filter(key => node.value.query.includes(key))
-      .reduce((acc, key) => {
-        acc[key] = query[key]
-        return acc
-      }, {})
+    return Object.keys(query).filter(key => node.value.query.includes(key)).reduce((acc, key) => {
+      acc[key] = query[key]
+      return acc
+    }, {})
   }
 
   /* Private helpers */
