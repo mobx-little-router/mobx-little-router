@@ -1,5 +1,5 @@
 // @flow
-import { action, observable } from 'mobx'
+import { action, observable, runInAction } from 'mobx'
 import type RouterStore from '../model/RouterStore'
 import { NotFound } from '../errors'
 import Navigation from '../model/Navigation'
@@ -196,16 +196,20 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
         )
         .then(() => {
           // Dispose of all route disposers when deactivating a route
-          deactivating.forEach(route => {
-            route.node.value.disposers.forEach(disposer => disposer())
-            route.node.value.disposers = []
+          exiting.forEach(route => {
+            route.disposers.forEach(disposer => disposer())
+            runInAction(() => {
+              route.disposers = []
+            })
           })
        
           // Start all subscriptions when activating a route
-          activating.forEach(route => {
+          entering.forEach(route => {
             const { subscriptions } = route.node.value
             if (typeof subscriptions === 'function') {
-              route.node.value.disposers = [].concat(subscriptions())
+              runInAction(() => {
+                route.disposers = [].concat(subscriptions.bind(route)())
+              })
             }
           })
 

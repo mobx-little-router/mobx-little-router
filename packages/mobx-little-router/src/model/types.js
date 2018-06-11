@@ -39,6 +39,7 @@ export type BasicConfig<D: Object> = {
   onTransition?: TransitionFn,
   onEnter?: LifecycleEndFn,
   onExit?: LifecycleEndFn,
+  state?: Object,
   subscriptions?: Function,
   computed?: Function,
   effects?: Function,
@@ -48,7 +49,7 @@ export type RedirectConfig<D: Object> = {
   path: string,
   query?: empty,
   redirectTo: Href,
-  getData?: (route: Route<*, *>) => D,
+  getData?: () => D,
   key?: string,
   children?: empty,
   match?: 'full' | 'partial',
@@ -97,9 +98,9 @@ export type RouteValue<C: Object, D: Object> = {
   onEnter: null | LifecycleEndFn,
   onExit: null | LifecycleEndFn,
   getContext: () => C,
-  getData: (route: Route<*, *>) => D,
+  getData: () => D,
+  state: Object,
   subscriptions: null | Function,
-  disposers: Array<Function>,
   computed: Function,
   effects: Function,
 }
@@ -125,8 +126,10 @@ export type Route<C, D> = {
   segment: string, // This is the matched segment from URL. e.g. "/123" for ":id"
   parentUrl: string,
   onTransition: null | TransitionFn,
+  state: Object,
   computed: Object,
-  effects: { [k: string]: () => Promise<any> }
+  effects: { [k: string]: () => Promise<any> },
+  disposers: Array<Function>
 }
 
 export type SelectBody = {

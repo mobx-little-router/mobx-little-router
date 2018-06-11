@@ -16,16 +16,18 @@ export default function createRouteInstance<C: Object, D: Object>(node: RouteSta
     segment,
     params,
     query,
+    state: node.value.state,
     context: node.value.getContext(),
-    onTransition: node.value.onTransition
+    onTransition: node.value.onTransition,
+    disposers: []
   }, {
     context: observable.ref
   })
 
   extendObservable(route, {
-    computed: node.value.computed(route),
-    effects: node.value.effects(route),
-    data: node.value.getData(route)
+    computed: node.value.computed.bind(route)(),
+    effects: node.value.effects.bind(route)(),
+    data: node.value.getData.bind(route)()
   })
 
   return route

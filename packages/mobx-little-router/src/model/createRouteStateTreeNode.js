@@ -72,7 +72,7 @@ export default function createRouteStateTreeNode(
       onExit: config.onExit || null,
       getContext,
       getData: config.getData || (() => ({})),
-      disposers: [],
+      state: config.state || {},
       subscriptions: config.subscriptions || null,
       computed: config.computed || (() => ({})),
       effects: config.effects || (() => ({}))

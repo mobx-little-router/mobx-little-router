@@ -1,7 +1,7 @@
-import React from 'react'
 import ShowsRoute from './ShowsRoute'
 import ShowRoute from './ShowRoute'
 import * as fx from './effects'
+import { when } from 'mobx'
 
 export default function init({ router, stores }) {
   const ROUTE_KEYS = {
@@ -14,7 +14,10 @@ export default function init({ router, stores }) {
       key: ROUTE_KEYS.shows,
       path: '/',
       query: ['q'],
-      computed(route) {
+      state: {
+        isPending: true
+      },
+      computed() {
         return {
           get shows() {
             return stores.ShowsStore.shows
@@ -22,10 +25,7 @@ export default function init({ router, stores }) {
         }
       },
       subscriptions() {
-        const selected = router.select({
-          [ROUTE_KEYS.shows]: { query: { q: null } }
-        })
-        return fx.fetchShows({ input: selected, stores })
+        return fx.fetchShows({ route: this, stores })
       },
       component: ShowsRoute,
       children: [
@@ -33,9 +33,12 @@ export default function init({ router, stores }) {
           key: ROUTE_KEYS.show,
           path: '/:id',
           query: ['q'],
-          computed(route) {
+          state: {
+            isPending: true
+          },
+          computed() {
             const { ShowsStore } = stores
-            const { params } = route
+            const { params } = this
             const selected = router.select({ shows: { computed: { shows: [] } } })
 
             return {
@@ -73,10 +76,10 @@ export default function init({ router, stores }) {
             }
           },
           subscriptions() {
-            const selected = router.select({
-              [ROUTE_KEYS.show]: { params: { id: null } }
-            })
-            return fx.fetchShow({ input: selected, stores })
+            return fx.fetchShow({ route: this, stores })
+          },
+          willResolve(route) {
+            return when(() => !route.state.isPending)
           },
           component: ShowRoute,
           outlet: 'modal',
