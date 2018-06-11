@@ -24,6 +24,7 @@ export default function createRouteInstance<C: Object, D: Object>(node: RouteSta
 
   extendObservable(route, {
     computed: node.value.computed(route),
+    effects: node.value.effects(route),
     data: node.value.getData(route)
   })
 
