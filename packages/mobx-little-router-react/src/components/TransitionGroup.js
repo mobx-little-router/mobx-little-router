@@ -1,5 +1,5 @@
 // @flow
-import type { Route } from 'mobx-little-router'
+import type { Route, Router } from 'mobx-little-router'
 import React, { createElement, Component } from 'react'
 import { findDOMNode } from 'react-dom'
 import { extendObservable, action, runInAction } from 'mobx'
@@ -14,6 +14,7 @@ const classNames = {
 }
 
 type TransitionGroupProps = {
+  router: Router,
   from: ?Object,
   to: ?Object,
   isTransitioning: boolean,
@@ -91,7 +92,7 @@ class TransitionGroup extends Component<TransitionGroupProps> {
   }
 
   render() {
-    const { from, to, isTransitioning, additionalProps } = this.props
+    const { router, from, to, isTransitioning, additionalProps } = this.props
     const routes = []
 
     if (from) {
@@ -115,6 +116,7 @@ class TransitionGroup extends Component<TransitionGroupProps> {
         {routes.map(({ route, key, className }) =>
           <TransitionItem
             key={key}
+            router={router}
             route={route}
             className={className}
             additionalProps={additionalProps}
@@ -127,6 +129,7 @@ class TransitionGroup extends Component<TransitionGroupProps> {
 }
 
 type TransitionItemProps = {
+  router: Router,
   route: Object,
   className: string,
   additionalProps: ?Object,
@@ -136,11 +139,12 @@ type TransitionItemProps = {
 // Need to wrap the item so we can properly set the innerRef
 export class TransitionItem extends Component<TransitionItemProps> {
   render() {
-    const { route, className, additionalProps, innerRef } = this.props
+    const { router, route, className, additionalProps, innerRef } = this.props
     
     return (
       <div className="router-transition-item" data-route-key={route.key} ref={innerRef}>
         {createElement(route.data.component, {
+          router,
           route,
           className,
           ...additionalProps

@@ -17,14 +17,14 @@ export default function createRouteInstance<C: Object, D: Object>(node: RouteSta
     params,
     query,
     context: node.value.getContext(),
-    data: node.value.getData(),
     onTransition: node.value.onTransition
   }, {
     context: observable.ref
   })
 
   extendObservable(route, {
-    model: node.value.computed(route)
+    computed: node.value.computed(route),
+    data: node.value.getData(route)
   })
 
   return route

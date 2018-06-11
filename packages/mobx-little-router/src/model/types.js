@@ -47,7 +47,7 @@ export type RedirectConfig<D: Object> = {
   path: string,
   query?: empty,
   redirectTo: Href,
-  getData?: () => D,
+  getData?: (route: Route<*, *>) => D,
   key?: string,
   children?: empty,
   match?: 'full' | 'partial',
@@ -96,7 +96,7 @@ export type RouteValue<C: Object, D: Object> = {
   onEnter: null | LifecycleEndFn,
   onExit: null | LifecycleEndFn,
   getContext: () => C,
-  getData: () => D,
+  getData: (route: Route<*, *>) => D,
   subscriptions: null | Function,
   computed: Function,
   disposers: Array<Function>
@@ -123,12 +123,13 @@ export type Route<C, D> = {
   segment: string, // This is the matched segment from URL. e.g. "/123" for ":id"
   parentUrl: string,
   onTransition: null | TransitionFn,
-  model: Object
+  computed: Object
 }
 
 export type SelectBody = {
   [k: string]: {
     query?: { [k: string]: null | string },
-    params?: { [k: string]: null | string }
+    params?: { [k: string]: null | string },
+    computed?: { [k: string]: null | string }
   }
 }

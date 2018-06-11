@@ -36,8 +36,17 @@ export default function init({ router, stores }) {
           computed(route) {
             const { ShowsStore } = stores
             const { params } = route
+            const selected = router.select({ shows: { computed: { shows: [] } } })
 
             return {
+              get numItems() {
+                return selected.shows.computed.shows.length
+              },
+
+              get index() {
+                return selected.shows.computed.shows.findIndex((show) => this.activeShow && show.id === this.activeShow.id) + 1
+              },
+              
               get activeShow() {
                 return ShowsStore.getDetails(params.id)
               },
