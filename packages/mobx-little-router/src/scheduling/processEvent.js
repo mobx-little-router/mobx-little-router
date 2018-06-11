@@ -200,15 +200,7 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
             route.node.value.disposers.forEach(disposer => disposer())
             route.node.value.disposers = []
           })
-
-          // Run all subscriptions when activating a route
-          activating.forEach(route => {
-            const { subscriptions } = route.node.value
-            if (typeof subscriptions === 'function') {
-              route.node.value.disposers = [].concat(subscriptions())
-            }
-          })
-        
+       
           // Start all subscriptions when activating a route
           activating.forEach(route => {
             const { subscriptions } = route.node.value
