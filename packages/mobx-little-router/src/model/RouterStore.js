@@ -132,7 +132,7 @@ class RouterStore {
     })
   }
 
-  updateActivateRoutes(nextRoutes: Route<*, *>[]) {
+  updateActivatedRoutes(nextRoutes: Route<*, *>[]) {
     runInAction(() => {
       this.activatedRoutes.replace(nextRoutes)
 
