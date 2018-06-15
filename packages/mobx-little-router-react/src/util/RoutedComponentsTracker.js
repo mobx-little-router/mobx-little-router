@@ -13,6 +13,7 @@ export default class RoutedComponentsTracker {
   from: Route<*, *> | null
   isNavigating: boolean
   isTransitioning: boolean
+  currentEventType: $Keys<typeof EventTypes>
 
   constructor(router: Router, outletName: ?string, depthIndex: number) {
     this._subscriptions = []
@@ -30,19 +31,18 @@ export default class RoutedComponentsTracker {
         get from() {
           return findRoute(depthIndex, outletName, this.prevRoutes)
         },
-        get isNavigating() {
-          return router.currentEventType !== EventTypes.NAVIGATION_END
-        },
         get isTransitioning() {
           return (
-            this.isNavigating &&
+            //this.currentEventType === EventTypes.NAVIGATION_TRANSITION_START &&
+            this.prevRoutes.length > 0 &&
             !areRoutesEqual(this.to, this.from) &&
             (canTransition(this.to) || canTransition(this.from))
           )
-        }
+        },
+        currentEventType: router.currentEventType
       },
       {
-        prevRoutes: observable
+        currentEventType: observable.ref
       }
     )
   }
@@ -59,7 +59,7 @@ export default class RoutedComponentsTracker {
     )
     this._subscriptions.push(
       reaction(
-        () => !this.isNavigating,
+        () => this.currentEventType === EventTypes.NAVIGATION_END,
         action(() => {
           this.prevRoutes = []
         }),

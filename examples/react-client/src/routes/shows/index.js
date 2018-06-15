@@ -25,7 +25,8 @@ export default function init({ router, stores }) {
         }
       },
       subscriptions() {
-        return fx.fetchShows({ route: this, stores })
+        const route = this
+        return fx.fetchShows({ route, stores })
       },
       component: ShowsRoute,
       children: [
@@ -76,7 +77,8 @@ export default function init({ router, stores }) {
             }
           },
           subscriptions() {
-            return fx.fetchShow({ route: this, stores })
+            const route = this
+            return fx.fetchShow({ route, stores })
           },
           willResolve(route) {
             return when(() => !route.state.isPending)
