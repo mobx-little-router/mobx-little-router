@@ -38,7 +38,11 @@ export type BasicConfig<D: Object> = {
   onError?: ErrorHandler,
   onTransition?: TransitionFn,
   onEnter?: LifecycleEndFn,
-  onExit?: LifecycleEndFn
+  onExit?: LifecycleEndFn,
+  state?: Object,
+  subscriptions?: Function,
+  computed?: Function,
+  effects?: Function,
 }
 
 export type RedirectConfig<D: Object> = {
@@ -94,7 +98,11 @@ export type RouteValue<C: Object, D: Object> = {
   onEnter: null | LifecycleEndFn,
   onExit: null | LifecycleEndFn,
   getContext: () => C,
-  getData: () => D
+  getData: () => D,
+  state: Object,
+  subscriptions: null | Function,
+  computed: Function,
+  effects: Function,
 }
 
 export type RouteStateTreeNode<C, D> = ITreeNode<RouteValue<C, D>>
@@ -117,12 +125,17 @@ export type Route<C, D> = {
   query: Query,
   segment: string, // This is the matched segment from URL. e.g. "/123" for ":id"
   parentUrl: string,
-  onTransition: null | TransitionFn
+  onTransition: null | TransitionFn,
+  state: Object,
+  computed: Object,
+  effects: { [k: string]: () => Promise<any> },
+  disposers: Array<Function>
 }
 
 export type SelectBody = {
   [k: string]: {
     query?: { [k: string]: null | string },
-    params?: { [k: string]: null | string }
+    params?: { [k: string]: null | string },
+    computed?: { [k: string]: null | string }
   }
 }

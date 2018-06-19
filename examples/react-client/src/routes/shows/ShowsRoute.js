@@ -1,33 +1,41 @@
 import React from 'react'
 import { inject, observer } from 'mobx-react'
-import { Link, withRouter } from 'mobx-little-router-react'
+import { Link } from 'mobx-little-router-react'
 import styled, { keyframes } from 'styled-components'
 
-const ShowsRoute = ({ router, route, ShowsStore, className }) =>
-  <Container className={className}>
-    <SearchHeader>
-      <SearchInput
-        onChange={ev => {
-          router.updateQuery({ q: encodeURIComponent(ev.target.value) })
-        }}
-        defaultValue={route.query.q}
-      />
-    </SearchHeader>
-    <SearchResults>
-      {ShowsStore.shows.map(show =>
-        <Show key={show.id}>
-          <CoverImage
-            to={`/shows/${show.id}?q=${route.query.q}`}
-            style={{ backgroundImage: `url(${show.image && show.image.medium})` }}
-          />
-          <Abstract>
-            <Network>{show.network && show.network.name}</Network>
-            <ShowName to={`/shows/${show.id}?q=${route.query.q}`}>{show.name}</ShowName>
-          </Abstract>
-        </Show>
-      )}
-    </SearchResults>
-  </Container>
+const ShowsRoute = ({ router, route, ShowsStore, className }) => {
+  const { state: { isPending } } = route
+
+  return (
+    <Container className={className}>
+      <SearchHeader>
+        <SearchInput
+          onChange={ev => {
+            router.updateQuery({ q: encodeURIComponent(ev.target.value) })
+          }}
+          defaultValue={route.query.q}
+        />
+      </SearchHeader>
+      <SearchResults>
+        { isPending
+          ? <Spinner />
+          : ShowsStore.shows.map(show =>
+              <Show key={show.id}>
+                <CoverImage
+                  to={`/shows/${show.id}?q=${route.query.q}`}
+                  style={{ backgroundImage: `url(${show.image && show.image.medium})` }}
+                />
+                <Abstract>
+                  <Network>{show.network && show.network.name}</Network>
+                  <ShowName to={`/shows/${show.id}?q=${route.query.q}`}>{show.name}</ShowName>
+                </Abstract>
+              </Show>
+            )
+        }
+      </SearchResults>
+    </Container>
+  )
+}
 
 const Container = styled.div`
   margin: 0 auto;
@@ -144,4 +152,4 @@ const SearchInput = styled.input.attrs({
   padding: 0 9px;
 `
 
-export default inject('ShowsStore')(withRouter(observer(ShowsRoute)))
+export default inject('ShowsStore')(observer(ShowsRoute))

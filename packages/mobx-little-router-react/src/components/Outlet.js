@@ -61,6 +61,7 @@ class Outlet extends Component<OutletProps> {
       <OutletContext.Provider value={this.getChildOutlet()}>
         <div className={`outlet`} {...dataProps}>
           <TransitionGroup
+            router={router}
             to={this.changeTracker.to}
             from={this.changeTracker.isTransitioning ? this.changeTracker.from : undefined}
             isTransitioning={this.changeTracker.isTransitioning}

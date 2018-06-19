@@ -5,8 +5,8 @@ import { Link } from 'mobx-little-router-react'
 
 import Modal from '../../components/Modal'
 
-const ShowRoute = ({ route: { params, query, data }, className }) => {
-  const { model: { activeShow, prevShow, nextShow } } = data
+const ShowRoute = ({ route: { params, query, computed }, className }) => {
+  const { activeShow, prevShow, nextShow, index, numItems } = computed
 
   return (
     <Modal className={className} closePath={`/shows?q=${query.q}`}>
@@ -20,6 +20,9 @@ const ShowRoute = ({ route: { params, query, data }, className }) => {
                 <PrevNavigationLink to={`/shows/${prevShow.id}?q=${query.q}`}>
                   Prev
                 </PrevNavigationLink>}
+
+              <Index>{index} / {numItems}</Index>
+
               {nextShow &&
                 <NextNavigationLink to={`/shows/${nextShow.id}?q=${query.q}`}>
                   Next
@@ -108,6 +111,14 @@ const Navigation = styled.div`
   right: 54px;
   line-height: 36px;
   margin: 18px 0;
+`
+
+const Index = styled.div`
+  flex: 1 1;
+  text-align: center;
+  font-size: 13px;
+  line-height: 18px;
+  color: #333;
 `
 
 const NavigationLink = styled(Link)`

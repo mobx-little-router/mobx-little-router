@@ -15,8 +15,8 @@
   "main": "lib/index.js",
   "module": "es/index.js",
   "peerDependencies": {
-    "mobx": "^4.3.0",
-    "mobx-react": "^5.1.2",
+    "mobx": "^4.3.1",
+    "mobx-react": "^5.2.0",
     "react": "^16.0.0"
   },
   "dependencies": {

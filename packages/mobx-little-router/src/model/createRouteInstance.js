@@ -1,5 +1,5 @@
 // @flow
-import { observable } from 'mobx'
+import { observable, extendObservable } from 'mobx'
 import qs from 'querystring'
 import createRouteKey from './createRouteKey'
 import type { Params, Query, Route, RouteStateTreeNode } from './types'
@@ -8,7 +8,7 @@ export default function createRouteInstance<C: Object, D: Object>(node: RouteSta
   const url = `${parentUrl}${segment}`
   const key = createRouteKey(node, url)
 
-  return observable({
+  const route = observable({
     node: node,
     key,
     value: `${url}?${qs.stringify(query)}`,
@@ -16,10 +16,19 @@ export default function createRouteInstance<C: Object, D: Object>(node: RouteSta
     segment,
     params,
     query,
+    state: node.value.state,
     context: node.value.getContext(),
-    data: node.value.getData(),
-    onTransition: node.value.onTransition
+    onTransition: node.value.onTransition,
+    disposers: []
   }, {
     context: observable.ref
   })
+
+  extendObservable(route, {
+    computed: node.value.computed.bind(route)(),
+    effects: node.value.effects.bind(route)(),
+    data: node.value.getData.bind(route)()
+  })
+
+  return route
 }

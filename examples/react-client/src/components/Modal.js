@@ -4,7 +4,7 @@ import cx from 'classnames'
 import { Link } from 'mobx-little-router-react'
 
 class Modal extends Component<*> {
-  componentWillMount() {
+  componentDidMount() {
     const { body } = document
     if (body) {
       const bodyClassNames = body.className

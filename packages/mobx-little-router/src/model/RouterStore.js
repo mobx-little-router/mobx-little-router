@@ -63,14 +63,7 @@ class RouterStore {
     const query = getQueryParams(nextLocation)
     return path.map(element => {
       const matchedQueryParams = this.getMatchedQueryParams(element.node, query)
-      const newRoute = createRouteInstance(element.node, element.parentUrl, element.segment, element.params, query)
-      const existingRoute = this.activatedRoutes.find(x => areRoutesEqual(x, newRoute))
-
-      if (existingRoute) {
-        return existingRoute
-      } else {
-        return observable(createRouteInstance(element.node, element.parentUrl, element.segment, element.params, matchedQueryParams))
-      }
+      return observable(createRouteInstance(element.node, element.parentUrl, element.segment, element.params, matchedQueryParams))
     })
   }
 
@@ -132,9 +125,29 @@ class RouterStore {
     })
   }
 
-  updateActivateRoutes(nextRoutes: Route<*, *>[]) {
+  updateActivatedRoutes(nextRoutes: Route<*, *>[]) {
     runInAction(() => {
-      this.activatedRoutes.replace(nextRoutes)
+      const routes = nextRoutes.map(route => {
+        const existingRoute = this.activatedRoutes.find(x => route.node.value.key === x.node.value.key)
+        if (existingRoute) {
+          if (!areRoutesEqual(route, existingRoute)) {
+            Object.assign(existingRoute, {
+              key: route.key,
+              value: route.value,
+              segment: route.segment
+            })
+            Object.assign(existingRoute.params, route.params)
+            Object.assign(existingRoute.state, route.state)
+            Object.assign(existingRoute.query, route.query)
+          }
+          
+          return existingRoute
+        }
+
+        return route
+      })
+
+      this.activatedRoutes.replace(routes)
 
       // Update params
       this.params.clear()

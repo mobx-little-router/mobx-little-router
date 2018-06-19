@@ -990,7 +990,7 @@ describe('Public API', () => {
     expect(router.location.pathname).toEqual('/**')
   })
 
-  test('route instance differs based on param values', async () => {
+  test('route instance is the same with differing param values', async () => {
     await router.start()
 
     await router.push('/foo')
@@ -999,7 +999,7 @@ describe('Public API', () => {
     await router.push('/bar')
     const [__, whateverRoute2] = router.activatedRoutes.slice()
 
-    expect(whateverRoute1).not.toBe(whateverRoute2)
+    expect(whateverRoute1).toBe(whateverRoute2)
   })
 })
 

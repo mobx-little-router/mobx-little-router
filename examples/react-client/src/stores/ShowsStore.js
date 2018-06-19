@@ -23,6 +23,10 @@ class ShowsStore {
   getDetails(id) {
     return this.details.get(id)
   }
+
+  getById(id) {
+    return this.shows.find(show => show.id === Number(id))
+  }
 }
 
 export default ShowsStore

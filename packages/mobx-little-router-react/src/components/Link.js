@@ -38,13 +38,12 @@ class Link extends Component<Props> {
   }
 
   render() {
-    const { router } = this.props
+    const { router, to, className, activeClassName, style, children, exact, onClick, ...rest } = this.props
 
     // Mark for non-production build only.
     if (process && process.env.NODE_ENV !== 'production') {
       assertRouterExists(router)
     }
-    const { to, className, activeClassName, style, children, exact, onClick, ...rest } = this.props
     const href = typeof to === 'object'
       ? locationToHref(to)
       : to

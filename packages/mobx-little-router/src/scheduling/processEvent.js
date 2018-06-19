@@ -1,5 +1,5 @@
 // @flow
-import { action } from 'mobx'
+import { action, observable, runInAction } from 'mobx'
 import type RouterStore from '../model/RouterStore'
 import { NotFound } from '../errors'
 import Navigation from '../model/Navigation'
@@ -194,8 +194,24 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
         .then(() =>
           evalTransitionsForRoutes([{ type: 'canDeactivate' }, { type: 'willDeactivate' }], deactivating, navigation)
         )
-        .then(() =>
-          evalTransitionsForRoutes(
+        .then(() => {
+          runInAction(() => {
+            // Dispose of all route disposers when deactivating a route
+            deactivating.forEach(route => {
+              route.disposers.forEach(disposer => disposer())
+              route.disposers = []
+            })
+
+            // Start all subscriptions when activating a route
+            activating.forEach(route => {
+              const { subscriptions } = route.node.value
+              if (typeof subscriptions === 'function') {
+                route.disposers = [].concat(subscriptions.bind(route)())
+              }
+            })
+          })
+
+          return evalTransitionsForRoutes(
             [
               { type: 'canActivate', includes: activating },
               { type: 'willActivate', includes: activating },
@@ -204,7 +220,7 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
             nextRoutes,
             navigation
           )
-        )
+        })
         .then((setter: Function) => ({
           type: EventTypes.NAVIGATION_ACTIVATED,
           navigation,
@@ -246,7 +262,7 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
         type: EventTypes.NAVIGATION_TRANSITION_START,
         navigation: evt.navigation,
         setter: action(() => {
-          store.updateActivateRoutes(nextRoutes)
+          store.updateActivatedRoutes(nextRoutes)
           store.updateLocation(navigation.to)
         }),
         entering,
