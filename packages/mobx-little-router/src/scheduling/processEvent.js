@@ -195,22 +195,20 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
           evalTransitionsForRoutes([{ type: 'canDeactivate' }, { type: 'willDeactivate' }], deactivating, navigation)
         )
         .then(() => {
-          // Dispose of all route disposers when deactivating a route
-          exiting.forEach(route => {
-            route.disposers.forEach(disposer => disposer())
-            runInAction(() => {
+          runInAction(() => {
+            // Dispose of all route disposers when deactivating a route
+            deactivating.forEach(route => {
+              route.disposers.forEach(disposer => disposer())
               route.disposers = []
             })
-          })
-       
-          // Start all subscriptions when activating a route
-          entering.forEach(route => {
-            const { subscriptions } = route.node.value
-            if (typeof subscriptions === 'function') {
-              runInAction(() => {
+
+            // Start all subscriptions when activating a route
+            activating.forEach(route => {
+              const { subscriptions } = route.node.value
+              if (typeof subscriptions === 'function') {
                 route.disposers = [].concat(subscriptions.bind(route)())
-              })
-            }
+              }
+            })
           })
 
           return evalTransitionsForRoutes(

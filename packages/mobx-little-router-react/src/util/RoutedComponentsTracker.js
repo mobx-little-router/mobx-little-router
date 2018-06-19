@@ -59,7 +59,7 @@ export default class RoutedComponentsTracker {
     )
     this._subscriptions.push(
       reaction(
-        () => this.currentEventType === EventTypes.NAVIGATION_END,
+        () => this.currentEventType == EventTypes.NAVIGATION_END,
         action(() => {
           this.prevRoutes = []
         }),
