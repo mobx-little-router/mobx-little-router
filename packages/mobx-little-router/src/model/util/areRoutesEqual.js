@@ -1,6 +1,7 @@
 // @flow
 import type { Route } from '../types'
+import { curryN } from 'ramda'
 
-export default function areRoutesEqual(a: ?Route<*, *>, b: ?Route<*, *>) {
+export default curryN(2, (a: ?Route<*, *>, b: ?Route<*, *>) => {
   return !!(a && b) && a.key === b.key && a.value === b.value
-}
+})
