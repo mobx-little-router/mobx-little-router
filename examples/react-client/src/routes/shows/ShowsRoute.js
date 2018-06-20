@@ -19,23 +19,39 @@ const ShowsRoute = ({ router, route, ShowsStore, className }) => {
       <SearchResults>
         { isPending
           ? <Spinner />
-          : ShowsStore.shows.map(show =>
-              <Show key={show.id}>
-                <CoverImage
-                  to={`/shows/${show.id}?q=${route.query.q}`}
-                  style={{ backgroundImage: `url(${show.image && show.image.medium})` }}
-                />
-                <Abstract>
-                  <Network>{show.network && show.network.name}</Network>
-                  <ShowName to={`/shows/${show.id}?q=${route.query.q}`}>{show.name}</ShowName>
-                </Abstract>
-              </Show>
-            )
+          : ShowsStore.shows.length
+            ? ShowsStore.shows.map(show =>
+                <Show key={show.id}>
+                  <CoverImage
+                    to={`/shows/${show.id}?q=${route.query.q}`}
+                    style={{ backgroundImage: `url(${show.image && show.image.medium})` }}
+                  />
+                  <Abstract>
+                    <Network>{show.network && show.network.name}</Network>
+                    <ShowName to={`/shows/${show.id}?q=${route.query.q}`}>{show.name}</ShowName>
+                  </Abstract>
+                </Show>
+              )
+            : <Empty>
+                <h2>No results</h2>
+                <p>Try searching for somethign else.</p>
+              </Empty>
         }
       </SearchResults>
     </Container>
   )
 }
+
+const Empty = styled.div`
+  text-align: center;
+  width: 100%;
+  color: #333;
+  margin: 168px 0;
+
+  > p {
+    color: #999;
+  }
+`
 
 const Container = styled.div`
   margin: 0 auto;
