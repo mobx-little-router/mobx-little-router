@@ -63,7 +63,15 @@ class RouterStore {
     const query = getQueryParams(nextLocation)
     return path.map(element => {
       const matchedQueryParams = this.getMatchedQueryParams(element.node, query)
-      return observable(createRouteInstance(element.node, element.parentUrl, element.segment, element.params, matchedQueryParams))
+      const route = createRouteInstance(
+        element.node,
+        element.parentUrl,
+        element.segment,
+        element.params,
+        matchedQueryParams
+      )
+
+      return this.activatedRoutes.find(areRoutesEqual(route)) || route
     })
   }
 
@@ -127,29 +135,31 @@ class RouterStore {
 
   updateActivatedRoutes(nextRoutes: Route<*, *>[]) {
     runInAction(() => {
-      const routes = nextRoutes.map(route => {
-        const existingRoute = this.activatedRoutes.find(x => route.node.value.key === x.node.value.key)
-        if (existingRoute) {
-          if (!areRoutesEqual(route, existingRoute)) {
-            Object.assign(existingRoute, {
-              key: route.key,
-              value: route.value,
-              segment: route.segment
-            })
-            Object.assign(existingRoute.params, route.params)
-            Object.assign(existingRoute.state, route.state)
-            Object.assign(existingRoute.query, route.query)
-          }
-          
-          return existingRoute
-        }
-
-        return route
+      // Commit changes to underlying node
+      nextRoutes.forEach(route => {
+        const { committed } = route.node.value
+        Object.assign(committed.params, route.params)
+        Object.assign(committed.query, route.query)
+        committed.state = route.state
       })
 
-      this.activatedRoutes.replace(routes)
+      // Reset committed params and query on deactivated routes
+      const deactivatingRoutes = this.activatedRoutes.filter(route =>
+        !nextRoutes.some(nextRoute =>
+          route.node === nextRoute.node
+        )
+      )
 
-      // Update params
+      deactivatingRoutes.forEach(route => {
+        const { committed: { params, query } } = route.node.value
+        Object.keys(params).forEach(key => params[key] = null)
+        Object.keys(query).forEach(key => query[key] = '')
+      })
+
+      this.activatedRoutes.replace(nextRoutes)
+
+      // XXX we now have router.select which can select this data
+      // Update params 
       this.params.clear()
       this.activatedRoutes.forEach(route => {
         this.params.set(route.node.value.key, route.params)

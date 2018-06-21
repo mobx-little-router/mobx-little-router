@@ -80,9 +80,10 @@ export default function init({ router, stores }) {
             const route = this
             return fx.fetchShow({ route, stores })
           },
-          willResolve(route) {
-            return when(() => !route.state.isPending)
-          },
+          // XXX this blocks the route transition chicken and egg problem
+          // willResolve(route) {
+          //   return when(() => !route.state.isPending)
+          // },
           component: ShowRoute,
           outlet: 'modal',
           animate: true

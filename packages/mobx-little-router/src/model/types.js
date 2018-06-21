@@ -39,10 +39,10 @@ export type BasicConfig<D: Object> = {
   onTransition?: TransitionFn,
   onEnter?: LifecycleEndFn,
   onExit?: LifecycleEndFn,
-  state?: Object,
   subscriptions?: Function,
   computed?: Function,
   effects?: Function,
+  state?: Object
 }
 
 export type RedirectConfig<D: Object> = {
@@ -61,8 +61,7 @@ export type RedirectConfig<D: Object> = {
   onError?: empty,
   onTransition?: empty,
   onEnter?: empty,
-  onExit?: empty,
-  etc?: any
+  onExit?: empty
 }
 
 export type LoadChildrenConfigFn<D> = () => Promise<any>
@@ -80,6 +79,12 @@ export type ResolveFn = (route: Route<*, *>, nav: Navigation) => Promise<void | 
 export type ErrorHandler = (route: Route<*, *>, navigation: Navigation, err: Error) => Promise<any>
 
 export type LoadChildrenRouteStateTreeNode = () => Promise<any>
+
+export type CommittedRoute = {
+  params: Params,
+  query: Query,
+  state: Object
+}
 
 export type RouteValue<C: Object, D: Object> = {
   key: string,
@@ -99,10 +104,12 @@ export type RouteValue<C: Object, D: Object> = {
   onExit: null | LifecycleEndFn,
   getContext: () => C,
   getData: () => D,
-  state: Object,
+  disposers: Array<Function>,
   subscriptions: null | Function,
   computed: Function,
   effects: Function,
+  state: Object,
+  committed: CommittedRoute
 }
 
 export type RouteStateTreeNode<C, D> = ITreeNode<RouteValue<C, D>>
@@ -126,10 +133,9 @@ export type Route<C, D> = {
   segment: string, // This is the matched segment from URL. e.g. "/123" for ":id"
   parentUrl: string,
   onTransition: null | TransitionFn,
-  state: Object,
   computed: Object,
   effects: { [k: string]: () => Promise<any> },
-  disposers: Array<Function>
+  state: Object
 }
 
 export type SelectBody = {

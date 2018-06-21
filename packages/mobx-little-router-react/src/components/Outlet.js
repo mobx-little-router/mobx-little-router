@@ -37,6 +37,10 @@ class Outlet extends Component<OutletProps> {
     this.changeTracker.start()
   }
 
+  componentWillUnmount() {
+    this.changeTracker.stop()
+  }
+
   getChildOutlet(): OutletContextValue {
     return {
       index: this.getCurrentIndex() + 1

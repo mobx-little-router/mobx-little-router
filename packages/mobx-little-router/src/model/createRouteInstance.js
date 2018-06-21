@@ -16,7 +16,7 @@ export default function createRouteInstance<C: Object, D: Object>(node: RouteSta
     segment,
     params,
     query,
-    state: node.value.state,
+    state: { ...node.value.state },
     context: node.value.getContext(),
     onTransition: node.value.onTransition,
     disposers: []

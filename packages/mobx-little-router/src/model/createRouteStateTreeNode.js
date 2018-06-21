@@ -1,10 +1,11 @@
 // @flow
-import { observable } from 'mobx'
+import { observable, extendObservable } from 'mobx'
 import type { Config, RouteStateTreeNode } from './types'
 import { TreeNode } from '../util/tree'
 import defaultCreateKey from '../util/createKey'
 import * as m from './matchers'
 import { array, string, optional, func, createValidator } from '../validation'
+import UrlPattern from 'url-pattern'
 
 function NOP(a: *, b: *) {
   return Promise.resolve()
@@ -51,50 +52,70 @@ export default function createRouteStateTreeNode(
       )
     : []
 
-  return TreeNode(
-    observable({
-      key: typeof config.key === 'string' ? config.key : createKey(),
-      path: config.path,
-      matcher: matcher(config.path),
-      query: typeof config.query !== 'undefined' ? config.query : [],
-      params: config.params !== null ? config.params : {},
-      loadChildren: typeof config.loadChildren === 'function'
-        ? config.loadChildren
-        : null,
-      canActivate: config.canActivate || NOP,
-      canDeactivate: config.canDeactivate || NOP,
-      willActivate: config.willActivate || NOP,
-      willDeactivate: config.willDeactivate || NOP,
-      willResolve: config.willResolve || NOP,
-      onError: config.onError || null,
-      onTransition: config.onTransition || null,
-      onEnter: config.onEnter || null,
-      onExit: config.onExit || null,
-      getContext,
-      getData: config.getData || (() => ({})),
-      state: config.state || {},
-      subscriptions: config.subscriptions || null,
-      computed: config.computed || (() => ({})),
-      effects: config.effects || (() => ({}))
-    }, {
-      matcher: observable.ref,
-      loadChildren: observable.ref,
-      canActivate: observable.ref,
-      canDeactivate: observable.ref,
-      willActivate: observable.ref,
-      willDeactivate: observable.ref,
-      willResolve: observable.ref,
-      onError: observable.ref,
-      onTransition: observable.ref,
-      onEnter: observable.ref,
-      onExit: observable.ref,
-      getData: observable.ref,
-      subscriptions: observable.ref,
-      computed: observable.ref,
-      effects: observable.ref
-    }),
-    children
-  )
+  const pattern = new UrlPattern(config.path || '/')
+  
+  const value = observable({
+    key: typeof config.key === 'string' ? config.key : createKey(),
+    path: config.path,
+    matcher: matcher(config.path),
+    params: pattern.names,
+    query: typeof config.query !== 'undefined' ? config.query : [],
+    loadChildren: typeof config.loadChildren === 'function'
+      ? config.loadChildren
+      : null,
+    canActivate: config.canActivate || NOP,
+    canDeactivate: config.canDeactivate || NOP,
+    willActivate: config.willActivate || NOP,
+    willDeactivate: config.willDeactivate || NOP,
+    willResolve: config.willResolve || NOP,
+    onError: config.onError || null,
+    onTransition: config.onTransition || null,
+    onEnter: config.onEnter || null,
+    onExit: config.onExit || null,
+    getContext,
+    getData: config.getData || (() => ({})),
+    state: config.state || {},
+    disposers: [],
+    subscriptions: config.subscriptions || null,
+    computed: config.computed || (() => ({})),
+    effects: config.effects || (() => ({}))
+  }, {
+    matcher: observable.ref,
+    loadChildren: observable.ref,
+    canActivate: observable.ref,
+    canDeactivate: observable.ref,
+    willActivate: observable.ref,
+    willDeactivate: observable.ref,
+    willResolve: observable.ref,
+    onError: observable.ref,
+    onTransition: observable.ref,
+    onEnter: observable.ref,
+    onExit: observable.ref,
+    getData: observable.ref,
+    subscriptions: observable.ref,
+    computed: observable.ref,
+    effects: observable.ref
+  })
+
+  value.committed = observable({
+    params: value.params.reduce((acc, x) => {
+      acc[x] = null
+      return acc
+    }, {}),
+    query: value.query.reduce((acc, x) => {
+      acc[x] = ''
+      return acc
+    }, {}),
+    state: value.state
+  }, {
+    state: observable.ref
+  })
+
+  extendObservable(value.committed, {
+    computed: value.computed ? value.computed.bind(value.committed)() : {}
+  })
+
+  return TreeNode(value, children)
 }
 
 export function getMatcher(config: Config<*>) {

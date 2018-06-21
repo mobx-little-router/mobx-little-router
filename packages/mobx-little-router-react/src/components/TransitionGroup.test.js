@@ -12,7 +12,7 @@ describe('TransitionGroup', () => {
   let tracker
 
   const updateRoutes = wrapper => {
-    const props = { to: tracker.to, from: tracker.from, isTransitioning: tracker.isTransitioning }
+    const props = { to: tracker.to, from: tracker.isTransitioning ? tracker.from : undefined, isTransitioning: tracker.isTransitioning }
     wrapper.setProps(props)
   }
 
@@ -69,7 +69,7 @@ describe('TransitionGroup', () => {
   // We need to mutate the classlist in this fashion to trigger the animation in the most
   // efficient way possible. The hasClass helper uses enzymes .html() function to view the raw html
   // we use this to check the animation lifecycle classes are correctly applied.
-  test('TransitionGroup handles transitioning in and out of routes', async () => {
+  test.only('TransitionGroup handles transitioning in and out of routes', async () => {
     const wrapper = mount(<TransitionGroup isTransitioning={false} />)
 
     router.push('/about')
@@ -77,8 +77,8 @@ describe('TransitionGroup', () => {
     updateRoutes(wrapper)
 
     // Initially we should be transitioning and have the enter class
-    expect(wrapper.find(TransitionItem).hasClass('transitioning')).toBe(true)
-    expect(wrapper.find(TransitionItem).hasClass('enter')).toBe(true)
+    expect(wrapper.find(TransitionItem).at(0).hasClass('transitioning')).toBe(true)
+    expect(wrapper.find(TransitionItem).at(0).hasClass('enter')).toBe(true)
 
     // Then the animation is initialized with the active class
     expect(tracker.to && tracker.to.data.transitionState).toBe('entering')
@@ -86,7 +86,7 @@ describe('TransitionGroup', () => {
     expect(hasClass(wrapper.find(TransitionItem).at(0), 'enter-active')).toBe(true)
 
     // Wait for transition to complete
-    await delay(150)
+    await waitUntil(EventTypes.NAVIGATION_TRANSITION_END, router)
     updateRoutes(wrapper)
 
     // Our transition has settled and transitioning class removed
@@ -98,6 +98,9 @@ describe('TransitionGroup', () => {
     await waitUntil(EventTypes.NAVIGATION_TRANSITION_START, router)
     updateRoutes(wrapper)
 
+    // Pop off so tracker doesnt mutate
+    const { to, from } = tracker
+
     // Now we will have two transitioning elements
     expect(wrapper.find(TransitionItem).length).toBe(2)
     expect(wrapper.find(TransitionItem).at(0).hasClass('transitioning')).toBe(true)
@@ -105,18 +108,24 @@ describe('TransitionGroup', () => {
     expect(wrapper.find(TransitionItem).at(0).hasClass('exit')).toBe(true)
     expect(wrapper.find(TransitionItem).at(1).hasClass('enter')).toBe(true)
 
-    await waitUntil(EventTypes.NAVIGATION_TRANSITION_END, router)
+    // after a small delay the transition classes will activate
+    await delay(1)
 
     // Then the animation is initialized with the active class
-    expect(tracker.to && tracker.to.data.transitionState).toBe('entering')
-    expect(tracker.from && tracker.from.data.transitionState).toBe('exiting')
-    //XXX expect(wrapper.find(TransitionItem).at(0).hasClass('exit-active')).toBe(true)
-    //XXX expect(wrapper.find(TransitionItem).at(1).hasClass('enter-active')).toBe(true)
+    expect(to && to.data.transitionState).toBe('entering')
+    expect(from && from.data.transitionState).toBe('exiting')
     expect(hasClass(wrapper.find(TransitionItem).at(0), 'exit-active')).toBe(true)
     expect(hasClass(wrapper.find(TransitionItem).at(1), 'enter-active')).toBe(true)
 
+    await waitUntil(EventTypes.NAVIGATION_TRANSITION_END, router)
+    updateRoutes(wrapper)
+
+    // Then the animation has reached its final stage
+    expect(to && to.data.transitionState).toBe('entered')
+    expect(from && from.data.transitionState).toBe('exited') // This doesnt get set properly for non animated routes
+
     // Wait for the transition to complete
-    await delay(150)
+    await waitUntil(EventTypes.NAVIGATION_END, router)
     updateRoutes(wrapper)
 
     // Our transition has settled and transitioning class removed

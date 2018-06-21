@@ -198,15 +198,15 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
           runInAction(() => {
             // Dispose of all route disposers when deactivating a route
             deactivating.forEach(route => {
-              route.disposers.forEach(disposer => disposer())
-              route.disposers = []
+              route.node.value.disposers.forEach(disposer => disposer())
+              route.node.value.disposers = []
             })
 
             // Start all subscriptions when activating a route
             activating.forEach(route => {
               const { subscriptions } = route.node.value
               if (typeof subscriptions === 'function') {
-                route.disposers = [].concat(subscriptions.bind(route)())
+                route.node.value.disposers = [].concat(subscriptions.bind(route.node.value.committed)())
               }
             })
           })

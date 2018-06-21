@@ -5,6 +5,7 @@ import { createMemoryHistory } from 'history'
 import { install } from '../index'
 import * as React from 'react'
 import RoutedComponentsTracker from './RoutedComponentsTracker'
+import { delay } from '../testUtil'
 
 const RouteHandlerA = (props) => <div>{props.route.params.thing}</div>
 
@@ -39,10 +40,17 @@ describe('RoutedComponentsTracker', () => {
     // Pop from off of tracker and makes sure it maintains state.
     const { to, from } = tracker
 
+    expect(from && from.params.thing).toEqual('one')
+    expect(to && to.params.thing).toEqual('two')
+
     await waitUntil(EventTypes.NAVIGATION_END, router)
 
-    expect(from.params.thing).toEqual('one')
-    expect(to.params.thing).toEqual('two')
+    expect(from && from.params.thing).toEqual('one')
+    expect(to && to.params.thing).toEqual('two')
+
+    // Ensure tracker clears from value
+    expect(!!tracker.from).toBe(false)
+    expect(!!tracker.to).toBe(true)
   })
 })
 

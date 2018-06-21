@@ -23,11 +23,23 @@ type TransitionGroupProps = {
 
 class TransitionGroup extends Component<TransitionGroupProps> {
   innerRefs: Object = {}
+  stopCallbacks: Array<Function> = []
 
   start = action(() => {
     const { to, from } = this.props
     const routes = [to, from]
     const afterCallbacks = []
+
+    this.stopCallbacks.push(() => {
+      // Ensure to and from transitionStates are correctly set after the transition stops
+      if (to) {
+        to.data.transitionState = 'entered'
+      }
+
+      if (from) {
+        from.data.transitionState = 'exited'
+      }      
+    })
 
     Object.keys(this.innerRefs).forEach(key => {
       const el = findDOMNode(this.innerRefs[key])
@@ -71,11 +83,8 @@ class TransitionGroup extends Component<TransitionGroupProps> {
   })
 
   stop = action(() => {
-    const { to } = this.props
-
-    if (to) {
-      to.data.transitionState = 'entered'
-    }
+    this.stopCallbacks.forEach(cb => cb())
+    this.stopCallbacks = []
 
     // Clear out refs
     this.innerRefs = {}

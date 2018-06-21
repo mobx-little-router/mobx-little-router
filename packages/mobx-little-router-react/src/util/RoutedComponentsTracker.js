@@ -6,6 +6,7 @@ import { areRoutesEqual, EventTypes, type Route, type Router } from 'mobx-little
  * This class tracks changes for routes with a component given an optional outletName and depthIndex.
  */
 export default class RoutedComponentsTracker {
+  router: Router
   _subscriptions: Function[]
   prevRoutes: Route<*, *>[]
   currRoutes: Route<*, *>[]
@@ -13,9 +14,9 @@ export default class RoutedComponentsTracker {
   from: Route<*, *> | null
   isNavigating: boolean
   isTransitioning: boolean
-  currentEventType: $Keys<typeof EventTypes>
 
   constructor(router: Router, outletName: ?string, depthIndex: number) {
+    this.router = router
     this._subscriptions = []
 
     extendObservable(
@@ -33,16 +34,11 @@ export default class RoutedComponentsTracker {
         },
         get isTransitioning() {
           return (
-            //this.currentEventType === EventTypes.NAVIGATION_TRANSITION_START &&
-            this.prevRoutes.length > 0 &&
+            this.router.currentEventType === EventTypes.NAVIGATION_TRANSITION_START &&
             !areRoutesEqual(this.to, this.from) &&
             (canTransition(this.to) || canTransition(this.from))
           )
-        },
-        currentEventType: router.currentEventType
-      },
-      {
-        currentEventType: observable.ref
+        }
       }
     )
   }
@@ -59,7 +55,7 @@ export default class RoutedComponentsTracker {
     )
     this._subscriptions.push(
       reaction(
-        () => this.currentEventType == EventTypes.NAVIGATION_END,
+        () => this.router.currentEventType === EventTypes.NAVIGATION_END,
         action(() => {
           this.prevRoutes = []
         }),
