@@ -1,7 +1,15 @@
 // @flow
 import type { Route } from '../types'
-import { curryN } from 'ramda'
 
-export default curryN(2, (a: ?Route<*, *>, b: ?Route<*, *>) => {
-  return a === b || (!!(a && b) && a.key === b.key && a.value === b.value)
-})
+export default (...args: Array<?Route<*, *>>) => {
+  const fn = (a: ?Route<*, *>, b: ?Route<*, *>) => {
+    return a === b || (!!(a && b) && a.key === b.key && a.value === b.value)
+  }
+
+  // Support currying if only one argument in given
+  if (args.length !== 2) {
+    return (b: ?Route<*, *>) => fn(args[0], b)
+  }
+
+  return fn.apply(null, args)
+}
