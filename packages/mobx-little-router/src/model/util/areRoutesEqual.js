@@ -3,7 +3,7 @@ import type { Route } from '../types'
 
 export default (...args: Array<?Route<*, *>>) => {
   const fn = (a: ?Route<*, *>, b: ?Route<*, *>) => {
-    return a === b || (!!(a && b) && a.key === b.key && a.value === b.value)
+    return a === b || (!!(a && b) && a.key === b.key)
   }
 
   // Support currying if only one argument in given
