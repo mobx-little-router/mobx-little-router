@@ -1,7 +1,7 @@
 import type { RouteStateTreeNode } from './types'
 
-export default function createRouteKey(node: RouteStateTreeNode<*, *>, url: string) {
-  return `${node.value.key}/${createHash(url)}`
+export default function createRouteKey(node: RouteStateTreeNode<*, *>, id: string) {
+  return `${node.value.key}/${createHash(id)}`
 }
 
 export const createHash = (subject: string): string => {

@@ -2,9 +2,7 @@
  * This module contains effects that exist within the `shows` route.
  * Effects run as a reaction to route params and query changes.
  */
-import { autorun, action, flow } from 'mobx'
-
-
+import { autorun, flow } from 'mobx'
 
 export const fetchShows = ({ route, stores }) => {
   return autorun(() => {

@@ -25,12 +25,10 @@ const ROUTES = [
     component: LoginRoute
   },
   {
-    key: 'about',
     path: '/about',
     loadChildren: () => import('./routes/about').then(initModule)
   },
   {
-    key: 'contact',
     path: '/contact',
     loadChildren: () => import('./routes/contact').then(initModule)
   },

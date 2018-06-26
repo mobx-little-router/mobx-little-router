@@ -4,14 +4,11 @@ import qs from 'querystring'
 import createRouteKey from './createRouteKey'
 import type { Params, Query, Route, RouteStateTreeNode } from './types'
 
-export default function createRouteInstance<C: Object, D: Object>(node: RouteStateTreeNode<C, D>, parentUrl: string, segment: string, params: Params, query: Query): Route<C,D> {
-  const url = `${parentUrl}${segment}`
-  const key = createRouteKey(node, url)
-
+export default function createRouteInstance<C: Object, D: Object>(node: RouteStateTreeNode<C, D>, parentUrl: string, segment: string, params: Params, query: Query): Route<C,D> {  
   const route = observable({
-    node: node,
-    key,
-    value: `${url}?${qs.stringify(query)}`,
+    node,
+    key: createRouteKey(node, `${parentUrl}:${segment}:${qs.stringify(query)}`),
+    value: `${parentUrl}${segment}?${qs.stringify(query)}`,
     parentUrl,
     segment,
     params,
@@ -21,6 +18,7 @@ export default function createRouteInstance<C: Object, D: Object>(node: RouteSta
     onTransition: node.value.onTransition,
     disposers: []
   }, {
+    node: observable.ref,
     context: observable.ref
   })
 

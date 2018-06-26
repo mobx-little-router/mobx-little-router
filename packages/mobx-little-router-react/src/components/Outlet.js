@@ -5,7 +5,7 @@ import withOutlet from '../hoc/withOutlet'
 import { observer } from 'mobx-react'
 import { reaction, action, extendObservable, observable, observe } from 'mobx'
 import RoutedComponentsTracker from '../util/RoutedComponentsTracker'
-import { type Router, EventTypes, areRoutesEqual } from 'mobx-little-router'
+import { type Router, EventTypes } from 'mobx-little-router'
 
 import TransitionGroup from './TransitionGroup'
 import OutletContext, { type OutletContextValue } from '../contexts/OutletContext'
@@ -67,7 +67,7 @@ class Outlet extends Component<OutletProps> {
           <TransitionGroup
             router={router}
             to={this.changeTracker.to}
-            from={this.changeTracker.isTransitioning ? this.changeTracker.from : undefined}
+            from={this.changeTracker.isTransitioning ? this.changeTracker.from : null}
             isTransitioning={this.changeTracker.isTransitioning}
             additionalProps={rest}
           />
