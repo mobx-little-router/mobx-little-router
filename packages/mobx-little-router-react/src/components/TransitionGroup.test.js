@@ -69,7 +69,7 @@ describe('TransitionGroup', () => {
   // We need to mutate the classlist in this fashion to trigger the animation in the most
   // efficient way possible. The hasClass helper uses enzymes .html() function to view the raw html
   // we use this to check the animation lifecycle classes are correctly applied.
-  test.only('TransitionGroup handles transitioning in and out of routes', async () => {
+  test('TransitionGroup handles transitioning in and out of routes', async () => {
     const wrapper = mount(<TransitionGroup isTransitioning={false} />)
 
     router.push('/about')
