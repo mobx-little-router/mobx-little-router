@@ -97,7 +97,7 @@ export default function createRouteStateTreeNode(
     effects: observable.ref
   })
 
-  value.committed = observable({
+  value.current = observable({
     params: value.params.reduce((acc, x) => {
       acc[x] = null
       return acc
@@ -111,8 +111,8 @@ export default function createRouteStateTreeNode(
     state: observable.ref
   })
 
-  extendObservable(value.committed, {
-    computed: value.computed ? value.computed.bind(value.committed)() : {}
+  extendObservable(value.current, {
+    computed: value.computed ? value.computed.bind(value.current)() : {}
   })
 
   return TreeNode(value, children)

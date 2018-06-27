@@ -135,27 +135,6 @@ class RouterStore {
 
   updateActivatedRoutes(nextRoutes: Route<*, *>[]) {
     runInAction(() => {
-      // Commit changes to underlying node
-      nextRoutes.forEach(route => {
-        const { committed } = route.node.value
-        Object.assign(committed.params, route.params)
-        Object.assign(committed.query, route.query)
-        committed.state = route.state
-      })
-
-      // Reset committed params and query on deactivated routes
-      const deactivatingRoutes = this.activatedRoutes.filter(route =>
-        !nextRoutes.some(nextRoute =>
-          route.node === nextRoute.node
-        )
-      )
-
-      deactivatingRoutes.forEach(route => {
-        const { committed: { params, query } } = route.node.value
-        Object.keys(params).forEach(key => params[key] = null)
-        Object.keys(query).forEach(key => query[key] = '')
-      })
-
       this.activatedRoutes.replace(nextRoutes)
 
       // XXX we now have router.select which can select this data
