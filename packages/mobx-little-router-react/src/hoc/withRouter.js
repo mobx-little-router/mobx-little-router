@@ -4,8 +4,7 @@ import React, { Component } from 'react'
 import type { ComponentType } from 'react'
 import RouterContext from '../contexts/RouterContext'
 import { assertRouterExists } from '../util'
-//import hoistNonReactStatics from 'hoist-non-react-statics'
-const hoistNonReactStatics = require('hoist-non-react-statics')
+import hoistNonReactStatics from 'hoist-non-react-statics'
 
 export default function withRouter<T: Object>(
   Source: ComponentType<{ router: Router } & T>

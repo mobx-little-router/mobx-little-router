@@ -2,8 +2,7 @@
 import React, { Component } from 'react'
 import type { ComponentType } from 'react'
 import OutletContext, { type OutletContextValue } from '../contexts/OutletContext'
-//import hoistNonReactStatics from 'hoist-non-react-statics'
-const hoistNonReactStatics = require('hoist-non-react-statics')
+import hoistNonReactStatics from 'hoist-non-react-statics'
 
 export default function withOutlet<T: Object>(
   Source: ComponentType<{ outlet: OutletContextValue } & T>
