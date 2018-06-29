@@ -1,5 +1,5 @@
 // @flow
-import { autorun } from 'mobx'
+import { autorun, reaction, observable, runInAction } from 'mobx'
 import { createMemoryHistory } from 'history'
 import delay from './util/delay'
 import { EventTypes } from './events'
@@ -988,6 +988,8 @@ describe('Public API', () => {
     await router.start()
 
     expect(router.location.pathname).toEqual('/**')
+
+    router.stop()
   })
 
   test('route instance differs based on param values', async () => {
@@ -1000,6 +1002,225 @@ describe('Public API', () => {
     const [__, whateverRoute2] = router.activatedRoutes.slice()
 
     expect(whateverRoute1).not.toBe(whateverRoute2)
+
+    router.stop()
+  })
+
+  test('subscriptions react to param changes with autorun', async () => {
+    const parentReaction = jest.fn()
+    const childReaction1 = jest.fn()
+    const childReaction2 = jest.fn()
+
+    router = install({
+      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+      routes: [
+        {
+          key: 'parent',
+          path: 'parent/:parentId',
+          subscriptions() {
+            const { params } = this
+
+            return autorun(() => params.parentId && parentReaction())
+          },
+          children: [
+            {
+              key: 'child',
+              path: 'child/:childId',
+              subscriptions() {
+                const { params } = this
+
+                return [
+                  autorun(() => params.parentId && childReaction1()),
+                  autorun(() => params.childId && childReaction2())
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    })
+
+    await router.start()
+
+    await router.push('/parent/1')
+
+    expect(parentReaction).toHaveBeenCalled()
+
+    await router.push('/parent/2')
+
+    expect(parentReaction.mock.calls.length).toBe(2)
+    expect(childReaction1).not.toHaveBeenCalled()
+    expect(childReaction2).not.toHaveBeenCalled()
+
+    await router.push('/parent/2/child/1')
+
+    expect(childReaction1).toHaveBeenCalled()
+    expect(childReaction2).toHaveBeenCalled()
+
+    await router.push('/parent/2/child/2')
+
+    expect(parentReaction.mock.calls.length).toBe(2)
+    expect(childReaction1.mock.calls.length).toBe(1)
+    expect(childReaction2.mock.calls.length).toBe(2)
+
+    await router.push('/parent/3/child/1')
+
+    expect(parentReaction.mock.calls.length).toBe(3)
+    expect(childReaction1.mock.calls.length).toBe(2)
+    expect(childReaction2.mock.calls.length).toBe(3)
+
+    router.stop()
+  })
+
+  test('subscriptions react to param changes with reaction fireImmediately', async () => {
+    const parentReaction = jest.fn()
+    const childReaction1 = jest.fn()
+    const childReaction2 = jest.fn()
+
+    router = install({
+      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+      routes: [
+        {
+          key: 'parent',
+          path: 'parent/:parentId',
+          subscriptions() {
+            const { params } = this
+
+            return reaction(() => params.parentId, parentReaction, { fireImmediately: true })
+          },
+          children: [
+            {
+              key: 'child',
+              path: 'child/:childId',
+              subscriptions() {
+                const { params } = this
+
+                return [
+                  reaction(() => params.parentId, childReaction1, { fireImmediately: true }),
+                  reaction(() => params.childId, childReaction2, { fireImmediately: true })
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    })
+
+    await router.start()
+
+    await router.push('/parent/1')
+
+    expect(parentReaction).toHaveBeenCalled()
+
+    await router.push('/parent/2')
+
+    expect(parentReaction.mock.calls.length).toBe(2)
+    expect(childReaction1).not.toHaveBeenCalled()
+    expect(childReaction2).not.toHaveBeenCalled()
+
+    await router.push('/parent/2/child/1')
+
+    expect(childReaction1).toHaveBeenCalled()
+    expect(childReaction2).toHaveBeenCalled()
+
+    await router.push('/parent/2/child/2')
+
+    expect(parentReaction.mock.calls.length).toBe(2)
+    expect(childReaction1.mock.calls.length).toBe(1)
+    expect(childReaction2.mock.calls.length).toBe(2)
+
+    await router.push('/parent/3/child/1')
+    
+    expect(parentReaction.mock.calls.length).toBe(3)
+    expect(childReaction1.mock.calls.length).toBe(2)
+    expect(childReaction2.mock.calls.length).toBe(3)
+
+    router.stop()
+  })
+
+  test('subscriptions react to param changes with reaction', async () => {
+    const parentReaction = jest.fn()
+    const childReaction1 = jest.fn()
+    const childReaction2 = jest.fn()
+    const stateReaction = jest.fn()
+
+    const state = observable({ isPending: false })
+
+    router = install({
+      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+      routes: [
+        {
+          key: 'parent',
+          path: 'parent/:parentId',
+          subscriptions() {
+            const { params } = this
+
+            return reaction(() => params.parentId, parentReaction)
+          },
+          children: [
+            {
+              key: 'child',
+              path: 'child/:childId',
+              subscriptions() {
+                const route = this
+                const { params } = this
+
+                return [
+                  reaction(() => params.parentId, childReaction1),
+                  reaction(() => params.childId, () => {
+                    route.state.isPending = true
+                    childReaction2()
+                  }),
+                  reaction(() => state.isPending, stateReaction)
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    })
+
+    await router.start()
+
+    await router.push('/parent/1')
+
+    expect(parentReaction).not.toHaveBeenCalled()
+
+    await router.push('/parent/2')
+
+    expect(parentReaction.mock.calls.length).toBe(1)
+    expect(childReaction1).not.toHaveBeenCalled()
+    expect(childReaction2).not.toHaveBeenCalled()
+
+    await router.push('/parent/2/child/1')
+
+    expect(childReaction1).not.toHaveBeenCalled()
+    expect(childReaction2).not.toHaveBeenCalled()
+
+    await router.push('/parent/2/child/2')
+
+    expect(parentReaction.mock.calls.length).toBe(1)
+    expect(childReaction1.mock.calls.length).toBe(0)
+    expect(childReaction2.mock.calls.length).toBe(1)
+
+    await router.push('/parent/3/child/1')
+
+    expect(parentReaction.mock.calls.length).toBe(2)
+    expect(childReaction1.mock.calls.length).toBe(0)
+    expect(childReaction2.mock.calls.length).toBe(1)
+
+    await new Promise((resolve, reject) => {
+      setTimeout(() => {
+        runInAction(() => {
+          state.isPending = true
+        })
+        resolve()
+      }, 100)
+    })
+
+    expect(stateReaction).toHaveBeenCalled()
+
+    router.stop()
   })
 })
 
