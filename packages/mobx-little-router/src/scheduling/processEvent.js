@@ -1,5 +1,5 @@
 // @flow
-import { action, observable, runInAction } from 'mobx'
+import { action, observable, runInAction, set } from 'mobx'
 import type RouterStore from '../model/RouterStore'
 import { NotFound } from '../errors'
 import Navigation from '../model/Navigation'
@@ -210,6 +210,15 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
             // Start all subscriptions when activating a route
             activating.forEach(route => {
               const { subscriptions, current } = route.node.value
+
+              Object.keys(route.params).forEach(key => {
+                set(current.params, key, null)
+              })
+
+              Object.keys(route.query).forEach(key => {
+                set(current.query, key, '')
+              })
+
               if (typeof subscriptions === 'function') {
                 route.node.value.disposers = [].concat(subscriptions.bind(current)())
               }
@@ -218,6 +227,7 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
             // Commit changes to underlying node
             nextRoutes.forEach(route => {
               const { current } = route.node.value
+
               Object.assign(current.params, route.params)
               Object.assign(current.query, route.query)
               current.state = route.state

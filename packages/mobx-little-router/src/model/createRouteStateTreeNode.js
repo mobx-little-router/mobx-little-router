@@ -98,14 +98,8 @@ export default function createRouteStateTreeNode(
   })
 
   value.current = observable({
-    params: value.params.reduce((acc, x) => {
-      acc[x] = null
-      return acc
-    }, {}),
-    query: value.query.reduce((acc, x) => {
-      acc[x] = ''
-      return acc
-    }, {}),
+    params: {},
+    query: {},
     state: value.state
   }, {
     state: observable.ref
