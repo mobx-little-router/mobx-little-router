@@ -2,7 +2,8 @@
 import React from 'react'
 import type { Element } from 'react'
 import { render, mount } from 'enzyme'
-import { install, Router } from 'mobx-little-router'
+import { Router } from 'mobx-little-router'
+import { install } from 'mobx-little-router-react'
 import RouterContext from './contexts/RouterContext'
 import { createMemoryHistory } from 'history'
 

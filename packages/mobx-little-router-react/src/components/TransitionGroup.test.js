@@ -108,15 +108,13 @@ describe('TransitionGroup', () => {
     expect(wrapper.find(TransitionItem).at(0).hasClass('exit')).toBe(true)
     expect(wrapper.find(TransitionItem).at(1).hasClass('enter')).toBe(true)
 
-    // after a small delay the transition classes will activate
-    await delay(1)
-
     // Then the animation is initialized with the active class
     expect(to && to.data.transitionState).toBe('entering')
     expect(from && from.data.transitionState).toBe('exiting')
     expect(hasClass(wrapper.find(TransitionItem).at(0), 'exit-active')).toBe(true)
     expect(hasClass(wrapper.find(TransitionItem).at(1), 'enter-active')).toBe(true)
 
+    // XXX Timeout happens here because navigation_transition_end event does not fire
     await waitUntil(EventTypes.NAVIGATION_TRANSITION_END, router)
     updateRoutes(wrapper)
 
@@ -138,7 +136,5 @@ const AboutPage = ({ className }) => <div className={className}>AboutPage</div>
 const ContactPage = ({ className }) => <div className={className}>ContactPage</div>
 
 function waitUntil(evtType, router) {
-  return new Promise(res => {
-    when(() => router.currentEventType === evtType, res)
-  })
+  return when(() => router.currentEventType === evtType)
 }
