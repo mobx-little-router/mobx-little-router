@@ -1017,8 +1017,8 @@ describe('Public API', () => {
         {
           key: 'parent',
           path: 'parent/:parentId',
-          subscriptions() {
-            const { params } = this
+          subscriptions(route) {
+            const { params } = route
 
             return autorun(() => params.parentId && parentReaction())
           },
@@ -1026,8 +1026,8 @@ describe('Public API', () => {
             {
               key: 'child',
               path: 'child/:childId',
-              subscriptions() {
-                const { params } = this
+              subscriptions(route) {
+                const { params } = route
 
                 return [
                   autorun(() => params.parentId && childReaction1()),
@@ -1083,8 +1083,8 @@ describe('Public API', () => {
         {
           key: 'parent',
           path: 'parent/:parentId',
-          subscriptions() {
-            const { params } = this
+          subscriptions(route) {
+            const { params } = route
 
             return reaction(() => params.parentId, parentReaction, { fireImmediately: true })
           },
@@ -1092,8 +1092,8 @@ describe('Public API', () => {
             {
               key: 'child',
               path: 'child/:childId',
-              subscriptions() {
-                const { params } = this
+              subscriptions(route) {
+                const { params } = route
 
                 return [
                   reaction(() => params.parentId, childReaction1, { fireImmediately: true }),
@@ -1152,8 +1152,8 @@ describe('Public API', () => {
         {
           key: 'parent',
           path: 'parent/:parentId',
-          subscriptions() {
-            const { params } = this
+          subscriptions(route) {
+            const { params } = route
 
             return reaction(() => params.parentId, parentReaction)
           },
@@ -1161,9 +1161,8 @@ describe('Public API', () => {
             {
               key: 'child',
               path: 'child/:childId',
-              subscriptions() {
-                const route = this
-                const { params } = this
+              subscriptions(route) {
+                const { params } = route
 
                 return [
                   reaction(() => params.parentId, childReaction1),
