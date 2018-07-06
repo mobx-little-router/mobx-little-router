@@ -33,11 +33,11 @@ class TransitionGroup extends Component<TransitionGroupProps> {
     this.stopCallbacks.push(() => {
       // Ensure to and from transitionStates are correctly set after the transition stops
       if (to) {
-        to.data.transitionState = 'entered'
+        to.state.transitionState = 'entered'
       }
 
       if (from) {
-        from.data.transitionState = 'exited'
+        from.state.transitionState = 'exited'
       }      
     })
 
@@ -47,7 +47,7 @@ class TransitionGroup extends Component<TransitionGroupProps> {
 
       if (route) {
         runInAction(() => {
-          route.data.transitionState = route === to ? 'entering' : 'exiting'
+          route.state.transitionState = route === to ? 'entering' : 'exiting'
         })
 
         if (el instanceof window.HTMLElement) {
@@ -58,7 +58,7 @@ class TransitionGroup extends Component<TransitionGroupProps> {
           if (target) {
             const handleTransitionEnd = (ev) => {
               runInAction(() => {
-                route.data.transitionState = route === to ? 'entered' : 'exited'
+                route.state.transitionState = route === to ? 'entered' : 'exited'
               })
 
               target.removeEventListener('transitionend', handleTransitionEnd)

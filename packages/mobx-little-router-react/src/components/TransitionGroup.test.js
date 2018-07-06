@@ -81,7 +81,7 @@ describe('TransitionGroup', () => {
     expect(wrapper.find(TransitionItem).at(0).hasClass('enter')).toBe(true)
 
     // Then the animation is initialized with the active class
-    expect(tracker.to && tracker.to.data.transitionState).toBe('entering')
+    expect(tracker.to && tracker.to.state.transitionState).toBe('entering')
     //XXX expect(wrapper.find(TransitionItem).hasClass('enter-active')).toBe(true)
     expect(hasClass(wrapper.find(TransitionItem).at(0), 'enter-active')).toBe(true)
 
@@ -92,7 +92,7 @@ describe('TransitionGroup', () => {
     // Our transition has settled and transitioning class removed
     expect(wrapper.childAt(0).childAt(0).hasClass('transitioning')).toBe(false)
     expect(wrapper.childAt(0).childAt(0).hasClass('enter-active')).toBe(false)
-    expect(tracker.to && tracker.to.data.transitionState).toBe('entered')
+    expect(tracker.to && tracker.to.state.transitionState).toBe('entered')
 
     router.push('/contact')
     await waitUntil(EventTypes.NAVIGATION_TRANSITION_START, router)
@@ -109,8 +109,8 @@ describe('TransitionGroup', () => {
     expect(wrapper.find(TransitionItem).at(1).hasClass('enter')).toBe(true)
 
     // Then the animation is initialized with the active class
-    expect(to && to.data.transitionState).toBe('entering')
-    expect(from && from.data.transitionState).toBe('exiting')
+    expect(to && to.state.transitionState).toBe('entering')
+    expect(from && from.state.transitionState).toBe('exiting')
     expect(hasClass(wrapper.find(TransitionItem).at(0), 'exit-active')).toBe(true)
     expect(hasClass(wrapper.find(TransitionItem).at(1), 'enter-active')).toBe(true)
 
@@ -119,8 +119,8 @@ describe('TransitionGroup', () => {
     updateRoutes(wrapper)
 
     // Then the animation has reached its final stage
-    expect(to && to.data.transitionState).toBe('entered')
-    expect(from && from.data.transitionState).toBe('exited') // This doesnt get set properly for non animated routes
+    expect(to && to.state.transitionState).toBe('entered')
+    expect(from && from.state.transitionState).toBe('exited') // This doesnt get set properly for non animated routes
 
     // Wait for the transition to complete
     await waitUntil(EventTypes.NAVIGATION_END, router)

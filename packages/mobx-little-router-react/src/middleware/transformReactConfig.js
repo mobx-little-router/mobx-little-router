@@ -6,7 +6,7 @@ const handleAnimatedTransition = ({ type, target }) => {
   return new Promise((resolve, reject) => {
     when(
       () => {
-        return target.data.transitionState === (type === 'entering' ? 'entered' : 'exited')
+        return target.state.transitionState === (type === 'entering' ? 'entered' : 'exited')
       },
       () => {
         resolve()
@@ -25,7 +25,6 @@ export default transformConfig(config => {
         return {
           component,
           outlet,
-          transitionState: null,
           ...(typeof config.getData === 'function' ? config.getData(route) : {})
         }
       }
@@ -35,8 +34,11 @@ export default transformConfig(config => {
     ? handleAnimatedTransition
     : config.onTransition
 
+  const state = { ...config.state, transitionState: null }
+
   return {
     ...config,
+    state,
     getData,
     onTransition
   }
