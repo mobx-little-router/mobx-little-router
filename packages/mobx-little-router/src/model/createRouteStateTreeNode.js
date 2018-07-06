@@ -106,7 +106,7 @@ export default function createRouteStateTreeNode(
   })
 
   extendObservable(value.current, {
-    computed: value.computed ? value.computed.bind(value.current)() : {}
+    computed: value.computed ? value.computed(value.current) : {}
   })
 
   return TreeNode(value, children)

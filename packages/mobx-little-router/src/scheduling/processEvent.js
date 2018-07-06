@@ -220,7 +220,7 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
               })
 
               if (typeof subscriptions === 'function') {
-                route.node.value.disposers = [].concat(subscriptions.bind(current)())
+                route.node.value.disposers = [].concat(subscriptions(current))
               }
             })
 

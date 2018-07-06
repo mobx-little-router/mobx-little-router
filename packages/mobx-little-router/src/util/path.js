@@ -8,10 +8,10 @@ export function resolve(from: string, to: string): string {
     return to
   } else {
     const results = []
-    let parts = from.split('/')
+    const parts = from.split('/')
 
     parts.pop()
-    parts = parts.concat(to.split('/'))
+    parts.push(...to.split('/'))
 
     parts.forEach(part => {
       if (part === '..') {

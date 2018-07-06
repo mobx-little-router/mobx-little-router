@@ -23,9 +23,9 @@ export default function createRouteInstance<C: Object, D: Object>(node: RouteSta
   })
 
   extendObservable(route, {
-    computed: node.value.computed.bind(route)(),
-    effects: node.value.effects.bind(route)(),
-    data: node.value.getData.bind(route)()
+    computed: node.value.computed(route),
+    effects: node.value.effects(route),
+    data: node.value.getData(route)
   })
 
   return route

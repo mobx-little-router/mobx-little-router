@@ -103,7 +103,7 @@ export type RouteValue<C: Object, D: Object> = {
   onEnter: null | LifecycleEndFn,
   onExit: null | LifecycleEndFn,
   getContext: () => C,
-  getData: () => D,
+  getData: (route: Route<*, *>) => D,
   disposers: Array<Function>,
   subscriptions: null | Function,
   computed: Function,

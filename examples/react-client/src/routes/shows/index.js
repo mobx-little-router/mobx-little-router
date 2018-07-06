@@ -24,8 +24,7 @@ export default function init({ router, stores }) {
           }
         }
       },
-      subscriptions() {
-        const route = this
+      subscriptions(route) {
         return fx.fetchShows({ route, stores })
       },
       component: ShowsRoute,
@@ -37,9 +36,9 @@ export default function init({ router, stores }) {
           state: {
             isPending: true
           },
-          computed() {
+          computed(route) {
             const { ShowsStore } = stores
-            const { params } = this
+            const { params } = route
             const selected = router.select({ shows: { computed: { shows: [] } } })
 
             return {
@@ -76,8 +75,7 @@ export default function init({ router, stores }) {
               }
             }
           },
-          subscriptions() {
-            const route = this
+          subscriptions(route) {
             return fx.fetchShow({ route, stores })
           },
           //XXX this blocks the route transition chicken and egg problem
