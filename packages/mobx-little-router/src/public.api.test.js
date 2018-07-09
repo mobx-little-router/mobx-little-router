@@ -1,5 +1,5 @@
 // @flow
-import { autorun, reaction, observable, runInAction } from 'mobx'
+import { autorun, reaction, observable, runInAction, action, when } from 'mobx'
 import { createMemoryHistory } from 'history'
 import delay from './util/delay'
 import { EventTypes } from './events'
@@ -1142,9 +1142,9 @@ describe('Public API', () => {
     const parentReaction = jest.fn()
     const childReaction1 = jest.fn()
     const childReaction2 = jest.fn()
-    const stateReaction = jest.fn()
+    const storeReaction = jest.fn()
 
-    const state = observable({ isPending: false })
+    const store = observable({ isPending: false })
 
     router = install({
       history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
@@ -1167,10 +1167,10 @@ describe('Public API', () => {
                 return [
                   reaction(() => params.parentId, childReaction1),
                   reaction(() => params.childId, () => {
-                    route.state.isPending = true
+                    store.isPending = true
                     childReaction2()
                   }),
-                  reaction(() => state.isPending, stateReaction)
+                  reaction(() => store.isPending, storeReaction)
                 ]
               }
             }
@@ -1211,13 +1211,101 @@ describe('Public API', () => {
     await new Promise((resolve, reject) => {
       setTimeout(() => {
         runInAction(() => {
-          state.isPending = true
+          store.isPending = true
         })
         resolve()
       }, 100)
     })
 
-    expect(stateReaction).toHaveBeenCalled()
+    expect(storeReaction).toHaveBeenCalled()
+
+    router.stop()
+  })
+
+  test('subscriptions with state and willResolve', async () => {
+    const store = observable({ a: null, b: null })
+
+    router = install({
+      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+      routes: [
+        {
+          key: 'a',
+          path: 'a/:id',
+          state: {
+            isLoaded: false
+          },
+          subscriptions(route) {
+            const { params } = route
+
+            return autorun(() => {
+              const { id } = params
+
+              if (id) {
+                setTimeout(action(() => {
+                  route.state.isLoaded = true
+                  store.a = { id }
+                }), 10)
+              }
+            })
+          }
+        },
+        {
+          key: 'b',
+          path: 'b/:id',
+          state: {
+            isLoaded: false
+          },
+          subscriptions(route) {
+            const { params } = route
+
+            return autorun(() => {
+              const { id } = params
+
+              if (id) {
+                setTimeout(action(() => {
+                  route.state.isLoaded = true
+                  store.b = { id }
+                }), 10)
+              }
+            })
+          },
+          willResolve(route) {
+            return when(() => route.state.isLoaded == true)
+          }
+        }
+      ]
+    })
+
+    await router.start()
+
+    // Route is resolved optimistically and renders before data is ready.
+    // Need to wait (delay) before data arrived
+    await router.push('/a/1')
+    
+    expect(store.a).toBe(null)
+
+    await delay(20)
+
+    expect(store.a.id).toBe('1')
+
+    await router.push('/a/2')
+
+    expect(store.a.id).toBe('1')
+
+    await delay(20)
+
+    expect(store.a.id).toBe('2')
+
+
+    // Route makes sure all data is resolved before completeing navigation.
+    // No need to wait
+    await router.push('/b/1')
+
+    expect(store.b.id).toBe('1')
+
+    await router.push('/b/2')
+
+    expect(store.b.id).toBe('2')
 
     router.stop()
   })
@@ -1225,4 +1313,8 @@ describe('Public API', () => {
 
 const getLastRoute = router => {
   return router.activatedRoutes[router.activatedRoutes.length - 1]
+}
+
+function waitUntil(evtType, router) {
+  return when(() => router.currentEventType === evtType)
 }
