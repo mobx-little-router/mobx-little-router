@@ -530,7 +530,7 @@ function findCatchAllPath(path) {
 }
 
 function invokeTransitionFunction(type) {
-  return route => getTransitionFunction(type)(route).call(route)
+  return route => getTransitionFunction(type)(route)(route)
 }
 
 function getTransitionFunction(type) {
