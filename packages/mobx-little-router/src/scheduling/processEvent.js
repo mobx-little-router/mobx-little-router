@@ -223,7 +223,10 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
                 route.node.value.disposers = [].concat(subscriptions(current))
               }
             })
-
+          })
+        })
+        .then(() => {
+          runInAction(() => {
             // Commit changes to underlying node
             nextRoutes.forEach(route => {
               const { current } = route.node.value
