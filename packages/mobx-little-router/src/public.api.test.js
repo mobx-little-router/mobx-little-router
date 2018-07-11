@@ -1072,6 +1072,72 @@ describe('Public API', () => {
     router.stop()
   })
 
+  test('subscriptions react to param changes with reaction fireImmediately', async () => {
+    const parentReaction = jest.fn()
+    const childReaction1 = jest.fn()
+    const childReaction2 = jest.fn()
+
+    router = install({
+      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+      routes: [
+        {
+          key: 'parent',
+          path: 'parent/:parentId',
+          subscriptions(route) {
+            const { params } = route
+
+            return reaction(() => params.parentId, parentReaction, { fireImmediately: true })
+          },
+          children: [
+            {
+              key: 'child',
+              path: 'child/:childId',
+              subscriptions(route) {
+                const { params } = route
+
+                return [
+                  reaction(() => params.parentId, childReaction1, { fireImmediately: true }),
+                  reaction(() => params.childId, childReaction2, { fireImmediately: true })
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    })
+
+    await router.start()
+
+    await router.push('/parent/1')
+
+    expect(parentReaction).toHaveBeenCalled()
+
+    await router.push('/parent/2')
+
+    expect(parentReaction.mock.calls.length).toBe(2)
+    expect(childReaction1).not.toHaveBeenCalled()
+    expect(childReaction2).not.toHaveBeenCalled()
+
+    await router.push('/parent/2/child/1')
+
+    expect(childReaction1).toHaveBeenCalled()
+    expect(childReaction2).toHaveBeenCalled()
+
+    await router.push('/parent/2/child/2')
+
+    expect(parentReaction.mock.calls.length).toBe(2)
+    expect(childReaction1.mock.calls.length).toBe(1)
+    expect(childReaction2.mock.calls.length).toBe(2)
+
+    await router.push('/parent/3/child/1')
+    
+    expect(parentReaction.mock.calls.length).toBe(3)
+    expect(childReaction1.mock.calls.length).toBe(2)
+    expect(childReaction2.mock.calls.length).toBe(3)
+
+    router.stop()
+  })
+
   test('subscriptions react to param changes with reaction', async () => {
     const parentReaction = jest.fn()
     const childReaction1 = jest.fn()
@@ -1117,31 +1183,30 @@ describe('Public API', () => {
 
     await router.push('/parent/1')
 
-    expect(parentReaction).toHaveBeenCalled()
+    expect(parentReaction).not.toHaveBeenCalled()
 
     await router.push('/parent/2')
 
-    expect(parentReaction.mock.calls.length).toBe(2)
-
+    expect(parentReaction.mock.calls.length).toBe(1)
     expect(childReaction1).not.toHaveBeenCalled()
     expect(childReaction2).not.toHaveBeenCalled()
 
     await router.push('/parent/2/child/1')
 
-    expect(childReaction1).toHaveBeenCalled()
-    expect(childReaction2).toHaveBeenCalled()
+    expect(childReaction1).not.toHaveBeenCalled()
+    expect(childReaction2).not.toHaveBeenCalled()
 
     await router.push('/parent/2/child/2')
 
-    expect(parentReaction.mock.calls.length).toBe(2)
-    expect(childReaction1.mock.calls.length).toBe(1)
-    expect(childReaction2.mock.calls.length).toBe(2)
+    expect(parentReaction.mock.calls.length).toBe(1)
+    expect(childReaction1.mock.calls.length).toBe(0)
+    expect(childReaction2.mock.calls.length).toBe(1)
 
     await router.push('/parent/3/child/1')
 
-    expect(parentReaction.mock.calls.length).toBe(3)
-    expect(childReaction1.mock.calls.length).toBe(2)
-    expect(childReaction2.mock.calls.length).toBe(3)
+    expect(parentReaction.mock.calls.length).toBe(2)
+    expect(childReaction1.mock.calls.length).toBe(0)
+    expect(childReaction2.mock.calls.length).toBe(1)
 
     await new Promise((resolve, reject) => {
       setTimeout(() => {
