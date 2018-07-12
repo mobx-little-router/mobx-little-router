@@ -1309,6 +1309,115 @@ describe('Public API', () => {
 
     router.stop()
   })
+
+  test('computeds and select', async () => {
+    const accountStore = observable({
+      path: null,
+      accounts: observable.map(),
+      get(username) {
+        return this.accounts.get(username)
+      },
+      add(account) {
+        this.accounts.set(account.username, account)
+      }
+    })
+    
+    const hubStore = observable({
+      path: null
+    })
+
+    let id = 0
+    const accountFetch = jest.fn((username) =>
+      runInAction(() => {
+        accountStore.path = `/${username}`
+
+        if (!accountStore.get(username)) {
+          accountStore.add({ username, id: ++id })
+        }
+      })
+    )
+
+    const hubFetch = jest.fn((accountId, hubId) => hubStore.path = `/${accountId}/${hubId}`)
+
+    router = install({
+      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+      routes: [
+        {
+          key: 'accountKey',
+          path: 'account/:username',
+          computed(route) {
+            const { params } = route
+
+            return {
+              get account() {
+                return accountStore.get(params.username)
+              }
+            }
+          },
+          subscriptions(route) {
+            const { params, computed } = route
+
+            return autorun(() => {
+              const { username } = params
+              accountFetch(username)
+            })
+          },
+          children: [
+            {
+              key: 'hubKey',
+              path: 'hub/:hubId',
+              subscriptions(route) {
+                const { params } = route
+                // XXX router.select cannot be used here need a better solution
+                const selected = router.select({ accountKey: { computed: { account: null } } })
+
+                return autorun(() => {
+                  const { hubId } = params
+                  const { account } = selected.accountKey.computed
+                  if (account) {
+                    hubFetch(account.id, hubId)
+                  }
+                })
+              }
+            }
+          ]
+        }
+      ]
+    })
+
+    await router.start()
+
+    await router.push('/account/pressly')
+
+    expect(accountStore.path).toBe('/pressly')
+
+    await router.push('/account/pressly/hub/1')
+
+    expect(hubStore.path).toBe('/1/1')
+
+    await router.push('/account/pressly/hub/2')
+
+    expect(hubStore.path).toBe('/1/2')
+
+    expect(accountFetch.mock.calls.length).toBe(1)
+    expect(hubFetch.mock.calls.length).toBe(2)
+
+    await router.push('/account/other/hub/3')
+
+    expect(hubStore.path).toBe('/2/3')
+
+    expect(accountFetch.mock.calls.length).toBe(2)
+
+    await router.push('/account/pressly/hub/4')
+
+    expect(hubStore.path).toBe('/1/4')
+
+    // XXX This currently fails because router.select only gets the committed data not the inflight data
+    // so it ends up making additional fetches
+    expect(hubFetch.mock.calls.length).toBe(4)
+
+    router.stop()
+  })
 })
 
 const getLastRoute = router => {
