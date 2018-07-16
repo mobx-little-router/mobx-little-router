@@ -77,12 +77,22 @@ class RouterStore {
 
   getNode(key: string): null | RouteStateTreeNode<*, *> {
     const x = this.cache.get(key)
-    if (x) {
-      const { node } = x
-      return node
-    } else {
-      return null
+    return x && x.node || null
+  }
+
+  getNodeParent(key: string): null | RouteStateTreeNode<*, *> {
+    const x = this.cache.get(key)
+    return x && x.parent || null
+  }
+
+  getNodeAncestors(key: string): Array<RouteStateTreeNode<*, *>> {
+    const parents = []
+    let node = this.getNode(key)
+    while (node = node && this.getNodeParent(node.value.key)) {
+      parents.push(node)
     }
+
+    return parents
   }
 
   getNodeUnsafe(key: string): RouteStateTreeNode<*, *> {
@@ -178,7 +188,7 @@ class RouterStore {
   }
 
   _storeInCache(parent: RouteStateTreeNode<*, *>, node: RouteStateTreeNode<*, *>) {
-    this.cache.set(node.value.key, { node: node, parent })
+    this.cache.set(node.value.key, { node, parent })
     node.children.forEach(child => this._storeInCache(node, child))
   }
 }

@@ -5,9 +5,10 @@ import { NotFound } from '../errors'
 import Navigation from '../model/Navigation'
 import type { Route } from '../model/types'
 import isUrlFullyMatched from './util/isUrlFullyMatched'
-import areRoutesEqual from '../model/util/areRoutesEqual'
+import createCurrentRoutePropertiesWrapper from './util/createCurrentRoutePropertiesWrapper'
 import getNodeValue from '../model/util/getNodeValue'
 import setNodeValue from '../model/util/setNodeValue'
+import areRoutesEqual from '../model/util/areRoutesEqual'
 import TransitionManager from '../transition/TransitionManager'
 import type { Event } from '../events'
 import { EventTypes } from '../events'
@@ -219,8 +220,13 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
                 set(current.query, key, '')
               })
 
+              const currentRouteProperties = createCurrentRoutePropertiesWrapper(route.node.value.key, store)
+
+              // Set the current computed property
+              set(current, 'computed', route.node.value.computed(currentRouteProperties))
+
               if (typeof subscriptions === 'function') {
-                route.node.value.disposers = [].concat(subscriptions(current))
+                route.node.value.disposers = [].concat(subscriptions(currentRouteProperties))
               }
             })
 

@@ -1310,7 +1310,7 @@ describe('Public API', () => {
     router.stop()
   })
 
-  test('computeds and select', async () => {
+  test('subscriptions with computed values', async () => {
     const accountStore = observable({
       path: null,
       accounts: observable.map(),
@@ -1343,10 +1343,10 @@ describe('Public API', () => {
       history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
       routes: [
         {
-          key: 'accountKey',
+          key: 'account',
           path: 'account/:username',
-          computed(route) {
-            const { params } = route
+          computed(props) {
+            const { params } = props
 
             return {
               get account() {
@@ -1354,8 +1354,8 @@ describe('Public API', () => {
               }
             }
           },
-          subscriptions(route) {
-            const { params, computed } = route
+          subscriptions(props) {
+            const { params } = props
 
             return autorun(() => {
               const { username } = params
@@ -1366,14 +1366,13 @@ describe('Public API', () => {
             {
               key: 'hubKey',
               path: 'hub/:hubId',
-              subscriptions(route) {
-                const { params } = route
-                // XXX router.select cannot be used here need a better solution
-                const selected = router.select({ accountKey: { computed: { account: null } } })
+              subscriptions(props) {
+                const { params, getParent, getAncestor } = props
 
                 return autorun(() => {
                   const { hubId } = params
-                  const { account } = selected.accountKey.computed
+                  const { computed: { account } } = getParent() // or getAncestor('account')
+
                   if (account) {
                     hubFetch(account.id, hubId)
                   }

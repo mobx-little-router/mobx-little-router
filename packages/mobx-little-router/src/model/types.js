@@ -80,10 +80,11 @@ export type ErrorHandler = (route: Route<*, *>, navigation: Navigation, err: Err
 
 export type LoadChildrenRouteStateTreeNode = () => Promise<any>
 
-export type CurrentRoute = {
+export type CurrentRouteProperties = {
   params: Params,
   query: Query,
-  state: Object
+  state: Object,
+  computed: Object
 }
 
 export type RouteValue<C: Object, D: Object> = {
@@ -109,7 +110,7 @@ export type RouteValue<C: Object, D: Object> = {
   computed: Function,
   effects: Function,
   state: Object,
-  current: CurrentRoute
+  current: CurrentRouteProperties
 }
 
 export type RouteStateTreeNode<C, D> = ITreeNode<RouteValue<C, D>>
