@@ -1,5 +1,5 @@
 // @flow
-import React, { Component, createContext } from 'react'
+import React, { Component } from 'react'
 import withRouter from '../hoc/withRouter'
 import withOutlet from '../hoc/withOutlet'
 import { observer } from 'mobx-react'
