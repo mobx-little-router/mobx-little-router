@@ -1,6 +1,6 @@
 {
   "name": "mobx-little-router",
-  "version": "2.0.0-9",
+  "version": "2.0.0-10",
   "description": "Implementation of an universal router that uses MobX to manage state.",
   "repository": "git@github.com:mobx-little-router/mobx-little-router.git",
   "license": "MIT",
