@@ -61,17 +61,25 @@ class RouterStore {
 
   createNextRouteInstances(path: PathElement<*, *>[], nextLocation: Location): Route<*, *>[] {
     const query = getQueryParams(nextLocation)
+    const ancestors = []
+    
     return path.map(element => {
-      const matchedQueryParams = this.getMatchedQueryParams(element.node, query)
-      const route = createRouteInstance(
-        element.node,
-        element.parentUrl,
-        element.segment,
-        element.params,
-        matchedQueryParams
+      const { node, parentUrl, segment, params } = element
+      const matchedQueryParams = this.getMatchedQueryParams(node, query)
+      const newRoute = createRouteInstance(
+        node,
+        parentUrl,
+        segment,
+        params,
+        matchedQueryParams,
+        ancestors
       )
+      
+      const route = this.activatedRoutes.find(areRoutesEqual(newRoute)) || newRoute
 
-      return this.activatedRoutes.find(areRoutesEqual(route)) || route
+      ancestors.push(route)
+
+      return route
     })
   }
 

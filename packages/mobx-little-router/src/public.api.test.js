@@ -1366,6 +1366,21 @@ describe('Public API', () => {
             {
               key: 'hubKey',
               path: 'hub/:hubId',
+              computed(props) {
+                const { params, getParent, getAncestor } = props
+                
+                try {
+                  const { computed: account } = getAncestor('account')
+                } catch (err) {
+                  console.log(err)
+                }
+
+                return {
+                  get account() {
+                    return null
+                  }
+                }
+              },
               subscriptions(props) {
                 const { params, getParent, getAncestor } = props
 
