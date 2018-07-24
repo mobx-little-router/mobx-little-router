@@ -1,5 +1,5 @@
 // @flow
-import React, { createContext } from 'react'
+import createContext from 'create-react-context';
 
 export type OutletContextValue = { index: number }
 

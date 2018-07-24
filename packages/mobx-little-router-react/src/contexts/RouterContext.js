@@ -1,6 +1,6 @@
 // @flow
-import React, { createContext } from 'react'
 import type { Router } from 'mobx-little-router'
+import createContext from 'create-react-context';
 
 export type RouterContextValue = null | Router
 
