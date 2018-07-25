@@ -22,9 +22,21 @@ import type {
 import Scheduler from './scheduling/Scheduler'
 import { type Event, EventTypes } from './events'
 import { NavigationTypes } from './model/Navigation'
+import { EMPTY } from './middleware/Middleware'
 import type { IMiddleware } from './middleware/Middleware'
 
 const OBSERVABLE_ROUTE_PROPERTIES = ['params', 'query', 'computed']
+
+type RouterCtorOptions = {
+  getContext?: void | (() => any),
+  middleware?: IMiddleware,
+  ssr?: {
+    state: Object
+  }
+}
+const DEFAULT_OPTIONS: RouterCtorOptions= {
+  middleware: EMPTY
+}
 
 class Router {
   // Public members
@@ -42,10 +54,10 @@ class Router {
   _disposers: Function[]
   _nextNavigation: * // This is computed from Scheduler event observable.
 
-  constructor(history: History, config: Config<*>[], getContext?: void | (() => any), middleware: IMiddleware) {
-    const root = createRouteStateTreeNode({ key: '@@ROOT', path: '', match: 'partial' }, getContext) // Initial root.
-    const store = new RouterStore(root)
-    const scheduler = new Scheduler(store, middleware)
+  constructor(history: History, config: Config<*>[], opts?: RouterCtorOptions = DEFAULT_OPTIONS) {
+    const root = createRouteStateTreeNode({ key: '@@ROOT', path: '', match: 'partial' }, opts.getContext) // Initial root.
+    const store = new RouterStore(root, opts.ssr ? opts.ssr.state : undefined)
+    const scheduler = new Scheduler(store, opts.middleware || EMPTY)
     extendObservable(
       this,
       {

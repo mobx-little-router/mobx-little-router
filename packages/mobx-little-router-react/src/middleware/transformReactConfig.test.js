@@ -12,7 +12,7 @@ describe('transformReactConfig middleware', () => {
       type: EventTypes.CHILDREN_LOADING,
       leaf: createLeaf(),
       navigation: createNavigation(),
-      partialPath: [],
+      partialPath: null,
       children: [
         { path: 'b', component: B, outlet: 'modal' },
         { path: 'c', component: C, children: [{ path: 'd', component: D }] }

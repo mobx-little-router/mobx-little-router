@@ -40,8 +40,9 @@ describe('Router', () => {
         { key: 'b', path: 'b' },
         { key: 'c', path: 'c' }
       ],
-      () => ({ message: 'Hello' }),
-      Middleware.EMPTY
+      {
+        getContext: () => ({ message: 'Hello' })
+      }
     )
 
     return router.start()
@@ -174,9 +175,7 @@ describe('Router', () => {
             }
           ]
         }
-      ],
-      () => ({}),
-      Middleware.EMPTY
+      ]
     )
     await router.start()
 
@@ -198,7 +197,11 @@ describe('Router', () => {
     })
 
     const dispose1 = autorun(() => {
-      const { user: { params: { id } } } = userData
+      const {
+        user: {
+          params: { id }
+        }
+      } = userData
       spy1(id)
     })
 

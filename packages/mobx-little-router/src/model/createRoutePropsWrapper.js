@@ -1,5 +1,4 @@
 // @flow
-import type RouterStore from './RouterStore'
 import type { Route, RouteProps } from './types'
 
 type RoutePropsWrapper = RouteProps & {
@@ -30,12 +29,14 @@ export default function createRoutePropsWrapper(route: Route<*, *>, useNode: boo
 
   const { defineProperty } = Object
   defineProperty(wrapped, 'state', {
+    enumerable: true,
     get() {
       return useNode ? current.state : route.state
     }
   })
 
   defineProperty(wrapped, 'computed', {
+    enumerable: true,
     get() {
       return useNode ? current.computed : route.computed
     }

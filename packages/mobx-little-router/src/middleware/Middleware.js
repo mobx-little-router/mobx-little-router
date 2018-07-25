@@ -26,4 +26,7 @@ export default function Middleware(f: Computation): IMiddleware {
   }
 }
 
-Middleware.EMPTY = Middleware(x => x)
+const EMPTY = Middleware(x => x)
+Middleware.EMPTY = EMPTY
+
+export { EMPTY }

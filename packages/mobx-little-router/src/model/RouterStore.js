@@ -7,42 +7,60 @@ import RouterStateTree from './RouterStateTree'
 import qs from 'querystring'
 import areRoutesEqual from './util/areRoutesEqual'
 import type Navigation from './Navigation'
-import type { Config, Location, Params, PathElement, Query, Route, RouteStateTreeNode } from './types'
+import type {
+  Config,
+  Location,
+  Params,
+  PathElement,
+  Query,
+  Route,
+  RouteStateTreeNode
+} from './types'
 
 type TreeNodeMetaData<C, D> = {
   node: RouteStateTreeNode<C, D>,
   parent: null | RouteStateTreeNode<C, D>
 }
 
+type InitialState = {
+  activatedRoutes: Object[],
+  store: Object
+}
+
 class RouterStore {
   location: Location
   params: ObservableMap<Params>
   state: RouterStateTree
-  nextKey = 0
+  nextKey: number
 
   // Create a map of all nodes in tree so we can perform faster lookup.
   // Instances should be exactly the same as in state tree.
   cache: ObservableMap<TreeNodeMetaData<*, *>>
 
   activatedRoutes: IObservableArray<Route<*, *>>
+  
+  initialActivatedRoutes: Object
 
   error: any
 
   cancelledSequence: number
 
-  constructor(root: RouteStateTreeNode<*, *>) {
+  constructor(root: RouteStateTreeNode<*, *>, initialState?: InitialState) {
     extendObservable(
       this,
       {
         state: new RouterStateTree(root),
         cancelledSequence: -1,
-        location: {},
+        location: initialState ? initialState.store.location : {},
         params: observable.map({}),
         cache: observable.map({ [root.value.key]: root }),
-        activatedRoutes: observable.array([]),
-        error: null
+        activatedRoutes: observable.array(),
+        error: null,
+        initialActivatedRoutes: initialState ? initialState.activatedRoutes : {},
+        nextKey: initialState ? initialState.store.nextKey : 0
       },
       {
+        nextKey: observable.ref,
         state: observable.ref,
         cancelledSequence: observable.ref
       }
@@ -57,8 +75,6 @@ class RouterStore {
     return `${key}`
   }
 
-  /* Queries */
-
   createNextRouteInstances(path: PathElement<*, *>[], nextLocation: Location): Route<*, *>[] {
     const query = getQueryParams(nextLocation)
     const ancestors = []
@@ -66,13 +82,16 @@ class RouterStore {
     return path.map(element => {
       const { node, parentUrl, segment, params } = element
       const matchedQueryParams = this.getMatchedQueryParams(node, query)
+      const initialRoute = this.initialActivatedRoutes[node.value.key]
+      const initialState = initialRoute ? initialRoute.state : undefined
       const newRoute = createRouteInstance(
         node,
         parentUrl,
         segment,
         params,
         matchedQueryParams,
-        ancestors
+        ancestors,
+        initialState
       )
       
       const route = this.activatedRoutes.find(areRoutesEqual(newRoute)) || newRoute
@@ -83,20 +102,22 @@ class RouterStore {
     })
   }
 
+  /* Queries */
+
   getNode(key: string): null | RouteStateTreeNode<*, *> {
     const x = this.cache.get(key)
-    return x && x.node || null
+    return (x && x.node) || null
   }
 
   getNodeParent(key: string): null | RouteStateTreeNode<*, *> {
     const x = this.cache.get(key)
-    return x && x.parent || null
+    return (x && x.parent) || null
   }
 
   getNodeAncestors(key: string): Array<RouteStateTreeNode<*, *>> {
     const parents = []
     let node = this.getNode(key)
-    while (node = node && this.getNodeParent(node.value.key)) {
+    while ((node = node && this.getNodeParent(node.value.key))) {
       parents.push(node)
     }
 
@@ -156,7 +177,7 @@ class RouterStore {
       this.activatedRoutes.replace(nextRoutes)
 
       // XXX we now have router.select which can select this data
-      // Update params 
+      // Update params
       this.params.clear()
       this.activatedRoutes.forEach(route => {
         this.params.set(route.node.value.key, route.params)
@@ -181,10 +202,12 @@ class RouterStore {
   }
 
   getMatchedQueryParams(node: RouteStateTreeNode<*, *>, query: Query): Query {
-    return Object.keys(query).filter(key => node.value.query.includes(key)).reduce((acc, key) => {
-      acc[key] = query[key]
-      return acc
-    }, {})
+    return Object.keys(query)
+      .filter(key => node.value.query.includes(key))
+      .reduce((acc, key) => {
+        acc[key] = query[key]
+        return acc
+      }, {})
   }
 
   /* Private helpers */
