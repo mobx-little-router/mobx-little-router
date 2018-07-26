@@ -1,6 +1,6 @@
 {
   "name": "react-client-ts",
-  "version": "2.0.0-11",
+  "version": "2.0.0-12",
   "private": true,
   "scripts": {
     "start": "webpack-dev-server --port=3000",
@@ -23,8 +23,8 @@
   "dependencies": {
     "history": "^4.7.2",
     "mobx": "^4.3.1",
-    "mobx-little-router": "^2.0.0-11",
-    "mobx-little-router-react": "^2.0.0-11",
+    "mobx-little-router": "^2.0.0-12",
+    "mobx-little-router-react": "^2.0.0-12",
     "mobx-react": "^5.2.0",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
