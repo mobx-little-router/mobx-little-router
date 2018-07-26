@@ -155,7 +155,6 @@ describe('Public API', () => {
   test('errors', async () => {
     router = install({
       history: createMemoryHistory({ initialEntries: ['/404'] }),
-      getContext: () => ({}),
       routes: [{ path: '' }]
     })
     await expect(router.start()).rejects.toEqual(expect.any(NotFound))
@@ -218,7 +217,6 @@ describe('Public API', () => {
   test('catch-all routes', async () => {
     const router = install({
       history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
-      getContext: () => ({}),
       routes: [{ path: 'a' }, { path: '**' }]
     })
 
@@ -241,9 +239,9 @@ describe('Public API', () => {
 
     const router = install({
       history: createMemoryHistory({ initialEntries: ['/a/1'], initialIndex: 0 }),
-      getContext: () => ({}),
       routes: [
         {
+          key: 'a',
           path: 'a/:id',
           query: ['q'],
           willActivate: willActivateSpy,
@@ -277,7 +275,6 @@ describe('Public API', () => {
 
     const router = install({
       history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
-      getContext: () => ({}),
       routes: [
         {
           path: 'a/:id',
@@ -474,7 +471,6 @@ describe('Public API', () => {
 
     const router = install({
       history: createMemoryHistory({ initialEntries: ['/a'], initialIndex: 0 }),
-      getContext: () => ({}),
       middleware: Middleware(middleware),
       routes: [
         {
@@ -940,7 +936,6 @@ describe('Public API', () => {
     for (const type of types) {
       router = install({
         history: createMemoryHistory({ initialEntries: ['/'] }),
-        getContext: () => ({}),
         routes: [
           {
             path: '',

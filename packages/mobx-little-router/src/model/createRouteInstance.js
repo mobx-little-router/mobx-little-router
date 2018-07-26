@@ -6,24 +6,35 @@ import createRoutePropsWrapper from './createRoutePropsWrapper'
 
 import type { Params, Query, Route, RouteStateTreeNode } from './types'
 
-export default function createRouteInstance<C: Object, D: Object>(node: RouteStateTreeNode<C, D>, parentUrl: string, segment: string, params: Params, query: Query, ancestors: Array<Route<*, *>> = []): Route<C,D> {
-  const route = observable({
-    node,
-    key: createRouteKey(node, `${parentUrl}:${segment}:${qs.stringify(query)}`),
-    value: `${parentUrl}${segment}?${qs.stringify(query)}`,
-    parentUrl,
-    segment,
-    params,
-    query,
-    state: { ...node.value.state },
-    context: node.value.getContext(),
-    onTransition: node.value.onTransition,
-    disposers: [],
-    ancestors
-  }, {
-    node: observable.ref,
-    context: observable.ref
-  })
+export default function createRouteInstance<C: Object, D: Object>(
+  node: RouteStateTreeNode<C, D>,
+  parentUrl: string,
+  segment: string,
+  params: Params,
+  query: Query,
+  ancestors: Array<Route<*, *>> = [],
+  initialState?: Object = {}
+): Route<C, D> {
+  const route = observable(
+    {
+      node,
+      key: createRouteKey(node, `${parentUrl}:${segment}:${qs.stringify(query)}`),
+      value: `${parentUrl}${segment}?${qs.stringify(query)}`,
+      parentUrl,
+      segment,
+      params,
+      query,
+      state: { ...node.value.state, ...initialState },
+      context: node.value.getContext(),
+      onTransition: node.value.onTransition,
+      disposers: [],
+      ancestors
+    },
+    {
+      node: observable.ref,
+      context: observable.ref
+    }
+  )
 
   extendObservable(route, {
     computed: node.value.computed(createRoutePropsWrapper(route)),
