@@ -205,7 +205,7 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
               disposers.length = 0
 
               Object.keys(params).forEach(key => params[key] = null)
-              Object.keys(query).forEach(key => query[key] = '')
+              Object.keys(query).forEach(key => query[key] = null)
             })
 
             // Start all subscriptions when activating a route
@@ -217,7 +217,7 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
               })
 
               Object.keys(route.query).forEach(key => {
-                set(current.query, key, '')
+                set(current.query, key, null)
               })
 
               const routeProps = createRoutePropsWrapper(route, true)
@@ -236,6 +236,7 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
 
               Object.assign(current.params, route.params)
               Object.assign(current.query, route.query)
+
               current.state = route.state
             })
           })

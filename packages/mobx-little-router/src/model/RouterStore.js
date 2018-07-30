@@ -202,12 +202,10 @@ class RouterStore {
   }
 
   getMatchedQueryParams(node: RouteStateTreeNode<*, *>, query: Query): Query {
-    return Object.keys(query)
-      .filter(key => node.value.query.includes(key))
-      .reduce((acc, key) => {
-        acc[key] = query[key]
-        return acc
-      }, {})
+    return node.value.query.reduce((acc, key) => {
+      acc[key] = query[key] || null
+      return acc
+    }, {})
   }
 
   /* Private helpers */

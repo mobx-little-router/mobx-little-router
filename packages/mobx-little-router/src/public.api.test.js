@@ -1001,6 +1001,51 @@ describe('Public API', () => {
     router.stop()
   })
 
+  test('subscriptions react to query changes with autorun', async () => {
+    const queryReaction = jest.fn()
+
+    router = install({
+      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+      routes: [
+        {
+          key: 'parent',
+          path: 'parent',
+          query: ['q'],
+          subscriptions(route) {
+            const { query } = route
+
+            return autorun(() => queryReaction(query.q))
+          }
+        }
+      ]
+    })
+
+    await router.start()
+
+    await router.push('/parent')
+    expect(queryReaction).toHaveBeenCalled()
+
+    await router.push('/parent?q=h')
+    expect(queryReaction.mock.calls.length).toBe(2)
+
+    await router.push('/parent?q=he')
+    await router.push('/parent?q=hel')
+    await router.push('/parent?q=hell')
+    await router.push('/parent?q=hello')
+
+    expect(queryReaction.mock.calls.length).toBe(6)
+
+    await router.push('/parent?q=')
+
+    expect(queryReaction.mock.calls.length).toBe(7)
+
+    await router.push('/parent')
+
+    expect(queryReaction.mock.calls.length).toBe(7)
+
+    router.stop()
+  })
+
   test('subscriptions react to param changes with autorun', async () => {
     const parentReaction = jest.fn()
     const childReaction1 = jest.fn()
