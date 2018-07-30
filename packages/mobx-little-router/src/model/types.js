@@ -7,7 +7,7 @@ import type Navigation from './Navigation'
 
 export type { MatchFn, Matcher }
 
-export type Query = { [key: string]: string }
+export type Query = { [key: string]: string | number | boolean | null | void }
 export type Params = { [key: string]: string | number | boolean | null | void }
 
 export type Location = HistoryLocation & {
