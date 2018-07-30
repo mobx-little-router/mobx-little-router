@@ -2,6 +2,7 @@
 import type { Route, RouteProps } from './types'
 
 type RoutePropsWrapper = RouteProps & {
+  context: Object,
   getParent: () => ?RoutePropsWrapper,
   getAncestor: (key: string) => ?RoutePropsWrapper
 }
@@ -9,11 +10,13 @@ type RoutePropsWrapper = RouteProps & {
 export default function createRoutePropsWrapper(route: Route<*, *>, useNode: boolean = false): RoutePropsWrapper {
   const parent = route.ancestors[route.ancestors.length - 1]
 
-  const { current } = route.node.value
+  const { current, getContext } = route.node.value
+  const context = getContext()
 
   const wrapped = {
     params: useNode ? current.params : route.params,
     query: useNode ? current.query : route.query,
+    context,
     getParent(): ?RoutePropsWrapper {
       return parent
         ? createRoutePropsWrapper(parent, useNode)
