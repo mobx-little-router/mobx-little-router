@@ -210,7 +210,7 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
 
             // Start all subscriptions when activating a route
             activating.forEach(route => {
-              const { subscriptions, current } = route.node.value
+              const { subscriptions, computed, current } = route.node.value
 
               Object.keys(route.params).forEach(key => {
                 set(current.params, key, null)
@@ -223,7 +223,7 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
               const routeProps = createRoutePropsWrapper(route, true)
 
               // Set the current computed property
-              set(current, 'computed', route.node.value.computed(routeProps))
+              set(current, 'computed', computed(routeProps))
 
               if (typeof subscriptions === 'function') {
                 route.node.value.disposers = [].concat(subscriptions(routeProps))

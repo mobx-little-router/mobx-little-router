@@ -45,13 +45,6 @@ export default function createRouteStateTreeNode(
 
   getContext = typeof getContext === 'function' ? getContext : () => ({})
 
-  const children = typeof config.children !== 'undefined'
-    ? config.children.map(x =>
-        // Chains the context down to children.
-        createRouteStateTreeNode(x, getContext, createKey)
-      )
-    : []
-
   const pattern = new UrlPattern(config.path || '/')
   
   const value = observable({
@@ -104,6 +97,13 @@ export default function createRouteStateTreeNode(
   }, {
     state: observable.ref
   })
+
+  const children = typeof config.children !== 'undefined'
+    ? config.children.map(x =>
+        // Chains the context down to children.
+        createRouteStateTreeNode(x, getContext, createKey)
+      )
+    : []
 
   return TreeNode(value, children)
 }
