@@ -204,8 +204,8 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
               disposers.forEach(disposer => disposer())
               disposers.length = 0
 
-              Object.keys(params).forEach(key => params[key] = null)
-              Object.keys(query).forEach(key => query[key] = null)
+              Object.keys(params).forEach(key => params[key] = undefined)
+              Object.keys(query).forEach(key => query[key] = undefined)
             })
 
             // Start all subscriptions when activating a route
@@ -213,11 +213,11 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
               const { subscriptions, computed, current } = route.node.value
 
               Object.keys(route.params).forEach(key => {
-                set(current.params, key, null)
+                set(current.params, key, undefined)
               })
 
               Object.keys(route.query).forEach(key => {
-                set(current.query, key, null)
+                set(current.query, key, undefined)
               })
 
               const routeProps = createRoutePropsWrapper(route, true)
