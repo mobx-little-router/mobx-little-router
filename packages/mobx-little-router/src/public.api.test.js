@@ -1024,9 +1024,11 @@ describe('Public API', () => {
 
     await router.push('/parent')
     expect(queryReaction).toHaveBeenCalled()
+    expect(queryReaction).toHaveBeenCalledWith(undefined)
 
     await router.push('/parent?q=h')
     expect(queryReaction.mock.calls.length).toBe(2)
+
 
     await router.push('/parent?q=he')
     await router.push('/parent?q=hel')
@@ -1034,6 +1036,7 @@ describe('Public API', () => {
     await router.push('/parent?q=hello')
 
     expect(queryReaction.mock.calls.length).toBe(6)
+    expect(queryReaction).toHaveBeenCalledWith('hello')
 
     await router.push('/parent?q=')
 
@@ -1042,6 +1045,7 @@ describe('Public API', () => {
     await router.push('/parent')
 
     expect(queryReaction.mock.calls.length).toBe(7)
+
 
     router.stop()
   })
