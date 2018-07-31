@@ -1,11 +1,11 @@
 import React from 'react'
-import { RouterProvider, Link, Outlet } from 'mobx-little-router-react'
+import { RouterContext, Link, Outlet } from 'mobx-little-router-react'
 import { Provider } from 'mobx-react'
 
 export default ({ router, dataStore }) => {
   return (
     <Provider dataStore={dataStore}>
-      <RouterProvider router={router}>
+      <RouterContext.Provider value={router}>
         <div style={{ display: 'flex' }}>
           <ul style={{ minWidth: '100px', maxWidth: '200px' }}>
             <li><Link to="/">Home</Link></li>
@@ -19,7 +19,7 @@ export default ({ router, dataStore }) => {
             <Outlet />
           </div>
         </div>
-      </RouterProvider>
+      </RouterContext.Provider>
     </Provider>
   )
 }
