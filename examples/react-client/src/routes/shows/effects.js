@@ -2,7 +2,13 @@
  * This module contains effects that exist within the `shows` route.
  * Effects run as a reaction to route params and query changes.
  */
-import { autorun, flow } from 'mobx'
+import { autorun, flow, runInAction } from 'mobx'
+
+const delay = (ms) => {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms)
+  })
+}
 
 export const fetchShows = ({ route, stores }) => {
   return autorun(() => {
@@ -14,9 +20,18 @@ export const fetchShows = ({ route, stores }) => {
         const res = yield fetch(`https://api.tvmaze.com/search/shows?q=${query.q}`)
         const json = yield res.json()
         const data = yield json.map(({ show }) => show)
-        stores.ShowsStore.load(data)
+
+        // Fake delay
+        yield delay(200)
+        
+        if (query.q) {
+          stores.ShowsStore.load(data)
+        }
+        
         state.isPending = false
       })()
+    } else {
+      stores.ShowsStore.load([])
     }
   }, { delay: 200 })
 }

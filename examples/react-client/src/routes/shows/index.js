@@ -15,9 +15,11 @@ export default function init({ router, stores }) {
       path: '/',
       query: ['q'],
       state: {
-        isPending: true
+        isPending: false
       },
-      computed() {
+      computed(props) {
+        const { query, state } = props
+
         return {
           get shows() {
             return stores.ShowsStore.shows
