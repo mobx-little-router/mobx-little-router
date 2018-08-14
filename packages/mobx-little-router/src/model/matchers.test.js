@@ -3,6 +3,14 @@ import * as m from './matchers'
 
 describe('URL matchers', () => {
   test('partial', () => {
+    expect(m.partial(':username/:uid').match('/bmo-for-women/bmo-pour-elles')).toEqual({
+      matched: true,
+      params: { username: 'bmo-for-women', uid: 'bmo-pour-elles' },
+      parentUrl: '',
+      segment: '/bmo-for-women/bmo-pour-elles',
+      remaining: ''
+    })
+
     expect(m.partial('shows/:id').match('/shows/1/edit')).toEqual({
       matched: true,
       params: { id: '1' },
@@ -35,9 +43,11 @@ describe('URL matchers', () => {
       remaining: '/shows/2/'
     })
 
-    expect(m.partial('/a').match('/abc')).toEqual(expect.objectContaining({
-      matched: false
-    }))
+    expect(m.partial('/a').match('/abc')).toEqual(
+      expect.objectContaining({
+        matched: false
+      })
+    )
 
     expect(m.partial('/shows/:id').match('/nope')).toEqual({
       matched: false,
@@ -102,13 +112,17 @@ describe('URL matchers', () => {
 
   test('params keys are always returned', () => {
     const x = m.full('(:foo)')
-    expect(x.match('/whatever')).toEqual(expect.objectContaining({
-      params: { foo: 'whatever' }
-    }))
+    expect(x.match('/whatever')).toEqual(
+      expect.objectContaining({
+        params: { foo: 'whatever' }
+      })
+    )
 
-    expect(x.match('/')).toEqual(expect.objectContaining({
-      params: { foo: null }
-    }))
+    expect(x.match('/')).toEqual(
+      expect.objectContaining({
+        params: { foo: null }
+      })
+    )
   })
 
   test('stringify', () => {
@@ -122,9 +136,10 @@ describe('URL matchers', () => {
 
   test('non-alphanumeric', () => {
     const x = m.partial('/a/:a/b/:b')
-    expect(x.match('/a/é/b/好')).toEqual(expect.objectContaining({
-      params: { a: 'é', b: '好' }
-    }))
-
+    expect(x.match('/a/é/b/好')).toEqual(
+      expect.objectContaining({
+        params: { a: 'é', b: '好' }
+      })
+    )
   })
 })
