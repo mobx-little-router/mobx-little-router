@@ -119,4 +119,12 @@ describe('URL matchers', () => {
     expect(y.stringify({ foo: '2' })).toEqual('/2')
     expect(() => z.stringify({})).toThrow(/Cannot/)
   })
+
+  test('non-alphanumeric', () => {
+    const x = m.partial('/a/:a/b/:b')
+    expect(x.match('/a/é/b/好')).toEqual(expect.objectContaining({
+      params: { a: 'é', b: '好' }
+    }))
+
+  })
 })

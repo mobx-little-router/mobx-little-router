@@ -11,29 +11,30 @@ function NOP(a: *, b: *) {
 }
 
 // Don't run validators in production bundle
-const validate = process.env.NODE_ENV === 'production'
-  ? createValidator({})
-  : createValidator({
-      path: string,
-      children: optional(array),
-      loadChildren: optional(func),
-      onError: optional(func),
-      canActivate: optional(func),
-      canDeactivate: optional(func),
-      onTransition: optional(func),
-      onEnter: optional(func),
-      onExit: optional(func),
-      willActivate: optional(func),
-      willDeactivate: optional(func),
-      willResolve: optional(func)
-    })
+const validate =
+  process.env.NODE_ENV === 'production'
+    ? createValidator({})
+    : createValidator({
+        path: string,
+        children: optional(array),
+        loadChildren: optional(func),
+        onError: optional(func),
+        canActivate: optional(func),
+        canDeactivate: optional(func),
+        onTransition: optional(func),
+        onEnter: optional(func),
+        onExit: optional(func),
+        willActivate: optional(func),
+        willDeactivate: optional(func),
+        willResolve: optional(func)
+      })
 
 type GetContext = () => *
 
 export default function createRouteStateTreeNode(
   config: Config<*>,
   getContext: ?GetContext,
-  createKey: (() => string) = defaultCreateKey
+  createKey: () => string = defaultCreateKey
 ): RouteStateTreeNode<*, *> {
   const matcher = getMatcher(config)
 
@@ -41,52 +42,54 @@ export default function createRouteStateTreeNode(
 
   getContext = typeof getContext === 'function' ? getContext : () => ({})
 
-  const children = typeof config.children !== 'undefined'
-    ? config.children.map(x =>
-        // Chains the context down to children.
-        createRouteStateTreeNode(x, getContext, createKey)
-      )
-    : []
+  const children =
+    typeof config.children !== 'undefined'
+      ? config.children.map(x =>
+          // Chains the context down to children.
+          createRouteStateTreeNode(x, getContext, createKey)
+        )
+      : []
 
   return TreeNode(
-    observable({
-      key: typeof config.key === 'string' ? config.key : createKey(),
-      path: config.path,
-      matcher: matcher(config.path),
-      query: typeof config.query !== 'undefined' ? config.query : [],
-      params: config.params !== null ? config.params : {},
-      loadChildren: typeof config.loadChildren === 'function'
-        ? config.loadChildren
-        : null,
-      canActivate: config.canActivate || NOP,
-      canDeactivate: config.canDeactivate || NOP,
-      willActivate: config.willActivate || NOP,
-      willDeactivate: config.willDeactivate || NOP,
-      willResolve: config.willResolve || NOP,
-      onError: config.onError || null,
-      onTransition: config.onTransition || null,
-      onEnter: config.onEnter || null,
-      onExit: config.onExit || null,
-      getContext,
-      getData: config.getData || (() => ({})),
-      // This prop is meant for middleware to add annotations that it may need to perform its task.
-      // e.g. validate config needs to add some hash for equality checks between tree nodes.
-      etc: config.etc || {}
-    }, {
-      matcher: observable.ref,
-      loadChildren: observable.ref,
-      canActivate: observable.ref,
-      canDeactivate: observable.ref,
-      willActivate: observable.ref,
-      willDeactivate: observable.ref,
-      willResolve: observable.ref,
-      onError: observable.ref,
-      onTransition: observable.ref,
-      onEnter: observable.ref,
-      onExit: observable.ref,
-      getData: observable.ref,
-      etc: observable.ref
-    }),
+    observable(
+      {
+        key: typeof config.key === 'string' ? config.key : createKey(),
+        path: config.path,
+        matcher: matcher(config.path),
+        query: typeof config.query !== 'undefined' ? config.query : [],
+        params: config.params !== null ? config.params : {},
+        loadChildren: typeof config.loadChildren === 'function' ? config.loadChildren : null,
+        canActivate: config.canActivate || NOP,
+        canDeactivate: config.canDeactivate || NOP,
+        willActivate: config.willActivate || NOP,
+        willDeactivate: config.willDeactivate || NOP,
+        willResolve: config.willResolve || NOP,
+        onError: config.onError || null,
+        onTransition: config.onTransition || null,
+        onEnter: config.onEnter || null,
+        onExit: config.onExit || null,
+        getContext,
+        getData: config.getData || (() => ({})),
+        // This prop is meant for middleware to add annotations that it may need to perform its task.
+        // e.g. validate config needs to add some hash for equality checks between tree nodes.
+        etc: config.etc || {}
+      },
+      {
+        matcher: observable.ref,
+        loadChildren: observable.ref,
+        canActivate: observable.ref,
+        canDeactivate: observable.ref,
+        willActivate: observable.ref,
+        willDeactivate: observable.ref,
+        willResolve: observable.ref,
+        onError: observable.ref,
+        onTransition: observable.ref,
+        onEnter: observable.ref,
+        onExit: observable.ref,
+        getData: observable.ref,
+        etc: observable.ref
+      }
+    ),
     children
   )
 }

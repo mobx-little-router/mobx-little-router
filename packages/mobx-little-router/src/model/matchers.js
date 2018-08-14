@@ -1,5 +1,6 @@
 // @flow
 import UrlPattern from 'url-pattern'
+import { URL_SEGMENT_VALUE_CHAR_SET } from '../constants'
 
 export type Matcher = {
   type: string,
@@ -7,7 +8,10 @@ export type Matcher = {
   stringify: (params: Object) => string
 }
 
-export type MatchFn = (current: string, full: ?string) => {
+export type MatchFn = (
+  current: string,
+  full: ?string
+) => {
   matched: boolean,
   params: null | Object,
   parentUrl: string,
@@ -17,7 +21,9 @@ export type MatchFn = (current: string, full: ?string) => {
 
 export function partial(path: string): Matcher {
   path = withLeadingSlash(path)
-  const pattern = new UrlPattern(path === '/' ? '*' : `${path}/*`)
+  const pattern = new UrlPattern(path === '/' ? '*' : `${path}/*`, {
+    segmentValueCharset: URL_SEGMENT_VALUE_CHAR_SET
+  })
   return {
     type: 'partial',
     match: createMatcher(pattern),
@@ -29,7 +35,9 @@ export function partial(path: string): Matcher {
 
 export function full(path: string): Matcher {
   path = withLeadingSlash(path)
-  const pattern = new UrlPattern(path === '/' ? '(/)' : `${path}(/)`)
+  const pattern = new UrlPattern(path === '/' ? '(/)' : `${path}(/)`, {
+    segmentValueCharset: URL_SEGMENT_VALUE_CHAR_SET
+  })
   return {
     type: 'full',
     match: createMatcher(pattern),
@@ -57,15 +65,16 @@ export function any(path: string): Matcher {
 
 function createMatcher(pattern: UrlPattern) {
   return (current: ?string, full: ?string) => {
-    const result = pattern.match(typeof current ==='string' ? withTrailingSlash(current) : current)
+    const result = pattern.match(typeof current === 'string' ? withTrailingSlash(current) : current)
 
     if (result) {
       const { _, ...params } = result
       const segment = pattern.stringify({ ...params, _: '' })
 
-      const parentUrl = typeof full === 'string'
-        ? full.replace(new RegExp(`${escapeRegExp(`${segment}${_ || ''}`)}\/?$`), '')
-        : ''
+      const parentUrl =
+        typeof full === 'string'
+          ? full.replace(new RegExp(`${escapeRegExp(`${segment}${_ || ''}`)}\/?$`), '')
+          : ''
       const normalizedParams = pattern.names.reduce((acc, k) => {
         if (k !== '_') {
           acc[k] = params[k] || null
@@ -106,6 +115,5 @@ function withoutTrailingSlash(x: string) {
 }
 
 function escapeRegExp(str) {
-  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&')
 }
-

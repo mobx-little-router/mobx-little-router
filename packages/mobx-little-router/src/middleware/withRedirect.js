@@ -5,6 +5,7 @@ import UrlPattern from 'url-pattern'
 import type { Config, Route } from '../model/types'
 import Navigation from '../model/Navigation'
 import transformConfig from './transformConfig'
+import { URL_SEGMENT_VALUE_CHAR_SET } from '../constants'
 
 function NOP(a: *, b: *) {
   return Promise.resolve()
@@ -12,10 +13,10 @@ function NOP(a: *, b: *) {
 
 export default transformConfig((config: Config<*>) => {
   if (typeof config.redirectTo === 'string') {
-    const _willActivate = typeof config.willActivate === 'function'
-      ? config.willActivate
-      : NOP
-    const pattern = new UrlPattern(config.redirectTo)
+    const _willActivate = typeof config.willActivate === 'function' ? config.willActivate : NOP
+    const pattern = new UrlPattern(config.redirectTo, {
+      segmentValueCharset: URL_SEGMENT_VALUE_CHAR_SET
+    })
 
     const willActivate = (route: Route<*, *>, navigation: Navigation) => {
       const url = pattern.stringify(route.params)
