@@ -32,7 +32,7 @@ describe('RouterStore', () => {
     }
 
     store.replaceChildren(store.state.root, [a])
-    store.updateActivatedRoutes([createRouteInstance(store.getNodeUnsafe('a'), '1', '1', { x: '1' }, {})])
+    store.updateActivatedRoutes([createRouteInstance(store.getNode('a'), '1', '1', { x: '1' }, {})])
 
     expect(store.activatedRoutes[0]).toEqual(
       expect.objectContaining({
@@ -45,7 +45,7 @@ describe('RouterStore', () => {
       })
     )
 
-    store.updateActivatedRoutes([createRouteInstance(store.getNodeUnsafe('a'), '2', '2', { x: '2' }, {})])
+    store.updateActivatedRoutes([createRouteInstance(store.getNode('a'), '2', '2', { x: '2' }, {})])
 
     expect(store.activatedRoutes[0]).toEqual(
       expect.objectContaining({
@@ -58,8 +58,9 @@ describe('RouterStore', () => {
       })
     )
 
-    expect(store.getRouteUnsafe('a').params.x).toBe('2')
-    expect(store.getParams('a')).toEqual({ x: '2' })
+    const x = store.select('a.params.x')
+
+    expect(x.get()).toBe('2')
   })
 
   test('Building routes from path', () => {
@@ -106,7 +107,7 @@ describe('RouterStore', () => {
     }
 
     store.replaceChildren(store.state.root, [a, b])
-    store.updateActivatedRoutes([createRouteInstance(store.getNodeUnsafe('a'), '', '', {}, { q: 'hey' })])
+    store.updateActivatedRoutes([createRouteInstance(store.getNode('a'), '', '', {}, { q: 'hey' })])
 
     expect(store.activatedRoutes[0]).toEqual(
       expect.objectContaining({
@@ -119,7 +120,7 @@ describe('RouterStore', () => {
       })
     )
 
-    store.updateActivatedRoutes([createRouteInstance(store.getNodeUnsafe('b'), '', '', {}, { r: 'what' })])
+    store.updateActivatedRoutes([createRouteInstance(store.getNode('b'), '', '', {}, { r: 'what' })])
 
     expect(store.activatedRoutes[0]).toEqual(
       expect.objectContaining({

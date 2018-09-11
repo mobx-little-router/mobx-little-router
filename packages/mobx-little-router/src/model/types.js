@@ -66,23 +66,27 @@ export type RedirectConfig<D: Object> = {
 
 export type LoadChildrenConfigFn<D> = () => Promise<any>
 
-export type GuardFn = (route: Route<*, *>, nav: Navigation) => boolean | Promise<void>
+export type GuardFn = (currentRoute: Route<*, *>, nav: Navigation) => boolean | Promise<void>
 
-export type LifecycleFn = (route: Route<*, *>, nav: Navigation) => Promise<void>
+export type LifecycleFn = (currentRoute: Route<*, *>, nav: Navigation) => Promise<void>
 
-export type LifecycleEndFn = (route: Route<*, *>) => void
+export type LifecycleEndFn = (currentRoute: Route<*, *>) => void
 
 export type Setter = () => void
 
-export type ResolveFn = (route: Route<*, *>, nav: Navigation) => Promise<void | Setter>
+export type ResolveFn = (currentRoute: Route<*, *>, nav: Navigation) => Promise<void | Setter>
 
-export type ErrorHandler = (route: Route<*, *>, navigation: Navigation, err: Error) => Promise<any>
+export type ErrorHandler = (
+  currentRoute: Route<*, *>,
+  navigation: Navigation,
+  err: Error
+) => Promise<any>
 
 export type LoadChildrenRouteStateTreeNode = () => Promise<any>
 
 export type RouteNodeValue<C: Object, D: Object> = {
   key: string,
-  // Original path provided to this route node.
+  // Original path provided to this currentRoute node.
   path: string,
   query: Array<string>,
   matcher: Matcher,
@@ -97,7 +101,7 @@ export type RouteNodeValue<C: Object, D: Object> = {
   onEnter: null | LifecycleEndFn,
   onExit: null | LifecycleEndFn,
   getContext: () => C,
-  getData: (route: Route<*, *>) => D,
+  getData: (currentRoute: Route<*, *>) => D,
   model: Object,
   subscriptions: null | Function
 }

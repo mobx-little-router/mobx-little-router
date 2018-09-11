@@ -25,8 +25,6 @@ import { NavigationTypes } from './model/Navigation'
 import { EMPTY } from './middleware/Middleware'
 import type { IMiddleware } from './middleware/Middleware'
 
-const OBSERVABLE_ROUTE_PROPERTIES = ['params', 'query', 'computed']
-
 type RouterCtorOptions = {
   getContext?: void | (() => any),
   middleware?: IMiddleware,
@@ -228,57 +226,6 @@ class Router {
     return this._store.getNode(key)
   }
 
-  getRoute(key: string): null | Route<*, *> {
-    return this._store.getRoute(key)
-  }
-
-  getParams(key: string): null | Params {
-    return this._store.getParams(key)
-  }
-
-  getParam(key: string, paramName: string): any {
-    const params = this._store.getParams(key)
-    if (params) {
-      return params[paramName]
-    }
-  }
-
-  select<T: SelectBody>(body: T): IObservable<T> {
-    if (!body) {
-      throw new Error(`A query object must be passed to select function.`)
-    }
-
-    const { activatedRoutes } = this
-    const obs = {}
-    // Prevents computeds from updating if not all routes have matched.
-    const guard$ = computed(() => {
-      return Object.keys(body).every(routeKey => activatedRoutes.find(route => route.node.value.key === routeKey))
-    })
-
-    Object.keys(body).forEach(routeKey => {
-      obs[routeKey] = {}
-      OBSERVABLE_ROUTE_PROPERTIES.forEach(type => {
-        const { [type]: defaults } = body[routeKey]
-        if (defaults) {
-          obs[routeKey][type] = {}
-          Object.keys(defaults).forEach(key => {
-            const route$ = createRouteObs(activatedRoutes, routeKey)
-            const value$ =  createValueObs({route$, key, type, defaults })
-
-            defineComputedProperty({
-              object: obs[routeKey][type],
-              key,
-              value$,
-              guard$
-            })
-          })
-        }
-      })
-    })
-
-    return observable(obs)
-  }
-
   /* Private helpers */
 
   // Waits for next navigation event to be processed and resolves.
@@ -341,34 +288,6 @@ function withSearch(href: Href) {
       search: qs ? `?${qs}` : qs
     }
   }
-}
-
-function createRouteObs(routes, key) {
-  return computed(() => routes.find(route => route.node.value.key === key) || null)
-}
-
-function createValueObs({ route$, type, defaults, key }) {
-  return computed(() => {
-    const currRoute = route$.get()
-    if (currRoute) {
-      return currRoute[type][key] || defaults[key]
-    } else {
-      return defaults[key]
-    }
-  })
-}
-
-function defineComputedProperty({ object, guard$, value$, key }) {
-  let _state = value$.get()
-  Object.defineProperty(object, key, {
-    enumerable: true,
-    get() {
-      if (guard$.get()) {
-        _state = value$.get()
-      }
-      return _state
-    }
-  })
 }
 
 export default Router

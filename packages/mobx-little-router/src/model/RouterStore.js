@@ -1,6 +1,6 @@
 // @flow
 import type { IObservableArray, ObservableMap } from 'mobx'
-import { extendObservable, observable, runInAction } from 'mobx'
+import { computed, extendObservable, observable, runInAction } from 'mobx'
 import createRouteStateTreeNode from './creating/createRouteStateTreeNode'
 import createRouteInstance from './creating/createRouteInstance'
 import RouterStateTree from './RouterStateTree'
@@ -10,11 +10,11 @@ import type Navigation from './Navigation'
 import type {
   Config,
   Location,
-  Params,
   PathElement,
   Query,
   Route,
-  RouteStateTreeNode
+  RouteStateTreeNode,
+  SelectBody
 } from './types'
 
 type TreeNodeMetaData<C, D> = {
@@ -27,9 +27,10 @@ type InitialState = {
   store: Object
 }
 
+const OBSERVABLE_ROUTE_PROPERTIES = ['params', 'query', 'computed']
+
 class RouterStore {
   location: Location
-  params: ObservableMap<Params>
   state: RouterStateTree
   nextKey: number
 
@@ -38,7 +39,7 @@ class RouterStore {
   cache: ObservableMap<TreeNodeMetaData<*, *>>
 
   activatedRoutes: IObservableArray<Route<*, *>>
-  
+
   initialActivatedRoutes: Object
 
   error: any
@@ -52,7 +53,6 @@ class RouterStore {
         state: new RouterStateTree(root),
         cancelledSequence: -1,
         location: initialState ? initialState.store.location : {},
-        params: observable.map({}),
         cache: observable.map({ [root.value.key]: root }),
         activatedRoutes: observable.array(),
         error: null,
@@ -78,7 +78,7 @@ class RouterStore {
   createNextRouteInstances(path: PathElement<*, *>[], nextLocation: Location): Route<*, *>[] {
     const query = getQueryParams(nextLocation)
     const ancestors = []
-    
+
     return path.map(element => {
       const { node, parentUrl, segment, params } = element
       const matchedQueryParams = this.getMatchedQueryParams(node, query)
@@ -93,7 +93,7 @@ class RouterStore {
         ancestors,
         initialState
       )
-      
+
       const route = this.activatedRoutes.find(areRoutesEqual(newRoute)) || newRoute
 
       ancestors.push(route)
@@ -109,54 +109,17 @@ class RouterStore {
     return (x && x.node) || null
   }
 
-  getNodeParent(key: string): null | RouteStateTreeNode<*, *> {
-    const x = this.cache.get(key)
-    return (x && x.parent) || null
-  }
-
-  getNodeAncestors(key: string): Array<RouteStateTreeNode<*, *>> {
-    const parents = []
-    let node = this.getNode(key)
-    while ((node = node && this.getNodeParent(node.value.key))) {
-      parents.push(node)
+  select<T: SelectBody>(spec: string | T): IObservable<T> {
+    if (!spec) {
+      throw new Error(`A query object must be passed to select function.`)
     }
 
-    return parents
-  }
-
-  getNodeUnsafe(key: string): RouteStateTreeNode<*, *> {
-    const x = this.getNode(key)
-    if (!x) {
-      throw new Error(`Cannot find node with key ${key}`)
+    if (typeof spec === 'string') {
+      const parts = spec.split('.')
+      const obj = selectObservableObject(createBody(parts), this.activatedRoutes)
+      return computed(() => parts.reduce((acc, k) => acc[k], obj))
     } else {
-      return x
-    }
-  }
-
-  getRoute(key: string): null | Route<*, *> {
-    const x = this.activatedRoutes.find(route => route.node.value.key === key)
-    if (x) {
-      return x
-    } else {
-      return null
-    }
-  }
-
-  getRouteUnsafe(key: string): Route<*, *> {
-    const x = this.getRoute(key)
-    if (x) {
-      return x
-    } else {
-      throw new Error(`Cannot find route with key ${key}`)
-    }
-  }
-
-  getParams(key: string): null | Params {
-    const params = this.params.get(key)
-    if (params) {
-      return params
-    } else {
-      return null
+      return observable(selectObservableObject(spec, this.activatedRoutes))
     }
   }
 
@@ -175,13 +138,6 @@ class RouterStore {
   updateActivatedRoutes(nextRoutes: Route<*, *>[]) {
     runInAction(() => {
       this.activatedRoutes.replace(nextRoutes)
-
-      // XXX we now have router.select which can select this data
-      // Update params
-      this.params.clear()
-      this.activatedRoutes.forEach(route => {
-        this.params.set(route.node.value.key, route.params)
-      })
     })
   }
 
@@ -224,6 +180,79 @@ class RouterStore {
 
 function getQueryParams(location: Location): Query {
   return location.search != null ? qs.parse(location.search.substr(1)) : {}
+}
+
+function createBody(path: string[]): SelectBody {
+  const body = {}
+  let head = body
+
+  path.forEach((k, idx) => {
+    head[k] = idx === path.length - 1 ? null : {}
+    head = head[k]
+  })
+
+  return body
+}
+
+function selectObservableObject(body, activatedRoutes) {
+  const obj = {}
+
+  // Prevents computeds from updating if not all routes have matched.
+  const guard$ = computed(() => {
+    return Object.keys(body).every(routeKey =>
+      activatedRoutes.find(route => route.node.value.key === routeKey)
+    )
+  })
+
+  Object.keys(body).forEach(routeKey => {
+    obj[routeKey] = {}
+    OBSERVABLE_ROUTE_PROPERTIES.forEach(type => {
+      const { [type]: defaults } = body[routeKey]
+      if (defaults) {
+        obj[routeKey][type] = {}
+        Object.keys(defaults).forEach(key => {
+          const route$ = createRouteObs(activatedRoutes, routeKey)
+          const value$ = createValueObs({ route$, key, type, defaults })
+
+          defineComputedProperty({
+            object: obj[routeKey][type],
+            key,
+            value$,
+            guard$
+          })
+        })
+      }
+    })
+  })
+  return obj
+}
+
+function createRouteObs(routes, key) {
+  return computed(() => routes.find(route => route.node.value.key === key) || null)
+}
+
+function createValueObs({ route$, type, defaults, key }) {
+  return computed(() => {
+    const currRoute = route$.get()
+    if (currRoute) {
+      return currRoute[type][key] || defaults[key]
+    } else {
+      return defaults[key]
+    }
+  })
+}
+
+function defineComputedProperty({ object, guard$, value$, key }) {
+  let _state = value$.get()
+  Object.defineProperty(object, key, {
+    enumerable: true,
+    get() {
+      if (guard$.get()) {
+        _state = value$.get()
+      }
+      return _state
+    }
+  })
 }
 
 export default RouterStore
