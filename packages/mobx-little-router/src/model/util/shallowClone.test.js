@@ -1,5 +1,5 @@
 // @flow
-import createRouteStateTreeNode from '../createRouteStateTreeNode'
+import createRouteStateTreeNode from '../creating/createRouteStateTreeNode'
 import shallowClone from './shallowClone'
 
 describe('shallowClone', () => {

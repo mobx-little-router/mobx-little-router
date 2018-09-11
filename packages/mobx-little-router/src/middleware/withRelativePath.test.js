@@ -4,7 +4,7 @@ import Navigation from '../model/Navigation'
 import type { NavigationStart } from '../events/index'
 import withRelativePath from './withRelativePath'
 import RouterStore from '../model/RouterStore'
-import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
+import createRouteStateTreeNode from '../model/creating/createRouteStateTreeNode'
 
 describe('withRelativePath middleware', () => {
   test('transforms pathname', () => {

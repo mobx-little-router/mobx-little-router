@@ -1,10 +1,10 @@
 // @flow
 import { observable, extendObservable } from 'mobx'
-import type { Config, RouteStateTreeNode } from './types'
-import { TreeNode } from '../util/tree'
-import defaultCreateKey from '../util/createKey'
-import * as m from './matchers'
-import { array, string, optional, func, createValidator } from '../validation'
+import type { Config, RouteStateTreeNode } from '../types'
+import { TreeNode } from '../../util/tree'
+import defaultCreateKey from '../../util/createKey'
+import * as m from '../matchers'
+import { array, string, optional, func, createValidator } from '../../validation/index'
 import UrlPattern from 'url-pattern'
 
 function NOP(a: *, b: *) {
@@ -27,9 +27,7 @@ const validate = process.env.NODE_ENV === 'production'
       willActivate: optional(func),
       willDeactivate: optional(func),
       willResolve: optional(func),
-      subscriptions: optional(func),
-      computed: optional(func),
-      effects: optional(func)
+      subscriptions: optional(func)
     })
 
 type GetContext = () => *
@@ -70,8 +68,7 @@ export default function createRouteStateTreeNode(
     state: config.state || {},
     disposers: [],
     subscriptions: config.subscriptions || null,
-    computed: config.computed || (() => ({})),
-    effects: config.effects || (() => ({}))
+    model: config.model || null,
   }, {
     matcher: observable.ref,
     loadChildren: observable.ref,
@@ -86,8 +83,7 @@ export default function createRouteStateTreeNode(
     onExit: observable.ref,
     getData: observable.ref,
     subscriptions: observable.ref,
-    computed: observable.ref,
-    effects: observable.ref
+    model: observable.ref
   })
 
   value.current = observable({

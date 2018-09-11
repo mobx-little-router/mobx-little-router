@@ -80,14 +80,7 @@ export type ErrorHandler = (route: Route<*, *>, navigation: Navigation, err: Err
 
 export type LoadChildrenRouteStateTreeNode = () => Promise<any>
 
-export type RouteProps = {
-  params: Params,
-  query: Query,
-  state: Object,
-  computed: Object
-}
-
-export type RouteValue<C: Object, D: Object> = {
+export type RouteNodeValue<C: Object, D: Object> = {
   key: string,
   // Original path provided to this route node.
   path: string,
@@ -105,15 +98,11 @@ export type RouteValue<C: Object, D: Object> = {
   onExit: null | LifecycleEndFn,
   getContext: () => C,
   getData: (route: Route<*, *>) => D,
-  disposers: Array<Function>,
-  subscriptions: null | Function,
-  computed: Function,
-  effects: Function,
-  state: Object,
-  current: RouteProps
+  model: Object,
+  subscriptions: null | Function
 }
 
-export type RouteStateTreeNode<C, D> = ITreeNode<RouteValue<C, D>>
+export type RouteStateTreeNode<C, D> = ITreeNode<RouteNodeValue<C, D>>
 
 export type PathElement<C, D> = {
   node: RouteStateTreeNode<C, D>,
@@ -134,10 +123,8 @@ export type Route<C, D> = {
   segment: string, // This is the matched segment from URL. e.g. "/123" for ":id"
   parentUrl: string,
   onTransition: null | TransitionFn,
-  computed: Object,
-  effects: { [k: string]: () => Promise<any> },
-  state: Object,
-  ancestors: Array<Route<*, *>>
+  model: Object,
+  disposers: Array<Function>
 }
 
 export type SelectBody = {

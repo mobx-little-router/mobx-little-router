@@ -1,8 +1,8 @@
 // @flow
 import type { IObservableArray, ObservableMap } from 'mobx'
 import { extendObservable, observable, runInAction } from 'mobx'
-import createRouteStateTreeNode from './createRouteStateTreeNode'
-import createRouteInstance from './createRouteInstance'
+import createRouteStateTreeNode from './creating/createRouteStateTreeNode'
+import createRouteInstance from './creating/createRouteInstance'
 import RouterStateTree from './RouterStateTree'
 import qs from 'querystring'
 import areRoutesEqual from './util/areRoutesEqual'

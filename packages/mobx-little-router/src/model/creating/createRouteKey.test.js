@@ -1,6 +1,6 @@
 // @flow
 import createRouteStateTreeNode from './createRouteStateTreeNode'
-import RouterStateTree from './RouterStateTree'
+import RouterStateTree from '../RouterStateTree'
 import createRouteKey, { createHash } from './createRouteKey'
 
 describe('createHash', () => {

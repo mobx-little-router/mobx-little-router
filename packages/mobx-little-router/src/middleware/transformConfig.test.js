@@ -2,7 +2,7 @@
 import { EventTypes } from '../events'
 import type { ChildrenLoading } from '../events'
 import transformConfig from './transformConfig'
-import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
+import createRouteStateTreeNode from '../model/creating/createRouteStateTreeNode'
 
 describe('transformConfig middleware', () => {
   test('transforms config before passing them as children', () => {

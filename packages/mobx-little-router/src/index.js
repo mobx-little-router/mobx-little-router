@@ -20,7 +20,7 @@ export type {
   Query,
   Params,
   RouteStateTreeNode,
-  RouteValue
+  RouteNodeValue
 } from './model/types'
 
 export { EventTypes } from './events'

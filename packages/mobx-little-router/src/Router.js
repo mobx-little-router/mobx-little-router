@@ -7,7 +7,7 @@ import { autorun, computed, extendObservable, observable, when } from 'mobx'
 import querystring from 'querystring'
 import delay from './util/delay'
 import type { Action, History } from 'history'
-import createRouteStateTreeNode from './model/createRouteStateTreeNode'
+import createRouteStateTreeNode from './model/creating/createRouteStateTreeNode'
 import RouterStore from './model/RouterStore'
 import type {
   SelectBody,

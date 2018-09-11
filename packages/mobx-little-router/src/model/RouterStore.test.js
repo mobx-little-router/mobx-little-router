@@ -2,8 +2,8 @@
 import { runInAction, autorun } from 'mobx'
 import type { Route, PathElement } from './types'
 import RouterStore from './RouterStore'
-import createRouteStateTreeNode from './createRouteStateTreeNode'
-import createRouteInstance from './createRouteInstance'
+import createRouteStateTreeNode from './creating/createRouteStateTreeNode'
+import createRouteInstance from './creating/createRouteInstance'
 
 describe('RouterStore', () => {
   let store, root, getContext

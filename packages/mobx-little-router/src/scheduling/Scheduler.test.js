@@ -5,8 +5,8 @@ import Middleware from '../middleware/Middleware'
 import RouterStore from '../model/RouterStore'
 import delay from '../util/delay'
 import Scheduler from './Scheduler'
-import createRouteStateTreeNode from '../model/createRouteStateTreeNode'
-import createRouteInstance from '../model/createRouteInstance'
+import createRouteStateTreeNode from '../model/creating/createRouteStateTreeNode'
+import createRouteInstance from '../model/creating/createRouteInstance'
 import { EventTypes } from '../events'
 
 const scanChildren = scan((curr, idx) => curr.children[idx])

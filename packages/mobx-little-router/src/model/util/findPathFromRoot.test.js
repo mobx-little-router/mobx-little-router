@@ -1,6 +1,6 @@
 // @flow
 import findPathFromRoot from './findPathFromRoot'
-import createRouteStateTreeNode from '../createRouteStateTreeNode'
+import createRouteStateTreeNode from '../creating/createRouteStateTreeNode'
 
 describe('findPathFromRoot', () => {
   test('Find with partial matching', async () => {

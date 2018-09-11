@@ -1,4 +1,4 @@
-import type { RouteStateTreeNode } from './types'
+import type { RouteStateTreeNode } from '../types'
 
 export default function createRouteKey(node: RouteStateTreeNode<*, *>, id: string) {
   return `${node.value.key}/${createHash(id)}`

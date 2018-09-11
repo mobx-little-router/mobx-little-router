@@ -1,7 +1,7 @@
 // @flow
 import createRouteStateTreeNode from './createRouteStateTreeNode'
 import createRouteInstance from './createRouteInstance'
-import Navigation from './Navigation'
+import Navigation from '../Navigation'
 
 describe('createRouteStateTreeNode', () => {
   test('Handles nesting and compound paths', () => {

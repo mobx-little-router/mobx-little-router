@@ -1,20 +1,19 @@
 // @flow
-import { observable, extendObservable } from 'mobx'
+import { observable } from 'mobx'
 import qs from 'querystring'
 import createRouteKey from './createRouteKey'
-import createRoutePropsWrapper from './createRoutePropsWrapper'
 
-import type { Params, Query, Route, RouteStateTreeNode } from './types'
+import type { Params, Query, Route, RouteStateTreeNode } from '../types'
 
 export default function createRouteInstance<C: Object, D: Object>(
   node: RouteStateTreeNode<C, D>,
   parentUrl: string,
   segment: string,
   params: Params,
-  query: Query,
-  ancestors: Array<Route<*, *>> = [],
-  initialState?: Object = {}
+  query: Query
 ): Route<C, D> {
+  const disposers = []
+
   const route = observable(
     {
       node,
@@ -24,23 +23,29 @@ export default function createRouteInstance<C: Object, D: Object>(
       segment,
       params,
       query,
-      state: { ...node.value.state, ...initialState },
+      data: node.value.getData(),
       context: node.value.getContext(),
       onTransition: node.value.onTransition,
-      disposers: [],
-      ancestors
+      model: node.value.model,
+      dispose: () => disposers.forEach(f => f())
     },
     {
       node: observable.ref,
+      data: observable.ref,
+      dispose: observable.ref,
       context: observable.ref
     }
   )
 
-  extendObservable(route, {
-    computed: node.value.computed(createRoutePropsWrapper(route)),
-    effects: node.value.effects(createRoutePropsWrapper(route)),
-    data: node.value.getData(route)
-  })
+  const { subscriptions } = node.value
+
+  if (typeof subscriptions === 'function') {
+    disposers.push(subscriptions(route))
+  } else if (Array.isArray(subscriptions)) {
+    subscriptions.forEach(subscribe => {
+      disposers.push(subscribe(route))
+    })
+  }
 
   return route
 }

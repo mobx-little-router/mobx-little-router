@@ -1,6 +1,6 @@
 // @flow
 import isUrlFullyMatched from './isUrlFullyMatched'
-import createRouteStateTreeNode from '../../model/createRouteStateTreeNode'
+import createRouteStateTreeNode from '../../model/creating/createRouteStateTreeNode'
 
 describe('isUrlFullyMatched', () => {
   let routes
