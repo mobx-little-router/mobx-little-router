@@ -19,10 +19,13 @@ describe('processEvent', () => {
         // This route has two levels of dynamic children. We'll be testing that params chain properly.
         {
           path: 'thing/:id',
-          loadChildren: () => Promise.resolve([{
-            path: '',
-            loadChildren: () => Promise.resolve([{ path: 'edit' }])
-          }])
+          loadChildren: () =>
+            Promise.resolve([
+              {
+                path: '',
+                loadChildren: () => Promise.resolve([{ path: 'edit' }])
+              }
+            ])
         },
         {
           path: '',
@@ -118,14 +121,16 @@ describe('processEvent', () => {
       expect.arrayContaining([
         expect.objectContaining({
           type: EventTypes.NAVIGATION_ACTIVATED,
-          incomingRoutes: expect.arrayContaining([
-            expect.objectContaining({
-              node: expect.objectContaining({
-                value: expect.objectContaining({ path: '**' })
-              }),
-              segment: '/c/'
-            })
-          ])
+          changeSet: expect.objectContaining({
+            incomingRoutes: expect.arrayContaining([
+              expect.objectContaining({
+                node: expect.objectContaining({
+                  value: expect.objectContaining({ path: '**' })
+                }),
+                segment: '/c/'
+              })
+            ])
+          })
         })
       ])
     )
@@ -189,10 +194,7 @@ async function takeWhileIncomplete(curr, store) {
       break
     }
     events.push(curr)
-    if (
-      curr.type === EventTypes.NAVIGATION_END ||
-      curr.type === EventTypes.NAVIGATION_CANCELLED
-    ) {
+    if (curr.type === EventTypes.NAVIGATION_END || curr.type === EventTypes.NAVIGATION_CANCELLED) {
       return events
     }
     count++
