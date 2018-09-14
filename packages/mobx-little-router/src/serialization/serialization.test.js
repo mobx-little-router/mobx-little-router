@@ -4,7 +4,7 @@ import { createMemoryHistory } from 'history'
 import { serialize } from './index'
 import install from '../install'
 
-describe('serialization', () => {
+describe.skip('serialization', () => {
   let router
 
   beforeEach(() => {
@@ -63,7 +63,7 @@ describe('serialization', () => {
     expect(() => serialize(router)).toThrow(/navigating/i)
   })
 
-  test.only('serialize preserves activated route states', async () => {
+  test('serialize preserves activated route states', async () => {
     await router.push('/c/d/e/123?q=hello')
 
     const serialized = serialize(router)

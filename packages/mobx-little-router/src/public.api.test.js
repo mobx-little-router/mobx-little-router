@@ -233,7 +233,7 @@ describe('Public API', () => {
     await router.push('/a/2?q=now&w=what')
 
     expect(willActivateSpy.mock.calls.length).toBe(1)
-    expect(willResolveSpy.mock.calls.length).toBe(4)
+    expect(willResolveSpy.mock.calls.length).toBe(5)
     expect(willDeactivateSpy.mock.calls.length).toBe(0)
 
     await router.push('/')
@@ -359,8 +359,8 @@ describe('Public API', () => {
     let activating = [], entering = []
     const dispose = router.subscribeEvent((ev) => {
       if (ev.type === EventTypes.NAVIGATION_ACTIVATED) {
-        activating = ev.activating
-        entering = ev.entering
+        activating = ev.changeSet.activating
+        entering = ev.changeSet.entering
       }
     })
 
@@ -430,6 +430,7 @@ describe('Public API', () => {
     ])
 
     router.stop()
+    dispose()
   })
 
 
@@ -962,7 +963,7 @@ describe('Public API', () => {
     router.stop()
   })
 
-  test('route instance differs based on param values', async () => {
+  test('route references are kept', async () => {
     await router.start()
 
     await router.push('/foo')
@@ -971,485 +972,487 @@ describe('Public API', () => {
     await router.push('/bar')
     const [__, whateverRoute2] = router.activatedRoutes.slice()
 
-    expect(whateverRoute1).not.toBe(whateverRoute2)
+    expect(whateverRoute1).toBe(whateverRoute2)
 
     router.stop()
   })
 
-  test('subscriptions react to query changes with autorun', async () => {
-    const queryReaction = jest.fn()
+  describe.skip('subscriptions and model', () => {
+    test('subscriptions react to query changes with autorun', async () => {
+      const queryReaction = jest.fn()
 
-    router = install({
-      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
-      routes: [
-        {
-          key: 'parent',
-          path: 'parent',
-          query: ['q'],
-          subscriptions(route) {
-            const { query } = route
+      router = install({
+        history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+        routes: [
+          {
+            key: 'parent',
+            path: 'parent',
+            query: ['q'],
+            subscriptions(route) {
+              const { query } = route
 
-            return autorun(() => queryReaction(query.q))
+              return autorun(() => queryReaction(query.q))
+            }
           }
-        }
-      ]
+        ]
+      })
+
+      await router.start()
+
+      await router.push('/parent')
+      expect(queryReaction).toHaveBeenCalled()
+      expect(queryReaction).toHaveBeenCalledWith(undefined)
+
+      await router.push('/parent?q=h')
+      expect(queryReaction.mock.calls.length).toBe(2)
+
+
+      await router.push('/parent?q=he')
+      await router.push('/parent?q=hel')
+      await router.push('/parent?q=hell')
+      await router.push('/parent?q=hello')
+
+      expect(queryReaction.mock.calls.length).toBe(6)
+      expect(queryReaction).toHaveBeenCalledWith('hello')
+
+      await router.push('/parent?q=')
+
+      expect(queryReaction.mock.calls.length).toBe(7)
+
+      await router.push('/parent')
+
+      expect(queryReaction.mock.calls.length).toBe(7)
+
+
+      router.stop()
     })
 
-    await router.start()
+    test('subscriptions react to param changes with autorun', async () => {
+      const parentReaction = jest.fn()
+      const childReaction1 = jest.fn()
+      const childReaction2 = jest.fn()
 
-    await router.push('/parent')
-    expect(queryReaction).toHaveBeenCalled()
-    expect(queryReaction).toHaveBeenCalledWith(undefined)
+      router = install({
+        history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+        routes: [
+          {
+            key: 'parent',
+            path: 'parent/:parentId',
+            subscriptions(route) {
+              const { params } = route
 
-    await router.push('/parent?q=h')
-    expect(queryReaction.mock.calls.length).toBe(2)
+              return autorun(() => params.parentId && parentReaction())
+            },
+            children: [
+              {
+                key: 'child',
+                path: 'child/:childId',
+                subscriptions(route) {
+                  const { params } = route
 
-
-    await router.push('/parent?q=he')
-    await router.push('/parent?q=hel')
-    await router.push('/parent?q=hell')
-    await router.push('/parent?q=hello')
-
-    expect(queryReaction.mock.calls.length).toBe(6)
-    expect(queryReaction).toHaveBeenCalledWith('hello')
-
-    await router.push('/parent?q=')
-
-    expect(queryReaction.mock.calls.length).toBe(7)
-
-    await router.push('/parent')
-
-    expect(queryReaction.mock.calls.length).toBe(7)
-
-
-    router.stop()
-  })
-
-  test('subscriptions react to param changes with autorun', async () => {
-    const parentReaction = jest.fn()
-    const childReaction1 = jest.fn()
-    const childReaction2 = jest.fn()
-
-    router = install({
-      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
-      routes: [
-        {
-          key: 'parent',
-          path: 'parent/:parentId',
-          subscriptions(route) {
-            const { params } = route
-
-            return autorun(() => params.parentId && parentReaction())
-          },
-          children: [
-            {
-              key: 'child',
-              path: 'child/:childId',
-              subscriptions(route) {
-                const { params } = route
-
-                return [
-                  autorun(() => params.parentId && childReaction1()),
-                  autorun(() => params.childId && childReaction2())
-                ]
+                  return [
+                    autorun(() => params.parentId && childReaction1()),
+                    autorun(() => params.childId && childReaction2())
+                  ]
+                }
               }
-            }
-          ]
-        }
-      ]
-    })
-
-    await router.start()
-
-    await router.push('/parent/1')
-
-    expect(parentReaction).toHaveBeenCalled()
-
-    await router.push('/parent/2')
-
-    expect(parentReaction.mock.calls.length).toBe(2)
-    expect(childReaction1).not.toHaveBeenCalled()
-    expect(childReaction2).not.toHaveBeenCalled()
-
-    await router.push('/parent/2/child/1')
-
-    expect(childReaction1).toHaveBeenCalled()
-    expect(childReaction2).toHaveBeenCalled()
-
-    await router.push('/parent/2/child/2')
-
-    expect(parentReaction.mock.calls.length).toBe(2)
-    expect(childReaction1.mock.calls.length).toBe(1)
-    expect(childReaction2.mock.calls.length).toBe(2)
-
-    await router.push('/parent/3/child/1')
-
-    expect(parentReaction.mock.calls.length).toBe(3)
-    expect(childReaction1.mock.calls.length).toBe(2)
-    expect(childReaction2.mock.calls.length).toBe(3)
-
-    router.stop()
-  })
-
-  test('subscriptions react to param changes with reaction fireImmediately', async () => {
-    const parentReaction = jest.fn()
-    const childReaction1 = jest.fn()
-    const childReaction2 = jest.fn()
-
-    router = install({
-      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
-      routes: [
-        {
-          key: 'parent',
-          path: 'parent/:parentId',
-          subscriptions(route) {
-            const { params } = route
-
-            return reaction(() => params.parentId, parentReaction, { fireImmediately: true })
-          },
-          children: [
-            {
-              key: 'child',
-              path: 'child/:childId',
-              subscriptions(route) {
-                const { params } = route
-
-                return [
-                  reaction(() => params.parentId, childReaction1, { fireImmediately: true }),
-                  reaction(() => params.childId, childReaction2, { fireImmediately: true })
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    })
-
-    await router.start()
-
-    await router.push('/parent/1')
-
-    expect(parentReaction).toHaveBeenCalled()
-
-    await router.push('/parent/2')
-
-    expect(parentReaction.mock.calls.length).toBe(2)
-    expect(childReaction1).not.toHaveBeenCalled()
-    expect(childReaction2).not.toHaveBeenCalled()
-
-    await router.push('/parent/2/child/1')
-
-    expect(childReaction1).toHaveBeenCalled()
-    expect(childReaction2).toHaveBeenCalled()
-
-    await router.push('/parent/2/child/2')
-
-    expect(parentReaction.mock.calls.length).toBe(2)
-    expect(childReaction1.mock.calls.length).toBe(1)
-    expect(childReaction2.mock.calls.length).toBe(2)
-
-    await router.push('/parent/3/child/1')
-    
-    expect(parentReaction.mock.calls.length).toBe(3)
-    expect(childReaction1.mock.calls.length).toBe(2)
-    expect(childReaction2.mock.calls.length).toBe(3)
-
-    router.stop()
-  })
-
-  test('subscriptions react to param changes with reaction', async () => {
-    const parentReaction = jest.fn()
-    const childReaction1 = jest.fn()
-    const childReaction2 = jest.fn()
-    const storeReaction = jest.fn()
-
-    const store = observable({ isPending: false })
-
-    router = install({
-      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
-      routes: [
-        {
-          key: 'parent',
-          path: 'parent/:parentId',
-          subscriptions(route) {
-            const { params } = route
-
-            return reaction(() => params.parentId, parentReaction)
-          },
-          children: [
-            {
-              key: 'child',
-              path: 'child/:childId',
-              subscriptions(route) {
-                const { params } = route
-
-                return [
-                  reaction(() => params.parentId, childReaction1),
-                  reaction(() => params.childId, () => {
-                    store.isPending = true
-                    childReaction2()
-                  }),
-                  reaction(() => store.isPending, storeReaction)
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    })
-
-    await router.start()
-
-    await router.push('/parent/1')
-
-    expect(parentReaction).not.toHaveBeenCalled()
-
-    await router.push('/parent/2')
-
-    expect(parentReaction.mock.calls.length).toBe(1)
-    expect(childReaction1).not.toHaveBeenCalled()
-    expect(childReaction2).not.toHaveBeenCalled()
-
-    await router.push('/parent/2/child/1')
-
-    expect(childReaction1).not.toHaveBeenCalled()
-    expect(childReaction2).not.toHaveBeenCalled()
-
-    await router.push('/parent/2/child/2')
-
-    expect(parentReaction.mock.calls.length).toBe(1)
-    expect(childReaction1.mock.calls.length).toBe(0)
-    expect(childReaction2.mock.calls.length).toBe(1)
-
-    await router.push('/parent/3/child/1')
-
-    expect(parentReaction.mock.calls.length).toBe(2)
-    expect(childReaction1.mock.calls.length).toBe(0)
-    expect(childReaction2.mock.calls.length).toBe(1)
-
-    await new Promise((resolve, reject) => {
-      setTimeout(() => {
-        runInAction(() => {
-          store.isPending = true
-        })
-        resolve()
-      }, 100)
-    })
-
-    expect(storeReaction).toHaveBeenCalled()
-
-    router.stop()
-  })
-
-  test('subscriptions with model and willResolve', async () => {
-    const store = observable({ a: null, b: null })
-
-    router = install({
-      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
-      routes: [
-        {
-          key: 'a',
-          path: 'a/:id',
-          model: {
-            isLoaded: false
-          },
-          subscriptions(route) {
-            const { params } = route
-
-            return autorun(() => {
-              const { id } = params
-
-              if (id) {
-                setTimeout(action(() => {
-                  route.model.isLoaded = true
-                  store.a = { id }
-                }), 10)
-              }
-            })
+            ]
           }
+        ]
+      })
+
+      await router.start()
+
+      await router.push('/parent/1')
+
+      expect(parentReaction).toHaveBeenCalled()
+
+      await router.push('/parent/2')
+
+      expect(parentReaction.mock.calls.length).toBe(2)
+      expect(childReaction1).not.toHaveBeenCalled()
+      expect(childReaction2).not.toHaveBeenCalled()
+
+      await router.push('/parent/2/child/1')
+
+      expect(childReaction1).toHaveBeenCalled()
+      expect(childReaction2).toHaveBeenCalled()
+
+      await router.push('/parent/2/child/2')
+
+      expect(parentReaction.mock.calls.length).toBe(2)
+      expect(childReaction1.mock.calls.length).toBe(1)
+      expect(childReaction2.mock.calls.length).toBe(2)
+
+      await router.push('/parent/3/child/1')
+
+      expect(parentReaction.mock.calls.length).toBe(3)
+      expect(childReaction1.mock.calls.length).toBe(2)
+      expect(childReaction2.mock.calls.length).toBe(3)
+
+      router.stop()
+    })
+
+    test('subscriptions react to param changes with reaction fireImmediately', async () => {
+      const parentReaction = jest.fn()
+      const childReaction1 = jest.fn()
+      const childReaction2 = jest.fn()
+
+      router = install({
+        history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+        routes: [
+          {
+            key: 'parent',
+            path: 'parent/:parentId',
+            subscriptions(route) {
+              const { params } = route
+
+              return reaction(() => params.parentId, parentReaction, { fireImmediately: true })
+            },
+            children: [
+              {
+                key: 'child',
+                path: 'child/:childId',
+                subscriptions(route) {
+                  const { params } = route
+
+                  return [
+                    reaction(() => params.parentId, childReaction1, { fireImmediately: true }),
+                    reaction(() => params.childId, childReaction2, { fireImmediately: true })
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      })
+
+      await router.start()
+
+      await router.push('/parent/1')
+
+      expect(parentReaction).toHaveBeenCalled()
+
+      await router.push('/parent/2')
+
+      expect(parentReaction.mock.calls.length).toBe(2)
+      expect(childReaction1).not.toHaveBeenCalled()
+      expect(childReaction2).not.toHaveBeenCalled()
+
+      await router.push('/parent/2/child/1')
+
+      expect(childReaction1).toHaveBeenCalled()
+      expect(childReaction2).toHaveBeenCalled()
+
+      await router.push('/parent/2/child/2')
+
+      expect(parentReaction.mock.calls.length).toBe(2)
+      expect(childReaction1.mock.calls.length).toBe(1)
+      expect(childReaction2.mock.calls.length).toBe(2)
+
+      await router.push('/parent/3/child/1')
+
+      expect(parentReaction.mock.calls.length).toBe(3)
+      expect(childReaction1.mock.calls.length).toBe(2)
+      expect(childReaction2.mock.calls.length).toBe(3)
+
+      router.stop()
+    })
+
+    test('subscriptions react to param changes with reaction', async () => {
+      const parentReaction = jest.fn()
+      const childReaction1 = jest.fn()
+      const childReaction2 = jest.fn()
+      const storeReaction = jest.fn()
+
+      const store = observable({ isPending: false })
+
+      router = install({
+        history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+        routes: [
+          {
+            key: 'parent',
+            path: 'parent/:parentId',
+            subscriptions(route) {
+              const { params } = route
+
+              return reaction(() => params.parentId, parentReaction)
+            },
+            children: [
+              {
+                key: 'child',
+                path: 'child/:childId',
+                subscriptions(route) {
+                  const { params } = route
+
+                  return [
+                    reaction(() => params.parentId, childReaction1),
+                    reaction(() => params.childId, () => {
+                      store.isPending = true
+                      childReaction2()
+                    }),
+                    reaction(() => store.isPending, storeReaction)
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      })
+
+      await router.start()
+
+      await router.push('/parent/1')
+
+      expect(parentReaction).not.toHaveBeenCalled()
+
+      await router.push('/parent/2')
+
+      expect(parentReaction.mock.calls.length).toBe(1)
+      expect(childReaction1).not.toHaveBeenCalled()
+      expect(childReaction2).not.toHaveBeenCalled()
+
+      await router.push('/parent/2/child/1')
+
+      expect(childReaction1).not.toHaveBeenCalled()
+      expect(childReaction2).not.toHaveBeenCalled()
+
+      await router.push('/parent/2/child/2')
+
+      expect(parentReaction.mock.calls.length).toBe(1)
+      expect(childReaction1.mock.calls.length).toBe(0)
+      expect(childReaction2.mock.calls.length).toBe(1)
+
+      await router.push('/parent/3/child/1')
+
+      expect(parentReaction.mock.calls.length).toBe(2)
+      expect(childReaction1.mock.calls.length).toBe(0)
+      expect(childReaction2.mock.calls.length).toBe(1)
+
+      await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          runInAction(() => {
+            store.isPending = true
+          })
+          resolve()
+        }, 100)
+      })
+
+      expect(storeReaction).toHaveBeenCalled()
+
+      router.stop()
+    })
+
+    test('subscriptions with model and willResolve', async () => {
+      const store = observable({ a: null, b: null })
+
+      router = install({
+        history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+        routes: [
+          {
+            key: 'a',
+            path: 'a/:id',
+            model: {
+              isLoaded: false
+            },
+            subscriptions(route) {
+              const { params } = route
+
+              return autorun(() => {
+                const { id } = params
+
+                if (id) {
+                  setTimeout(action(() => {
+                    route.model.isLoaded = true
+                    store.a = { id }
+                  }), 10)
+                }
+              })
+            }
+          },
+          {
+            key: 'b',
+            path: 'b/:id',
+            model: {
+              isLoaded: false
+            },
+            subscriptions(route) {
+              const { params } = route
+
+              return autorun(() => {
+                const { id } = params
+
+                if (id) {
+                  setTimeout(action(() => {
+                    route.model.isLoaded = true
+                    store.b = { id }
+                  }), 10)
+                }
+              })
+            },
+            willResolve(route) {
+              return when(() => route.model.isLoaded == true)
+            }
+          }
+        ]
+      })
+
+      await router.start()
+
+      // Route is resolved optimistically and renders before data is ready.
+      // Need to wait (delay) before data arrived
+      await router.push('/a/1')
+
+      expect(store.a).toBe(null)
+
+      await delay(20)
+
+      expect(store.a.id).toBe('1')
+
+      await router.push('/a/2')
+
+      expect(store.a.id).toBe('1')
+
+      await delay(20)
+
+      expect(store.a.id).toBe('2')
+
+
+      // Route makes sure all data is resolved before completeing navigation.
+      // No need to wait
+      await router.push('/b/1')
+
+      expect(store.b.id).toBe('1')
+
+      await router.push('/b/2')
+
+      expect(store.b.id).toBe('2')
+
+      router.stop()
+    })
+
+    test('subscriptions with computed values', async () => {
+      const accountStore = observable({
+        path: null,
+        accounts: observable.map(),
+        get(username) {
+          return this.accounts.get(username)
         },
-        {
-          key: 'b',
-          path: 'b/:id',
-          model: {
-            isLoaded: false
-          },
-          subscriptions(route) {
-            const { params } = route
-
-            return autorun(() => {
-              const { id } = params
-
-              if (id) {
-                setTimeout(action(() => {
-                  route.model.isLoaded = true
-                  store.b = { id }
-                }), 10)
-              }
-            })
-          },
-          willResolve(route) {
-            return when(() => route.model.isLoaded == true)
-          }
-        }
-      ]
-    })
-
-    await router.start()
-
-    // Route is resolved optimistically and renders before data is ready.
-    // Need to wait (delay) before data arrived
-    await router.push('/a/1')
-    
-    expect(store.a).toBe(null)
-
-    await delay(20)
-
-    expect(store.a.id).toBe('1')
-
-    await router.push('/a/2')
-
-    expect(store.a.id).toBe('1')
-
-    await delay(20)
-
-    expect(store.a.id).toBe('2')
-
-
-    // Route makes sure all data is resolved before completeing navigation.
-    // No need to wait
-    await router.push('/b/1')
-
-    expect(store.b.id).toBe('1')
-
-    await router.push('/b/2')
-
-    expect(store.b.id).toBe('2')
-
-    router.stop()
-  })
-
-  test('subscriptions with computed values', async () => {
-    const accountStore = observable({
-      path: null,
-      accounts: observable.map(),
-      get(username) {
-        return this.accounts.get(username)
-      },
-      add(account) {
-        this.accounts.set(account.username, account)
-      }
-    })
-    
-    const hubStore = observable({
-      path: null
-    })
-
-    let id = 0
-    const accountFetch = jest.fn((username) =>
-      runInAction(() => {
-        accountStore.path = `/${username}`
-
-        if (!accountStore.get(username)) {
-          accountStore.add({ username, id: ++id })
+        add(account) {
+          this.accounts.set(account.username, account)
         }
       })
-    )
 
-    const hubFetch = jest.fn((accountId, hubId) => hubStore.path = `/${accountId}/${hubId}`)
+      const hubStore = observable({
+        path: null
+      })
 
-    router = install({
-      history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
-      routes: [
-        {
-          key: 'account',
-          path: 'account/:username',
-          computed(props) {
-            const { params } = props
+      let id = 0
+      const accountFetch = jest.fn((username) =>
+        runInAction(() => {
+          accountStore.path = `/${username}`
 
-            return {
-              get account() {
-                return accountStore.get(params.username)
-              }
-            }
-          },
-          subscriptions(props) {
-            const { params } = props
+          if (!accountStore.get(username)) {
+            accountStore.add({ username, id: ++id })
+          }
+        })
+      )
 
-            return autorun(() => {
-              const { username } = params
-              accountFetch(username)
-            })
-          },
-          children: [
-            {
-              key: 'hubKey',
-              path: 'hub/:hubId',
-              computed(props) {
-                const { params, getParent, getAncestor } = props
-                
-                try {
-                  const { computed: account } = getAncestor('account')
-                } catch (err) {
-                  console.log(err)
+      const hubFetch = jest.fn((accountId, hubId) => hubStore.path = `/${accountId}/${hubId}`)
+
+      router = install({
+        history: createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 }),
+        routes: [
+          {
+            key: 'account',
+            path: 'account/:username',
+            computed(props) {
+              const { params } = props
+
+              return {
+                get account() {
+                  return accountStore.get(params.username)
                 }
-
-                return {
-                  get account() {
-                    return null
-                  }
-                }
-              },
-              subscriptions(props) {
-                const { params, getParent, getAncestor } = props
-
-                return autorun(() => {
-                  const { hubId } = params
-                  const { computed: { account } } = getParent() // or getAncestor('account')
-
-                  if (account) {
-                    hubFetch(account.id, hubId)
-                  }
-                })
               }
-            }
-          ]
-        }
-      ]
+            },
+            subscriptions(props) {
+              const { params } = props
+
+              return autorun(() => {
+                const { username } = params
+                accountFetch(username)
+              })
+            },
+            children: [
+              {
+                key: 'hubKey',
+                path: 'hub/:hubId',
+                computed(props) {
+                  const { params, getParent, getAncestor } = props
+
+                  try {
+                    const { computed: account } = getAncestor('account')
+                  } catch (err) {
+                    console.log(err)
+                  }
+
+                  return {
+                    get account() {
+                      return null
+                    }
+                  }
+                },
+                subscriptions(props) {
+                  const { params, getParent, getAncestor } = props
+
+                  return autorun(() => {
+                    const { hubId } = params
+                    const { computed: { account } } = getParent() // or getAncestor('account')
+
+                    if (account) {
+                      hubFetch(account.id, hubId)
+                    }
+                  })
+                }
+              }
+            ]
+          }
+        ]
+      })
+
+      await router.start()
+
+      await router.push('/account/pressly')
+
+      expect(accountStore.path).toBe('/pressly')
+
+      await router.push('/account/pressly/hub/1')
+
+      expect(hubStore.path).toBe('/1/1')
+
+      await router.push('/account/pressly/hub/2')
+
+      expect(hubStore.path).toBe('/1/2')
+
+      expect(accountFetch.mock.calls.length).toBe(1)
+      expect(hubFetch.mock.calls.length).toBe(2)
+
+      await router.push('/account/other/hub/3')
+
+      expect(hubStore.path).toBe('/2/3')
+
+      expect(accountFetch.mock.calls.length).toBe(2)
+
+      await router.push('/account/pressly/hub/4')
+
+      expect(hubStore.path).toBe('/1/4')
+
+      // XXX This currently fails because router.select only gets the committed data not the inflight data
+      // so it ends up making additional fetches
+      expect(hubFetch.mock.calls.length).toBe(4)
+
+      router.stop()
     })
-
-    await router.start()
-
-    await router.push('/account/pressly')
-
-    expect(accountStore.path).toBe('/pressly')
-
-    await router.push('/account/pressly/hub/1')
-
-    expect(hubStore.path).toBe('/1/1')
-
-    await router.push('/account/pressly/hub/2')
-
-    expect(hubStore.path).toBe('/1/2')
-
-    expect(accountFetch.mock.calls.length).toBe(1)
-    expect(hubFetch.mock.calls.length).toBe(2)
-
-    await router.push('/account/other/hub/3')
-
-    expect(hubStore.path).toBe('/2/3')
-
-    expect(accountFetch.mock.calls.length).toBe(2)
-
-    await router.push('/account/pressly/hub/4')
-
-    expect(hubStore.path).toBe('/1/4')
-
-    // XXX This currently fails because router.select only gets the committed data not the inflight data
-    // so it ends up making additional fetches
-    expect(hubFetch.mock.calls.length).toBe(4)
-
-    router.stop()
   })
 })
 

@@ -3,8 +3,8 @@ import { autorun, toJS, when } from 'mobx'
 import { createMemoryHistory } from 'history'
 import { install, serialize } from './index'
 
-describe('SSR', () => {
-  test.only('to and from JS for server-side rendering', async () => {
+describe.skip('SSR', () => {
+  test('to and from JS for server-side rendering', async () => {
     let activeRouterNumber = null
     const activeRoutesSpy = jest.fn()
     const stateSpy = jest.fn()
