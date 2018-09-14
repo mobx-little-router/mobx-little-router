@@ -19,7 +19,7 @@ function serializeActivatedRoute(route: Route<*, *>) {
   return {
     key: route.key,
     nodeKey: route.node.value.key,
-    state: toJS(route.state)
+    model: toJS(route.model)
   }
 }
 

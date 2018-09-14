@@ -65,10 +65,9 @@ export default function createRouteStateTreeNode(
     onExit: config.onExit || null,
     getContext,
     getData: config.getData || (() => ({})),
-    state: config.state || {},
+    model: config.model || {},
     disposers: [],
-    subscriptions: config.subscriptions || null,
-    model: config.model || null,
+    subscriptions: config.subscriptions || null
   }, {
     matcher: observable.ref,
     loadChildren: observable.ref,
@@ -84,14 +83,6 @@ export default function createRouteStateTreeNode(
     getData: observable.ref,
     subscriptions: observable.ref,
     model: observable.ref
-  })
-
-  value.current = observable({
-    params: {},
-    query: {},
-    state: value.state
-  }, {
-    state: observable.ref
   })
 
   const children = typeof config.children !== 'undefined'

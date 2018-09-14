@@ -40,9 +40,7 @@ export type BasicConfig<D: Object> = {
   onEnter?: LifecycleEndFn,
   onExit?: LifecycleEndFn,
   subscriptions?: Function,
-  computed?: Function,
-  effects?: Function,
-  state?: Object
+  model?: Object
 }
 
 export type RedirectConfig<D: Object> = {
@@ -101,7 +99,7 @@ export type RouteNodeValue<C: Object, D: Object> = {
   onEnter: null | LifecycleEndFn,
   onExit: null | LifecycleEndFn,
   getContext: () => C,
-  getData: (currentRoute: Route<*, *>) => D,
+  getData: () => D,
   model: Object,
   subscriptions: null | Function
 }
@@ -128,13 +126,22 @@ export type Route<C, D> = {
   parentUrl: string,
   onTransition: null | TransitionFn,
   model: Object,
-  disposers: Array<Function>
+  activate: () => () => void,
+  dispose: () => void
 }
 
 export type SelectBody = {
   [k: string]: {
     query?: { [k: string]: null | string },
     params?: { [k: string]: null | string },
-    computed?: { [k: string]: null | string }
+    model?: { [k: string]: null | string }
   }
+}
+
+export type RoutesChangeSet = {
+  incomingRoutes: Route<*, *>[],
+  activating: Route<*, *>[],
+  deactivating: Route<*, *>[],
+  entering: Route<*, *>[],
+  exiting: Route<*, *>[]
 }

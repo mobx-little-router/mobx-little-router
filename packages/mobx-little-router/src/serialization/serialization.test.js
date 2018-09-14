@@ -1,5 +1,5 @@
 // @flow
-import { autorun, flow, when } from 'mobx'
+import { autorun, when } from 'mobx'
 import { createMemoryHistory } from 'history'
 import { serialize } from './index'
 import install from '../install'
@@ -33,18 +33,18 @@ describe('serialization', () => {
                     {
                       key: 'e',
                       path: '/e(/:id)',
-                      state: {
+                      model: {
                         isReady: false,
                         item: null
                       },
                       subscriptions: route => {
                         const { params } = route
                         return autorun(async () => {
-                          route.state.item = await getItem(params.id)
-                          route.state.isReady = true
+                          route.model.item = await getItem(params.id)
+                          route.model.isReady = true
                         })
                       },
-                      willResolve: route => when(() => route.state.isReady)
+                      willResolve: route => when(() => route.model.isReady)
                     }
                   ])
               }
@@ -63,18 +63,18 @@ describe('serialization', () => {
     expect(() => serialize(router)).toThrow(/navigating/i)
   })
 
-  test('serialize preserves activated route states', async () => {
+  test.only('serialize preserves activated route states', async () => {
     await router.push('/c/d/e/123?q=hello')
 
     const serialized = serialize(router)
 
-    expect(serialized.activatedRoutes.e.state).toEqual({
+    expect(serialized.activatedRoutes.e.model).toEqual({
       isReady: true,
       item: { id: '123', name: 'Item 123' }
     })
   })
 
-  test('serialize preserves store state', async () => {
+  test('serialize preserves store model', async () => {
     await router.push('/c/d/e/123?q=hello')
 
     const serialized = serialize(router)

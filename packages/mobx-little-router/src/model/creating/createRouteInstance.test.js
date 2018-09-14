@@ -89,6 +89,8 @@ describe('createRouteStateTreeNode', () => {
       {}
     )
 
+    route.activate()
+
     runInAction(() => {
       route.model.user = { name: 'Alice' }
     })

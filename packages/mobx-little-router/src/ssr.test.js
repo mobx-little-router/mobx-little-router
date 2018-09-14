@@ -15,15 +15,15 @@ describe('SSR', () => {
       {
         key: 'a',
         path: '/a/:id',
-        state: {
+        model: {
           flag: false.valueOf()
         },
         willResolve: route =>
-          when(() => route.state.flag).then(() => {
+          when(() => route.model.flag).then(() => {
             stateSpy({
               routerNumber: activeRouterNumber,
               in: 'willResolve',
-              value: toJS(route.state)
+              value: toJS(route.model)
             })
           }),
         subscriptions(route) {
@@ -37,10 +37,10 @@ describe('SSR', () => {
             stateSpy({
               routerNumber: activeRouterNumber,
               in: 'subscriptions',
-              value: toJS(route.state)
+              value: toJS(route.model)
             })
             if (params.id) {
-              route.state.flag = true
+              route.model.flag = true
             }
           })
         }
@@ -83,7 +83,7 @@ describe('SSR', () => {
       { routerNumber: 1, in: 'subscriptions', value: { flag: false } },
       { routerNumber: 1, in: 'willResolve', value: { flag: true } },
 
-      // Route state is restored from serialized state.
+      // Route model is restored from serialized model.
       { routerNumber: 2, in: 'subscriptions', value: { flag: true } },
       { routerNumber: 2, in: 'willResolve', value: { flag: true } }
     ])
@@ -98,7 +98,7 @@ describe('SSR', () => {
       { routeNumber: 1, routes: ['@@ROOT', 'home'] },
       { routeNumber: 1, routes: ['@@ROOT', 'a'] },
 
-      // Activated route is restored from serialized state.
+      // Activated route is restored from serialized model.
       { routeNumber: 2, routes: [] },
 
       { routeNumber: 2, routes: ['@@ROOT', 'a'] }

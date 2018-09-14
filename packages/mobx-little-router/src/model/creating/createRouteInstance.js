@@ -27,25 +27,28 @@ export default function createRouteInstance<C: Object, D: Object>(
       context: node.value.getContext(),
       onTransition: node.value.onTransition,
       model: node.value.model,
+      activate: () => {
+        const { subscriptions } = node.value
+
+        if (typeof subscriptions === 'function') {
+          disposers.push(subscriptions(route))
+        } else if (Array.isArray(subscriptions)) {
+          subscriptions.forEach(subscribe => {
+            disposers.push(subscribe(route))
+          })
+        }
+
+        return () => disposers.forEach(f => f())
+      },
       dispose: () => disposers.forEach(f => f())
     },
     {
       node: observable.ref,
       data: observable.ref,
+      activate: observable.ref,
       dispose: observable.ref,
       context: observable.ref
     }
   )
-
-  const { subscriptions } = node.value
-
-  if (typeof subscriptions === 'function') {
-    disposers.push(subscriptions(route))
-  } else if (Array.isArray(subscriptions)) {
-    subscriptions.forEach(subscribe => {
-      disposers.push(subscribe(route))
-    })
-  }
-
   return route
 }

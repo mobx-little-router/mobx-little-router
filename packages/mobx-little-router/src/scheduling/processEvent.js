@@ -1,14 +1,14 @@
 // @flow
-import { action, observable, runInAction, set } from 'mobx'
+import { action } from 'mobx'
 import type RouterStore from '../model/RouterStore'
 import { NotFound } from '../errors'
 import Navigation from '../model/Navigation'
 import type { Route } from '../model/types'
+import createIncomingRoutes from './creating/createIncomingRoutes'
 import isUrlFullyMatched from './util/isUrlFullyMatched'
-import createRoutePropsWrapper from '../model/creating/createRoutePropsWrapper'
 import getNodeValue from '../model/util/getNodeValue'
 import setNodeValue from '../model/util/setNodeValue'
-import areRoutesEqual from '../model/util/areRoutesEqual'
+import createRoutesChangeSet from './creating/createRoutesChangeSet'
 import TransitionManager from '../transition/TransitionManager'
 import type { Event } from '../events'
 import { EventTypes } from '../events'
@@ -46,7 +46,13 @@ export default function maybeProcessEvent(evt: Event, store: RouterStore): Promi
     })
 }
 
-export function processEvent({ evt, store }: { evt: Event, store: RouterStore }): Promise<null | Event> {
+export function processEvent({
+  evt,
+  store
+}: {
+  evt: Event,
+  store: RouterStore
+}): Promise<null | Event> {
   switch (evt.type) {
     case EventTypes.NAVIGATION_START: {
       const { navigation } = evt
@@ -164,7 +170,7 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
         leaf,
         root: store.state.root,
         setter: action(() => {
-          store.replaceChildren(leaf.node, children)
+          store.updateChildren(leaf.node, children)
           setNodeValue('loadChildren', null, leaf)
         })
       })
@@ -185,82 +191,42 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
     case EventTypes.NAVIGATION_ACTIVATING: {
       const { navigation, matchedPath } = evt
       const currRoutes = store.activatedRoutes.slice()
-      const nextRoutes = store.createNextRouteInstances(matchedPath, navigation.to)
-      const { activating, deactivating, entering, exiting } = diffRoutes(currRoutes, nextRoutes)
+      const incomingRoutes = createIncomingRoutes(store.initialActivatedRoutes, matchedPath, navigation.to)
+      const changeSet = createRoutesChangeSet(currRoutes, incomingRoutes)
+      const { activating, deactivating, entering, exiting } = changeSet
+
+      store.updateIncomingRoutes(incomingRoutes)
 
       // Add matched leaf to the navigation object so it can be used for redirection
-      navigation.leaf = nextRoutes[nextRoutes.length - 1]
+      navigation.leaf = incomingRoutes[incomingRoutes.length - 1]
 
       return Promise.resolve()
         .then(() =>
-          evalTransitionsForRoutes([{ type: 'canDeactivate' }, { type: 'willDeactivate' }], deactivating, navigation)
+          evalTransitionsForRoutes(
+            [{ type: 'canDeactivate' }, { type: 'willDeactivate' }],
+            deactivating,
+            navigation
+          )
         )
-        .then(() => {
-          runInAction(() => {
-            // Dispose of all route disposers when deactivating a route
-            deactivating.forEach(route => {
-              const { disposers, current: { params, query } } = route.node.value
-
-              disposers.forEach(disposer => disposer())
-              disposers.length = 0
-
-              Object.keys(params).forEach(key => params[key] = undefined)
-              Object.keys(query).forEach(key => query[key] = undefined)
-            })
-
-            // Start all subscriptions when activating a route
-            activating.forEach(route => {
-              const { subscriptions, computed, current } = route.node.value
-
-              Object.keys(route.params).forEach(key => {
-                set(current.params, key, undefined)
-              })
-
-              Object.keys(route.query).forEach(key => {
-                set(current.query, key, undefined)
-              })
-
-              const routeProps = createRoutePropsWrapper(route, true)
-
-              // Set the current computed property
-              set(current, 'computed', computed(routeProps))
-
-              if (typeof subscriptions === 'function') {
-                route.node.value.disposers = [].concat(subscriptions(routeProps))
-              }
-            })
-
-            // Commit changes to underlying node
-            nextRoutes.forEach(route => {
-              const { current } = route.node.value
-
-              Object.assign(current.params, route.params)
-              Object.assign(current.query, route.query)
-
-              current.state = route.state
-            })
-          })
-
-          return evalTransitionsForRoutes(
+        .then(() =>
+          evalTransitionsForRoutes(
             [
               { type: 'canActivate', includes: activating },
               { type: 'willActivate', includes: activating },
               { type: 'willResolve', includes: entering }
             ],
-            nextRoutes,
+            incomingRoutes,
             navigation
           )
+        )
+        .then((setter: Function) => {
+          return {
+            type: EventTypes.NAVIGATION_ACTIVATED,
+            navigation,
+            changeSet,
+            setter
+          }
         })
-        .then((setter: Function) => ({
-          type: EventTypes.NAVIGATION_ACTIVATED,
-          navigation,
-          activating,
-          deactivating,
-          entering,
-          exiting,
-          nextRoutes,
-          setter
-        }))
         .catch(err => {
           if (err instanceof Navigation) {
             return {
@@ -286,25 +252,27 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
         })
     }
     case EventTypes.NAVIGATION_ACTIVATED: {
-      const { navigation, nextRoutes, exiting, entering } = evt
+      const { navigation } = evt
 
       return Promise.resolve({
         type: EventTypes.NAVIGATION_TRANSITION_START,
         navigation: evt.navigation,
         setter: action(() => {
-          store.updateActivatedRoutes(nextRoutes)
+          store.updateActivatedRoutes(evt.changeSet)
           store.updateLocation(navigation.to)
         }),
-        entering,
-        exiting
+        changeSet: evt.changeSet
       })
     }
     case EventTypes.NAVIGATION_TRANSITION_START: {
-      const { navigation, exiting, entering } = evt
+      const { navigation, changeSet: {exiting, entering } }= evt
       let done
       if (navigation.shouldTransition) {
         // Run and wait on transition of exiting and newly entering nodes.
-        done = Promise.all([TransitionManager.run('exiting', exiting), TransitionManager.run('entering', entering)])
+        done = Promise.all([
+          TransitionManager.run('exiting', exiting),
+          TransitionManager.run('entering', entering)
+        ])
       } else {
         done = Promise.resolve()
       }
@@ -312,12 +280,11 @@ export function processEvent({ evt, store }: { evt: Event, store: RouterStore })
       return done.then(() => ({
         type: EventTypes.NAVIGATION_TRANSITION_END,
         navigation,
-        entering,
-        exiting
+        changeSet: evt.changeSet
       }))
     }
     case EventTypes.NAVIGATION_TRANSITION_END: {
-      const { exiting, entering } = evt
+      const { exiting, entering } = evt.changeSet
 
       exiting.forEach(invokeTransitionFunction('onExit'))
       entering.forEach(invokeTransitionFunction('onEnter'))
@@ -368,60 +335,6 @@ function normalizePath(x: string) {
   return x.endsWith('/') ? x : `${x}/`
 }
 
-function diffRoutes(currRoutes: Route<*, *>[], nextRoutes: Route<*, *>[]) {
-  let parentWillResolve
-
-  // Exiting this specific route instance
-  const exiting = currRoutes
-    .reduce((acc, x, idx) => {
-      const y = nextRoutes.length > idx ? nextRoutes[idx] : undefined
-      if (acc.length > 0 || !areRoutesEqual(x, y)) {
-        acc.push(x)
-      }
-      return acc
-    }, [])
-    .reverse()
-
-  // Entering this specific route instance
-  const entering = nextRoutes.reduce((acc, x, idx) => {
-    const y = currRoutes.length > idx ? currRoutes[idx] : undefined
-    if (acc.length > 0 || !areRoutesEqual(x, y)) {
-      acc.push(x)
-    }
-    return acc
-  }, [])
-
-  // Deactivating this route state tree node
-  parentWillResolve = false
-  const deactivating = currRoutes
-    .reduce((acc, x, idx) => {
-      const y = nextRoutes.length > idx ? nextRoutes[idx] : undefined
-      if (acc.length > 0 || parentWillResolve || x.node !== (y && y.node)) {
-        acc.push(x)
-      }
-      if (!areRoutesEqual(x, y)) {
-        parentWillResolve = true
-      }
-      return acc
-    }, [])
-    .reverse()
-
-  // Activating this route state tree node
-  parentWillResolve = false
-  const activating = nextRoutes.reduce((acc, x, idx) => {
-    const y = currRoutes.length > idx ? currRoutes[idx] : undefined
-    if (acc.length > 0 || parentWillResolve || x.node !== (y && y.node)) {
-      acc.push(x)
-    }
-    if (!areRoutesEqual(x, y)) {
-      parentWillResolve = true
-    }
-    return acc
-  }, [])
-
-  return { activating, deactivating, entering, exiting }
-}
-
 type HookType = 'canDeactivate' | 'canActivate' | 'willDeactivate' | 'willActivate' | 'willResolve'
 
 type Operation = {
@@ -446,9 +359,10 @@ function evalTransition(
 ): Promise<void | Function> {
   const { value } = route.node
   const { type, includes } = operation
-  const result = typeof value[type] === 'function' && isIncluded(route, includes)
-    ? value[type](route, navigation)
-    : true
+  const result =
+    typeof value[type] === 'function' && isIncluded(route, includes)
+      ? value[type](route, navigation)
+      : true
 
   // If the guard results in `false` or a rejected promise then mark transition as failed.
   if (undefined === result || false === result) {
@@ -476,13 +390,24 @@ function evalTransition(
   }
 }
 
-function evalTransitions(operations: Operation[], route: Route<*, *>, navigation: Navigation, state: EvalState) {
+function evalTransitions(
+  operations: Operation[],
+  route: Route<*, *>,
+  navigation: Navigation,
+  state: EvalState
+) {
   return operations.reduce((curr, operation) => {
-    return state.caughtError ? Promise.resolve() : curr.then(() => evalTransition(operation, route, navigation, state))
+    return state.caughtError
+      ? Promise.resolve()
+      : curr.then(() => evalTransition(operation, route, navigation, state))
   }, Promise.resolve())
 }
 
-function evalTransitionsForRoutes(operations: Operation[], routes: Route<*, *>[], navigation: Navigation) {
+function evalTransitionsForRoutes(
+  operations: Operation[],
+  routes: Route<*, *>[],
+  navigation: Navigation
+) {
   const state = {
     caughtError: false,
     setters: []

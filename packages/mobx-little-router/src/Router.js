@@ -2,8 +2,8 @@
  * This is the public facade over all of the routing interface.
  * The `Router` is a coordinator of other objects in the system.
  */
-import type { IObservable, IObservableArray } from 'mobx'
-import { autorun, computed, extendObservable, observable, when } from 'mobx'
+import type { IObservableArray } from 'mobx'
+import { autorun, extendObservable, observable, when } from 'mobx'
 import querystring from 'querystring'
 import delay from './util/delay'
 import type { Action, History } from 'history'
@@ -15,7 +15,6 @@ import type {
   Href,
   Location,
   LocationShape,
-  Params,
   Route,
   RouteStateTreeNode
 } from './model/types'
@@ -32,7 +31,7 @@ type RouterCtorOptions = {
     state: Object
   }
 }
-const DEFAULT_OPTIONS: RouterCtorOptions= {
+const DEFAULT_OPTIONS: RouterCtorOptions = {
   middleware: EMPTY
 }
 
@@ -53,7 +52,10 @@ class Router {
   _nextNavigation: * // This is computed from Scheduler event observable.
 
   constructor(history: History, config: Config<*>[], opts?: RouterCtorOptions = DEFAULT_OPTIONS) {
-    const root = createRouteStateTreeNode({ key: '@@ROOT', path: '', match: 'partial' }, opts.getContext) // Initial root.
+    const root = createRouteStateTreeNode(
+      { key: '@@ROOT', path: '', match: 'partial' },
+      opts.getContext
+    ) // Initial root.
     const store = new RouterStore(root, opts.ssr ? opts.ssr.state : undefined)
     const scheduler = new Scheduler(store, opts.middleware || EMPTY)
     extendObservable(
@@ -69,14 +71,20 @@ class Router {
           return this._store.error
         },
         get isNavigating() {
-          const { event: { type } } = this._scheduler
+          const {
+            event: { type }
+          } = this._scheduler
           return type !== EventTypes.NAVIGATION_ERROR && type !== EventTypes.NAVIGATION_END
         },
 
         // Private usage to figure out if an event has a next navigation object.
         get _nextNavigation() {
           const { event } = this._scheduler
-          return event !== null ? (event.nextNavigation !== null ? event.nextNavigation : null) : null
+          return event !== null
+            ? event.nextNavigation !== null
+              ? event.nextNavigation
+              : null
+            : null
         },
         get currentEventType() {
           const { event } = this._scheduler
@@ -172,7 +180,10 @@ class Router {
     return this._done()
   }
 
-  updateQuery(query: Object, options: { action?: Action, merge?: boolean } = { action: 'REPLACE', merge: false }) {
+  updateQuery(
+    query: Object,
+    options: { action?: Action, merge?: boolean } = { action: 'REPLACE', merge: false }
+  ) {
     const search = this._store.location.search
     const existingQuery = search ? querystring.parse(search.substr(1)) : {}
     let updatedQuery = options.merge === true ? { ...existingQuery, ...query } : query
@@ -182,7 +193,8 @@ class Router {
       }
       return acc
     }, {})
-    const queryString = Object.keys(updatedQuery).length > 0 ? `?${querystring.stringify(updatedQuery)}` : ''
+    const queryString =
+      Object.keys(updatedQuery).length > 0 ? `?${querystring.stringify(updatedQuery)}` : ''
     const pathname = `${this.location.pathname}${queryString}`
 
     switch (options.action) {
@@ -219,6 +231,10 @@ class Router {
     }, [])
 
     return `/${result.join('/')}${endsWithSlash ? '/' : ''}`
+  }
+
+  select<T: SelectBody>(spec: string | Object): T {
+    return this._store.select(spec)
   }
 
   // Note: This will not return any dynamic nodes unless they have already loaded.

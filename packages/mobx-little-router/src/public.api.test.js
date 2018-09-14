@@ -44,31 +44,6 @@ describe('Public API', () => {
     })
   })
 
-  test('getParam', async () => {
-    await router.start()
-
-    const ids = []
-
-    const dispose = autorun(() => {
-      const accountId = router.getParam('account', 'id')
-      ids.push(accountId)
-    })
-
-    await router.push('/account/1/hub/2')
-
-    expect(router.getParam('account', 'id')).toBe('1')
-    expect(router.getParam('hub', 'id')).toBe('2')
-
-    await router.push('/account/3/hub/4')
-
-    expect(router.getParam('account', 'id')).toBe('3')
-    expect(router.getParam('hub', 'id')).toBe('4')
-
-    expect(ids).toEqual([undefined, '1', '3'])
-
-    dispose()
-    router.stop()
-  })
 
   test('context chain', () => {
     expect(router._store.state.root.value.getContext()).toEqual({ message: 'Hello' })
@@ -1266,7 +1241,7 @@ describe('Public API', () => {
     router.stop()
   })
 
-  test('subscriptions with state and willResolve', async () => {
+  test('subscriptions with model and willResolve', async () => {
     const store = observable({ a: null, b: null })
 
     router = install({
@@ -1275,7 +1250,7 @@ describe('Public API', () => {
         {
           key: 'a',
           path: 'a/:id',
-          state: {
+          model: {
             isLoaded: false
           },
           subscriptions(route) {
@@ -1286,7 +1261,7 @@ describe('Public API', () => {
 
               if (id) {
                 setTimeout(action(() => {
-                  route.state.isLoaded = true
+                  route.model.isLoaded = true
                   store.a = { id }
                 }), 10)
               }
@@ -1296,7 +1271,7 @@ describe('Public API', () => {
         {
           key: 'b',
           path: 'b/:id',
-          state: {
+          model: {
             isLoaded: false
           },
           subscriptions(route) {
@@ -1307,14 +1282,14 @@ describe('Public API', () => {
 
               if (id) {
                 setTimeout(action(() => {
-                  route.state.isLoaded = true
+                  route.model.isLoaded = true
                   store.b = { id }
                 }), 10)
               }
             })
           },
           willResolve(route) {
-            return when(() => route.state.isLoaded == true)
+            return when(() => route.model.isLoaded == true)
           }
         }
       ]

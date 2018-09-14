@@ -1,6 +1,6 @@
 // @flow
 import { runInAction, autorun } from 'mobx'
-import type { Route, PathElement } from './types'
+import type { PathElement } from './types'
 import RouterStore from './RouterStore'
 import createRouteStateTreeNode from './creating/createRouteStateTreeNode'
 import createRouteInstance from './creating/createRouteInstance'
@@ -31,8 +31,14 @@ describe('RouterStore', () => {
       }
     }
 
-    store.replaceChildren(store.state.root, [a])
-    store.updateActivatedRoutes([createRouteInstance(store.getNode('a'), '1', '1', { x: '1' }, {})])
+    store.updateChildren(store.state.root, [a])
+    store.updateActivatedRoutes({
+      exiting: [],
+      entering: [],
+      activating: [],
+      deactivating: [],
+      incomingRoutes: [createRouteInstance(store.getNodeUnsafe('a'), '1', '1', { x: '1' }, {})]
+    })
 
     expect(store.activatedRoutes[0]).toEqual(
       expect.objectContaining({
@@ -45,7 +51,13 @@ describe('RouterStore', () => {
       })
     )
 
-    store.updateActivatedRoutes([createRouteInstance(store.getNode('a'), '2', '2', { x: '2' }, {})])
+    store.updateActivatedRoutes({
+      exiting: [],
+      entering: [],
+      activating: [],
+      deactivating: [],
+      incomingRoutes: [createRouteInstance(store.getNodeUnsafe('a'), '2', '2', { x: '2' }, {})]
+    })
 
     expect(store.activatedRoutes[0]).toEqual(
       expect.objectContaining({
@@ -63,34 +75,6 @@ describe('RouterStore', () => {
     expect(x.get()).toBe('2')
   })
 
-  test('Building routes from path', () => {
-    const dataSpy = jest.fn(() => Promise.resolve())
-    const a = createRouteStateTreeNode({ path: 'a', getData: () => dataSpy('a') })
-    const b = createRouteStateTreeNode({ path: 'b', getData: () => dataSpy('b') })
-    const c = createRouteStateTreeNode({ path: 'c', getData: () => dataSpy('c') })
-
-    const aRoute = createRouteInstance(a, '', '/a/1', { x: '1' }, {})
-    const bRoute = createRouteInstance(b, '/a/1', '/b/1', { y: '1' }, {})
-
-    const currRoutes = [aRoute, bRoute]
-
-    store.activatedRoutes.replace(currRoutes)
-
-    const nextPath1: PathElement<*, *>[] = [
-      { node: a, params: { x: '1' }, parentUrl: '', segment: '/a/1', remaining: '/b/1/c/1' },
-      { node: b, params: { y: '1' }, parentUrl: '/a/1', segment: '/b/1', remaining: '/c/1' },
-      { node: c, params: { z: '1' }, parentUrl: '/a/1/b/1', segment: '/c/1', remaining: '' }
-    ]
-
-    const nextRoutes = store.createNextRouteInstances(nextPath1, ({}: any))
-
-    expect(nextRoutes).toEqual([
-      expect.objectContaining({ params: { x: '1' } }),
-      expect.objectContaining({ params: { y: '1' } }),
-      expect.objectContaining({ params: { z: '1' } })
-    ])
-  })
-
   test('Routes with query params', () => {
     const a = {
       path: 'a',
@@ -106,8 +90,14 @@ describe('RouterStore', () => {
       query: ['r']
     }
 
-    store.replaceChildren(store.state.root, [a, b])
-    store.updateActivatedRoutes([createRouteInstance(store.getNode('a'), '', '', {}, { q: 'hey' })])
+    store.updateChildren(store.state.root, [a, b])
+    store.updateActivatedRoutes({
+      exiting: [],
+      entering: [],
+      activating: [],
+      deactivating: [],
+      incomingRoutes: [createRouteInstance(store.getNodeUnsafe('a'), '', '', {}, { q: 'hey' })]
+    })
 
     expect(store.activatedRoutes[0]).toEqual(
       expect.objectContaining({
@@ -120,7 +110,15 @@ describe('RouterStore', () => {
       })
     )
 
-    store.updateActivatedRoutes([createRouteInstance(store.getNode('b'), '', '', {}, { r: 'what' })])
+    store.updateActivatedRoutes({
+      exiting: [],
+      entering: [],
+      activating: [],
+      deactivating: [],
+      incomingRoutes: [
+      createRouteInstance(store.getNodeUnsafe('b'), '', '', {}, { r: 'what' })
+    ]
+    })
 
     expect(store.activatedRoutes[0]).toEqual(
       expect.objectContaining({
@@ -132,5 +130,59 @@ describe('RouterStore', () => {
         })
       })
     )
+  })
+
+  test('Subscribing to route changes', () => {
+    const a = {
+      path: 'a/:id',
+      key: 'a',
+      model: {
+        user: null,
+        get name() {
+          return this.user ? this.user.name : 'Anonymous'
+        }
+      },
+      subscriptions: route => {
+        const { params, model } = route
+        return autorun(() => {
+          const user = { id: params.id, name: `User ${params.id}` }
+          runInAction(() => {
+            model.user = user
+          })
+        })
+      },
+      children: []
+    }
+
+    store.updateChildren(store.state.root, [a])
+    store.updateActivatedRoutes({
+      exiting: [],
+      entering: [],
+      activating: [],
+      deactivating: [],
+      incomingRoutes: [
+      createRouteInstance(store.getNodeUnsafe('a'), '', '/a/1', { id: '1' }, {})
+    ]
+    })
+
+    const route = store.activatedRoutes[0]
+    const results = []
+
+    autorun(() => results.push(route.model.name))
+
+    expect(route.model.user).toEqual({ id: '1', name: 'User 1' })
+
+    store.updateActivatedRoutes({
+      exiting: [],
+      entering: [],
+      activating: [],
+      deactivating: [],
+      incomingRoutes: [
+      createRouteInstance(store.getNodeUnsafe('a'), '', '/a/2', { id: '2' }, {})
+    ]
+    })
+    expect(route.model.user).toEqual({ id: '2', name: 'User 2' })
+
+    expect(results).toEqual(['User 1', 'User 2'])
   })
 })

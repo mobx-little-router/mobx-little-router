@@ -118,7 +118,7 @@ describe('processEvent', () => {
       expect.arrayContaining([
         expect.objectContaining({
           type: EventTypes.NAVIGATION_ACTIVATED,
-          nextRoutes: expect.arrayContaining([
+          incomingRoutes: expect.arrayContaining([
             expect.objectContaining({
               node: expect.objectContaining({
                 value: expect.objectContaining({ path: '**' })

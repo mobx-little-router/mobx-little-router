@@ -1,18 +1,15 @@
 // @flow
-import type { IObservableArray, ObservableMap } from 'mobx'
+import type { IObservable, IObservableArray, ObservableMap } from 'mobx'
 import { computed, extendObservable, observable, runInAction } from 'mobx'
 import createRouteStateTreeNode from './creating/createRouteStateTreeNode'
-import createRouteInstance from './creating/createRouteInstance'
 import RouterStateTree from './RouterStateTree'
-import qs from 'querystring'
-import areRoutesEqual from './util/areRoutesEqual'
+import getNodeValue from './util/getNodeValue'
 import type Navigation from './Navigation'
 import type {
   Config,
   Location,
-  PathElement,
-  Query,
   Route,
+  RoutesChangeSet,
   RouteStateTreeNode,
   SelectBody
 } from './types'
@@ -27,7 +24,7 @@ type InitialState = {
   store: Object
 }
 
-const OBSERVABLE_ROUTE_PROPERTIES = ['params', 'query', 'computed']
+const OBSERVABLE_ROUTE_PROPERTIES = ['params', 'query', 'model']
 
 class RouterStore {
   location: Location
@@ -39,6 +36,8 @@ class RouterStore {
   cache: ObservableMap<TreeNodeMetaData<*, *>>
 
   activatedRoutes: IObservableArray<Route<*, *>>
+
+  incomingRoutes: IObservableArray<Route<*, *>>
 
   initialActivatedRoutes: Object
 
@@ -55,6 +54,7 @@ class RouterStore {
         location: initialState ? initialState.store.location : {},
         cache: observable.map({ [root.value.key]: root }),
         activatedRoutes: observable.array(),
+        incomingRoutes: observable.array(),
         error: null,
         initialActivatedRoutes: initialState ? initialState.activatedRoutes : {},
         nextKey: initialState ? initialState.store.nextKey : 0
@@ -67,46 +67,17 @@ class RouterStore {
     )
   }
 
-  getNextKey = (): string => {
-    const key = this.nextKey
-    runInAction(() => {
-      this.nextKey++
-    })
-    return `${key}`
-  }
-
-  createNextRouteInstances(path: PathElement<*, *>[], nextLocation: Location): Route<*, *>[] {
-    const query = getQueryParams(nextLocation)
-    const ancestors = []
-
-    return path.map(element => {
-      const { node, parentUrl, segment, params } = element
-      const matchedQueryParams = this.getMatchedQueryParams(node, query)
-      const initialRoute = this.initialActivatedRoutes[node.value.key]
-      const initialState = initialRoute ? initialRoute.state : undefined
-      const newRoute = createRouteInstance(
-        node,
-        parentUrl,
-        segment,
-        params,
-        matchedQueryParams,
-        ancestors,
-        initialState
-      )
-
-      const route = this.activatedRoutes.find(areRoutesEqual(newRoute)) || newRoute
-
-      ancestors.push(route)
-
-      return route
-    })
-  }
-
   /* Queries */
 
   getNode(key: string): null | RouteStateTreeNode<*, *> {
     const x = this.cache.get(key)
     return (x && x.node) || null
+  }
+
+  getNodeUnsafe(key: string): RouteStateTreeNode<*, *> {
+    const node = this.getNode(key)
+    if (node) return node
+    else throw new Error(`Cannot find node for key ${key}`)
   }
 
   select<T: SelectBody>(spec: string | T): IObservable<T> {
@@ -123,10 +94,16 @@ class RouterStore {
     }
   }
 
+  isCancelled(navigation: null | Navigation) {
+    return navigation ? navigation.sequence <= this.cancelledSequence : false
+  }
+
   /* Mutations */
 
-  replaceChildren(node: RouteStateTreeNode<*, *>, children: Config<*>[]): void {
-    node.children.replace(children.map(x => this._createNode(node, x)))
+  updateChildren(node: RouteStateTreeNode<*, *>, children: Config<*>[]): void {
+    runInAction(() => {
+      node.children.replace(children.map(x => this._createNode(node, x)))
+    })
   }
 
   updateError(err: any) {
@@ -135,9 +112,35 @@ class RouterStore {
     })
   }
 
-  updateActivatedRoutes(nextRoutes: Route<*, *>[]) {
+  updateIncomingRoutes(routes: Route<*, *>[]) {
     runInAction(() => {
-      this.activatedRoutes.replace(nextRoutes)
+      this.incomingRoutes.replace(routes)
+    })
+  }
+
+  updateActivatedRoutes(changeset: RoutesChangeSet) {
+    const { incomingRoutes: routes } = changeset
+    runInAction(() => {
+      // TODO: Should only dispose of routes that will be deactivated.
+      this.activatedRoutes.forEach(route => route.dispose())
+
+      this.activatedRoutes.replace(
+        routes.map(r => {
+          const existing = this.activatedRoutes.find(
+            x => getNodeValue('key', x) === getNodeValue('key', r)
+          )
+          if (existing) {
+            Object.assign(existing['query'], r['query'])
+            Object.assign(existing['params'], r['params'])
+            return existing
+          } else {
+            return r
+          }
+        })
+      )
+
+      // Resume subscriptions
+      this.activatedRoutes.forEach(route => route.activate())
     })
   }
 
@@ -153,21 +156,18 @@ class RouterStore {
     }
   }
 
-  isCancelled(navigation: null | Navigation) {
-    return navigation ? navigation.sequence <= this.cancelledSequence : false
-  }
-
-  getMatchedQueryParams(node: RouteStateTreeNode<*, *>, query: Query): Query {
-    return node.value.query.reduce((acc, key) => {
-      acc[key] = query[key]
-      return acc
-    }, {})
-  }
-
   /* Private helpers */
 
+  _getNextKey = (): string => {
+    const key = this.nextKey
+    runInAction(() => {
+      this.nextKey++
+    })
+    return `${key}`
+  }
+
   _createNode(parent: RouteStateTreeNode<*, *>, config: Config<*>) {
-    const node = createRouteStateTreeNode(config, parent.value.getContext, this.getNextKey)
+    const node = createRouteStateTreeNode(config, parent.value.getContext, this._getNextKey)
     this._storeInCache(parent, node)
     return node
   }
@@ -177,11 +177,6 @@ class RouterStore {
     node.children.forEach(child => this._storeInCache(node, child))
   }
 }
-
-function getQueryParams(location: Location): Query {
-  return location.search != null ? qs.parse(location.search.substr(1)) : {}
-}
-
 function createBody(path: string[]): SelectBody {
   const body = {}
   let head = body

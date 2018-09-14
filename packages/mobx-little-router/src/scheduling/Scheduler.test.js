@@ -65,11 +65,7 @@ describe('Scheduler', () => {
     test('Activation successful', async () => {
       const spy = jest.fn(() => true)
       const root = store.state.root
-      const [_, appRootNode, todosRoot, todosView] = scanChildren(store.state.root, [
-        0,
-        0,
-        1
-      ])
+      const [_, appRootNode, todosRoot, todosView] = scanChildren(store.state.root, [0, 0, 1])
       updateNode(root, { canActivate: spy })
       updateNode(todosRoot, { canActivate: spy })
       updateNode(todosView, { canActivate: spy })
@@ -109,9 +105,15 @@ describe('Scheduler', () => {
       const [root, _, todosRoot, todosView] = scanChildren(store.state.root, [0, 1, 1])
       updateNode(todosRoot, { canDeactivate: rootSpy })
       updateNode(todosView, { canDeactivate: viewSpy })
-      store.updateActivatedRoutes(
-        [root, todosRoot, todosView].map(x => createRouteInstance(x, '', '', {}, {}))
-      )
+      store.updateActivatedRoutes({
+        exiting: [],
+        entering: [],
+        activating: [],
+        deactivating: [],
+        incomingRoutes: [root, todosRoot, todosView].map(x =>
+          createRouteInstance(x, '', '', {}, {})
+        )
+      })
       store.location.pathname = '/todos/123'
       scheduler.schedule({ type: 'PUSH', to: { pathname: '/' } })
 
@@ -132,9 +134,15 @@ describe('Scheduler', () => {
       updateNode(todosRoot, { canDeactivate: spy })
       updateNode(todosView, { canDeactivate: spy })
       store.location.pathname = '/todos/123'
-      store.updateActivatedRoutes(
-        [root, todosRoot, todosView].map(x => createRouteInstance(x, '', '', {}, {}))
-      )
+      store.updateActivatedRoutes({
+        exiting: [],
+        entering: [],
+        activating: [],
+        deactivating: [],
+        incomingRoutes: [root, todosRoot, todosView].map(x =>
+          createRouteInstance(x, '', '', {}, {})
+        )
+      })
       scheduler.schedule({ type: 'PUSH', to: { pathname: '/' } })
 
       await nextTick()
@@ -188,9 +196,15 @@ describe('Scheduler', () => {
         const [_, appRootNode, todosRoot] = scanChildren(store.state.root, [0, 0])
         updateNode(todosRoot, { canDeactivate: spy })
         store.location.pathname = '/todos/'
-        store.updateActivatedRoutes(
-          [store.state.root, appRootNode, todosRoot].map(x => createRouteInstance(x, '', '', {}, {}))
-        )
+        store.updateActivatedRoutes({
+          exiting: [],
+          entering: [],
+          activating: [],
+          deactivating: [],
+          incomingRoutes: [store.state.root, appRootNode, todosRoot].map(x =>
+            createRouteInstance(x, '', '', {}, {})
+          )
+        })
         scheduler.schedule({ type: 'PUSH', to: { pathname: '/' } })
 
         await nextTick()
@@ -203,9 +217,15 @@ describe('Scheduler', () => {
         const [_, appRootNode, todosRoot] = scanChildren(store.state.root, [0, 0])
         updateNode(todosRoot, { canDeactivate: spy })
         store.location.pathname = '/todos/'
-        store.updateActivatedRoutes(
-          [store.state.root, appRootNode, todosRoot].map(x => createRouteInstance(x, '', '', {}, {}))
-        )
+        store.updateActivatedRoutes({
+          exiting: [],
+          entering: [],
+          activating: [],
+          deactivating: [],
+          incomingRoutes: [store.state.root, appRootNode, todosRoot].map(x =>
+            createRouteInstance(x, '', '', {}, {})
+          )
+        })
         scheduler.schedule({ type: 'PUSH', to: { pathname: '/' } })
 
         await nextTick()
@@ -218,9 +238,15 @@ describe('Scheduler', () => {
         const [_, appRootNode, todosRoot] = scanChildren(store.state.root, [0, 0])
         updateNode(todosRoot, { canDeactivate: spy })
         store.location.pathname = '/todos'
-        store.updateActivatedRoutes(
-          [store.state.root, appRootNode, todosRoot].map(x => createRouteInstance(x, '', '', {}, {}))
-        )
+        store.updateActivatedRoutes({
+          exiting: [],
+          entering: [],
+          activating: [],
+          deactivating: [],
+          incomingRoutes: [store.state.root, appRootNode, todosRoot].map(x =>
+            createRouteInstance(x, '', '', {}, {})
+          )
+        })
         scheduler.schedule({ type: 'PUSH', to: { pathname: '/' } })
 
         await nextTick()
@@ -342,9 +368,15 @@ describe('Scheduler', () => {
 
     test('Can cancel navigation from willDeactivate', async () => {
       store.location.pathname = '/todos/'
-      store.updateActivatedRoutes(
-        [store.state.root, todosRoot].map(x => createRouteInstance(x, '', '', {}, {}))
-      )
+      store.updateActivatedRoutes({
+        incomingRoutes: [store.state.root, todosRoot].map(x =>
+          createRouteInstance(x, '', '', {}, {})
+        ),
+        exiting: [],
+        entering: [],
+        activating: [],
+        deactivating: []
+      })
 
       scheduler.schedule({ type: 'PUSH', sequence: 0, to: { pathname: '/' } })
 
@@ -376,11 +408,7 @@ describe('Scheduler', () => {
     test('Nodes are called in order or deactivation and activation path', async () => {
       // Setup
       const spy = jest.fn(() => true)
-      const [root, appRoot, todosRoot, todosView] = scanChildren(store.state.root, [
-        0,
-        0,
-        1
-      ])
+      const [root, appRoot, todosRoot, todosView] = scanChildren(store.state.root, [0, 0, 1])
       const [_, projectsRootNode, projectsListNode] = scanChildren(appRoot, [1, 0])
       const [__, ___, projectsViewNode] = scanChildren(appRoot, [1, 1])
 
@@ -462,11 +490,7 @@ describe('Scheduler', () => {
       // Setup
       let nodesDuringListTransition = []
       let nodesDuringViewTransition = []
-      const [root, appRoot, todosRoot, todosView] = scanChildren(store.state.root, [
-        0,
-        0,
-        1
-      ])
+      const [root, appRoot, todosRoot, todosView] = scanChildren(store.state.root, [0, 0, 1])
       const todosList = todosRoot.children[0]
       // Prepare spies and futures to assert in the middle of activation.
       const listTransitionSpy = jest.fn(
@@ -515,7 +539,13 @@ describe('Scheduler', () => {
 
   function updateLocation(location: *, nodes: *) {
     store.location.pathname = location
-    store.updateActivatedRoutes(nodes.map(x => createRouteInstance(x, '', '', {}, {})))
+    store.updateActivatedRoutes({
+      exiting: [],
+      entering: [],
+      activating: [],
+      deactivating: [],
+      incomingRoutes: nodes.map(x => createRouteInstance(x, '', '', {}, {}))
+    })
   }
 })
 

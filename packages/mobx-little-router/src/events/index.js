@@ -1,6 +1,6 @@
 // @flow
 import Navigation from '../model/Navigation'
-import type { PathElement, Route, RouteStateTreeNode, Setter } from '../model/types'
+import type {PathElement, Route, RoutesChangeSet, RouteStateTreeNode, Setter} from '../model/types'
 
 /*
   * Sequence of events that occur from navigation start to end.
@@ -138,9 +138,7 @@ export type NavigationActivating = {
 export type NavigationActivated = {
   type: 'NAVIGATION_ACTIVATED',
   navigation: Navigation,
-  nextRoutes: Route<*, *>[],
-  entering: Route<*, *>[],
-  exiting: Route<*, *>[],
+  changeSet: RoutesChangeSet,
   setter?: ?Setter,
   done?: false,
   [other: string]: any
@@ -149,8 +147,7 @@ export type NavigationActivated = {
 export type NavigationTransitionStart = {
   type: 'NAVIGATION_TRANSITION_START',
   navigation: Navigation,
-  entering: Route<*, *>[],
-  exiting: Route<*, *>[],
+  changeSet: RoutesChangeSet,
   setter?: ?Setter,
   done?: false,
   [other: string]: any
@@ -159,8 +156,7 @@ export type NavigationTransitionStart = {
 export type NavigationTransitionEnd = {
   type: 'NAVIGATION_TRANSITION_END',
   navigation: Navigation,
-  entering: Route<*, *>[],
-  exiting: Route<*, *>[],
+  changeSet: RoutesChangeSet,
   setter?: ?Setter,
   done?: false,
   [other: string]: any
